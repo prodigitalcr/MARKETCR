@@ -116,6 +116,7 @@ img{max-width:100%}
 .p-stock.ok{color:var(--green)}
 .p-stock.low{color:#B45309}
 .p-stock.out{color:var(--danger)}
+.p-stock.discount{color:#E8351D}
 .p-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
 .p-name{font-size:14.5px;font-weight:700;line-height:1.25}
 .p-desc{font-size:12.5px;color:var(--muted);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px}
@@ -432,6 +433,9 @@ textarea.f-input{resize:vertical;min-height:70px}
 .card-like-btn svg{width:16px;height:16px}
 .card-like-btn.on{color:#E8351D}
 .card-like-btn.on svg{fill:#E8351D}
+.card-edit-btn{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(23,32,42,.85);box-shadow:0 2px 6px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;color:#fff;z-index:2;transition:.15s}
+.card-edit-btn svg{width:14px;height:14px}
+.card-edit-btn:hover{background:var(--green)}
 
 /* --- galería a pantalla completa (tocar para agrandar) --- */
 .pv-media.zoomable{cursor:zoom-in}
@@ -558,8 +562,13 @@ body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float{disp
 .inv-table-adm tr:last-child td{border-bottom:none}
 .inv-table-adm tr:hover td{background:#FAFBFC}
 .tbl-prod{display:flex;align-items:center;gap:10px;font-weight:600}
-.tbl-thumb{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tbl-thumb{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .tbl-thumb svg{width:22px;height:22px}
+.tbl-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.prod-status-sel{padding:6px 9px;border-radius:10px;border:1.5px solid var(--line);font-size:12px;font-weight:700;outline:none;cursor:pointer;min-width:118px}
+.prod-status-sel.st-disponible{border-color:var(--green);color:var(--green);background:var(--green-soft)}
+.prod-status-sel.st-descuento{border-color:#E8351D;color:#E8351D;background:#FDE9E4}
+.prod-status-sel.st-agotado{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
 .tbl-cat{font-size:11.5px;color:var(--muted);font-weight:400}
 .pill{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px}
 .pill.green{background:var(--green-soft);color:var(--green)}
@@ -1576,6 +1585,15 @@ async function saveProductToDB(id, data){
   else await productsCol.add(data);
 }
 async function deleteProductFromDB(id){ await productsCol.doc(id).delete(); }
+async function setProductStatus(id, status){
+  try{
+    await saveProductToDB(id, {status});
+    toast('Estado actualizado a "' + (PROD_STATUS[status] ? PROD_STATUS[status].lbl : status) + '"', 'ok');
+  }catch(e){
+    toast('No se pudo actualizar el estado: ' + (e && e.message ? e.message : 'error desconocido'), 'err');
+    console.error(e);
+  }
+}
 
 /* ---------- helpers ---------- */
 function fmt(n){ return '₡' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u2009'); }
@@ -1981,18 +1999,30 @@ function renderExternalLinks(){
 
 /* el cliente NUNCA ve la cantidad exacta en inventario, solo disponibilidad */
 function activeVariants(p){ return (p.variants||[]).filter(v=>!v.removed); }
+/* estados manuales que el administrador puede asignar desde la columna
+   "Estado" del inventario, para clasificar el producto de un vistazo */
+const PROD_STATUS = {
+  disponible:{lbl:'Disponible'},
+  descuento:{lbl:'Descuento'},
+  agotado:{lbl:'Agotado'}
+};
 function stockInfo(p){
+  /* disponibilidad real según el stock cargado (nunca deja comprar algo sin stock) */
+  let real;
   if(p.hasVariants){
     const av = activeVariants(p);
     const total = av.reduce((s,v)=>s+(v.stock||0),0);
-    if(!av.length || total <= 0) return {label:'Agotado', cls:'out', can:false};
-    if(total <= 3 || av.every(v=>v.stock<=3)) return {label:'Pocas unidades', cls:'low', can:true};
-    return {label:'Disponible', cls:'ok', can:true};
+    real = (!av.length || total <= 0) ? {ok:false, low:false} : {ok:true, low:(total<=3 || av.every(v=>v.stock<=3))};
+  } else if(p.unlimited){
+    real = {ok:true, low:false};
+  } else {
+    real = {ok:(p.stock||0) > 0, low:(p.stock||0) > 0 && p.stock <= 3};
   }
-  if(p.unlimited) return {label:'Disponible', cls:'ok', can:true};
-  if((p.stock||0) <= 0) return {label:'Agotado', cls:'out', can:false};
-  if(p.stock <= 3) return {label:'Pocas unidades', cls:'low', can:true};
-  return {label:'Disponible', cls:'ok', can:true};
+  const manual = p.status || 'disponible';
+  if(manual === 'agotado' || !real.ok) return {label:'Agotado', cls:'out', can:false, status:'agotado'};
+  if(manual === 'descuento') return {label:'Descuento', cls:'discount', can:true, status:'descuento'};
+  if(real.low) return {label:'Pocas unidades', cls:'low', can:true, status:'disponible'};
+  return {label:'Disponible', cls:'ok', can:true, status:'disponible'};
 }
 /* precio a mostrar en tarjeta/detalle: si tiene variantes con precios distintos, se muestra "Desde ¢X" */
 function displayPrice(p){
@@ -2109,9 +2139,12 @@ function renderGrid(){
       const timerHTML = deal.active ? '<div class="mini-timer" data-timer="' + p.id + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span>Termina en --:--:--</span></div>' : '';
       const ratingHTML = rs.count ? '<div class="p-rating-row"><span class="stars">' + starsHTML(rs.avg,11) + '</span>' + rs.avg + ' (' + rs.count + ')</div>' : '';
       const liked = isLiked(p.id);
+      const adminEditBtn = isAdminSession ?
+        '<button class="card-edit-btn" data-edit="' + esc(p.id) + '" title="Editar producto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>' : '';
       return '<div class="p-card" data-id="' + esc(p.id) + '">' +
         '<div class="p-img" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' +
           media +
+          adminEditBtn +
           '<button class="card-like-btn' + (liked?' on':'') + '" data-like="' + esc(p.id) + '" title="Me gusta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>' +
           '<span class="p-stock ' + st.cls + '">' + st.label + '</span>' +
           (badges.length ? '<div class="p-badges">' + badges.join('') + '</div>' : '') +
@@ -2146,6 +2179,12 @@ document.getElementById('productGrid').addEventListener('click', function(e){
     if(likeBtn){
       e.stopPropagation();
       toggleLike(likeBtn.dataset.like);
+      return;
+    }
+    const editBtn = e.target.closest('[data-edit]');
+    if(editBtn){
+      e.stopPropagation();
+      if(isAdminSession) openProductModal(editBtn.dataset.edit);
       return;
     }
     const addBtn = e.target.closest('[data-add]');
@@ -2283,6 +2322,7 @@ function updatePvTotal(p){
 function updatePvAddBtn(p){
   const addBtn = document.getElementById('pvAddBtn');
   const st = stockInfo(p);
+  if(p.status === 'agotado'){ addBtn.disabled = true; addBtn.textContent = 'Agotado'; return; }
   if(p.hasVariants){
     const v = pvSelectedVariantId ? activeVariants(p).find(x=>x.id===pvSelectedVariantId) : null;
     if(!activeVariants(p).length){ addBtn.disabled = true; addBtn.textContent = 'Agotado'; return; }
@@ -3056,7 +3096,7 @@ function exportInventoryPDF(){
   });
   doc.setFontSize(9.5);
   doc.setTextColor(107,114,128);
-  doc.text(products.length + ' referencias - ' + products.filter(p=>stockInfo(p).cls!=='ok').length + ' con stock bajo o agotado', 40, doc.lastAutoTable.finalY + 20);
+  doc.text(products.length + ' referencias - ' + products.filter(p=>{const c=stockInfo(p).cls; return c==='low'||c==='out';}).length + ' con stock bajo o agotado', 40, doc.lastAutoTable.finalY + 20);
   pdfFooter(doc);
   doc.save((TENANT_ID||'tienda') + '-inventario-' + todayFileStamp() + '.pdf');
   toast('Reporte de inventario descargado', 'ok');
@@ -3114,16 +3154,24 @@ function renderInventory(){
   const q = (document.getElementById('invSearch').value||'').toLowerCase().trim();
   const list = products.filter(p => !q || p.name.toLowerCase().includes(q));
   document.getElementById('invSummary').textContent =
-    products.length + ' referencias · ' + products.filter(p=>stockInfo(p).cls!=='ok').length + ' con stock bajo o agotado';
+    products.length + ' referencias · ' + products.filter(p=>{const c=stockInfo(p).cls; return c==='low'||c==='out';}).length + ' con stock bajo o agotado';
   document.getElementById('invBody').innerHTML = list.map(p => {
     const st = stockInfo(p);
     const g = gradFor(p.id);
+    const cover = firstImage(p);
+    const thumb = cover ?
+      '<span class="tbl-thumb"><img src="' + esc(cover) + '" alt="' + esc(p.name) + '" loading="lazy"></span>' :
+      '<span class="tbl-thumb" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + svgIcon(p.icon,22) + '</span>';
     const totalStock = p.hasVariants ? activeVariants(p).reduce((s,v)=>s+(v.stock||0),0) : p.stock;
+    const manual = p.status || 'disponible';
+    const statusSel = '<select class="prod-status-sel st-' + manual + '" title="Estado del producto" onchange="setProductStatus(\'' + p.id + '\', this.value)">' +
+      Object.keys(PROD_STATUS).map(k=>'<option value="'+k+'"'+(manual===k?' selected':'')+'>'+PROD_STATUS[k].lbl+'</option>').join('') +
+      '</select>';
     return '<tr>' +
-      '<td><div class="tbl-prod"><span class="tbl-thumb" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + svgIcon(p.icon,22) + '</span><span>' + esc(p.name) + '<div class="tbl-cat">' + esc(p.cat) + (p.hasVariants ? ' · ' + activeVariants(p).length + ' ' + esc((p.variantGroupName||'variantes').toLowerCase()) : '') + '</div></span></div></td>' +
+      '<td><div class="tbl-prod">' + thumb + '<span>' + esc(p.name) + '<div class="tbl-cat">' + esc(p.cat) + (p.hasVariants ? ' · ' + activeVariants(p).length + ' ' + esc((p.variantGroupName||'variantes').toLowerCase()) : '') + '</div></span></div></td>' +
       '<td><b>' + displayPrice(p) + '</b></td>' +
       '<td>' + (p.unlimited ? '<span class="pill blue">Servicio</span>' : totalStock) + '</td>' +
-      '<td><span class="pill ' + (st.cls==='ok'?'green':st.cls==='low'?'amber':'red') + '">' + st.label + '</span></td>' +
+      '<td>' + statusSel + (st.cls==='low' ? '<div class="tbl-cat" style="margin-top:4px;color:#B45309">Pocas unidades</div>' : '') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
         '<button class="icon-btn" title="Editar" onclick="openProductModal(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>' +
         '<button class="icon-btn danger" title="Eliminar" onclick="deleteProduct(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
