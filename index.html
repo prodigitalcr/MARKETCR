@@ -840,6 +840,11 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 .sa-table input.f-input,.sa-table select.sort-select{padding:8px 10px;font-size:12.5px;min-width:100px}
 .sa-mini-btn{font-size:12px;font-weight:700;padding:7px 12px;border-radius:9px;border:none;cursor:pointer;background:var(--green);color:#fff}
 .sa-mini-btn:hover{background:var(--green-dark)}
+.sa-mini-btn.ghost{background:#F3F4F6;color:var(--ink)}
+.sa-mini-btn.ghost:hover{background:#E5E7EB}
+.sa-mini-btn.danger{background:var(--danger-soft);color:var(--danger)}
+.sa-mini-btn.danger:hover{background:var(--danger);color:#fff}
+.sa-actions-cell{display:flex;gap:6px;flex-wrap:wrap}
 .sa-mini-link{font-size:12px;font-weight:700;color:var(--blue);text-decoration:underline}
 </style>
 </head>
@@ -1741,6 +1746,48 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </tr></thead>
         <tbody id="saTableBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr></tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SUPERADMIN — EDITAR NEGOCIO (modal completo) ================= -->
+<div class="modal" id="saEditModal">
+  <div class="modal-bg" onclick="saCloseEditModal()"></div>
+  <div class="modal-card">
+    <div class="modal-head"><h3>Editar negocio</h3>
+      <button class="close-x" onclick="saCloseEditModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="f-group"><label>Slug / ID (no editable)</label><input class="f-input" id="saEditSlug" disabled></div>
+      <div class="f-row">
+        <div class="f-group"><label>Nombre a mostrar</label><input class="f-input" id="saEditNombre"></div>
+        <div class="f-group"><label>Tipo</label>
+          <select class="sort-select" id="saEditTipo" style="width:100%">
+            <option value="">Tienda (catálogo con carrito)</option>
+            <option value="profesional">Profesional (sin carrito)</option>
+          </select>
+        </div>
+      </div>
+      <div class="f-row">
+        <div class="f-group"><label>WhatsApp (con código de país)</label><input class="f-input" id="saEditWhatsapp" inputmode="tel"></div>
+        <div class="f-group"><label>Categoría (solo profesionales)</label><input class="f-input" id="saEditCategoria"></div>
+      </div>
+      <div class="f-group"><label>Servicios (separados por coma, solo profesionales)</label><input class="f-input" id="saEditServicios"></div>
+      <div class="f-group"><label>Correos administradores (separados por coma)</label><input class="f-input" id="saEditAdminEmails" placeholder="correo1@negocio.com, correo2@negocio.com"></div>
+      <div class="f-row">
+        <div class="f-group"><label>Monto mensual (₡)</label><input class="f-input" id="saEditMonto" type="number" inputmode="decimal"></div>
+        <div class="f-group"><label>Estado de pago</label>
+          <select class="sort-select" id="saEditEstado" style="width:100%">
+            <option value="al_dia">Al día</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="vencido">Vencido</option>
+          </select>
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:6px 0 16px">
+        <input type="checkbox" id="saEditActivo"> Negocio activo (visible en la plataforma)
+      </label>
+      <button class="btn-primary" onclick="saSaveEditModal()">Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -4778,7 +4825,11 @@ function renderSuperadminTable(){
       '</select></td>' +
       '<td><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" data-sa-activo="' + esc(t.id) + '" ' + (activo?'checked':'') + '> Activo</label></td>' +
       '<td><a class="sa-mini-link" href="' + url + '" target="_blank" rel="noopener">Ver</a></td>' +
-      '<td><button class="sa-mini-btn" onclick="saSaveTenantRow(\'' + esc(t.id) + '\')">Guardar</button></td>' +
+      '<td><div class="sa-actions-cell">' +
+        '<button class="sa-mini-btn" onclick="saSaveTenantRow(\'' + esc(t.id) + '\')">Guardar</button>' +
+        '<button class="sa-mini-btn ghost" onclick="saOpenEditModal(\'' + esc(t.id) + '\')">Editar</button>' +
+        '<button class="sa-mini-btn danger" onclick="saDeleteTenant(\'' + esc(t.id) + '\')">Eliminar</button>' +
+      '</div></td>' +
     '</tr>';
   }).join('');
 }
@@ -4795,6 +4846,99 @@ async function saSaveTenantRow(id){
     toast('Negocio actualizado', 'ok');
   }catch(e){
     toast('No se pudo guardar: ' + (e && e.message ? e.message : 'error desconocido'), 'err');
+    console.error(e);
+  }
+}
+
+/* ---------- editar toda la información de un negocio (modal completo) ---------- */
+let _saEditingId = null;
+function saOpenEditModal(id){
+  const t = _saTenants.find(x=>x.id===id);
+  if(!t) return;
+  _saEditingId = id;
+  document.getElementById('saEditSlug').value = id;
+  document.getElementById('saEditNombre').value = t.nombre || '';
+  document.getElementById('saEditTipo').value = t.tipo === 'profesional' ? 'profesional' : '';
+  document.getElementById('saEditWhatsapp').value = t.whatsapp || '';
+  document.getElementById('saEditCategoria').value = t.categoria || '';
+  document.getElementById('saEditServicios').value = (t.servicios || []).join(', ');
+  document.getElementById('saEditAdminEmails').value = (t.adminEmails || []).join(', ');
+  document.getElementById('saEditMonto').value = Number(t.montoMensual) || 0;
+  document.getElementById('saEditEstado').value = t.estadoPago || 'al_dia';
+  document.getElementById('saEditActivo').checked = t.activo !== false;
+  document.getElementById('saEditModal').classList.add('show');
+}
+function saCloseEditModal(){
+  document.getElementById('saEditModal').classList.remove('show');
+  _saEditingId = null;
+}
+async function saSaveEditModal(){
+  if(!_saEditingId) return;
+  const id = _saEditingId;
+  const nombre = document.getElementById('saEditNombre').value.trim();
+  if(!nombre){ toast('El nombre es obligatorio', 'err'); return; }
+  const data = {
+    nombre,
+    tipo: document.getElementById('saEditTipo').value,
+    whatsapp: waDigits(document.getElementById('saEditWhatsapp').value),
+    categoria: document.getElementById('saEditCategoria').value.trim(),
+    servicios: document.getElementById('saEditServicios').value.split(',').map(s=>s.trim()).filter(Boolean),
+    adminEmails: document.getElementById('saEditAdminEmails').value.split(',').map(s=>s.trim()).filter(Boolean),
+    montoMensual: Number(document.getElementById('saEditMonto').value) || 0,
+    estadoPago: document.getElementById('saEditEstado').value,
+    activo: document.getElementById('saEditActivo').checked
+  };
+  try{
+    await db.collection('tenants').doc(id).set(data, {merge:true});
+    // También actualiza el documento de configuración de la tienda (settings/store)
+    // para que el tipo/whatsapp/categoría/servicios queden en sincronía con lo
+    // que ve el administrador de ese negocio en su propio panel.
+    await db.collection('tenants').doc(id).collection('settings').doc('store').set({
+      tipo: data.tipo, whatsapp: data.whatsapp, categoria: data.categoria, servicios: data.servicios
+    }, {merge:true});
+    Object.assign(_saTenants.find(x=>x.id===id) || {}, data);
+    renderSuperadminSummary();
+    renderSuperadminTable();
+    saCloseEditModal();
+    toast('Negocio actualizado', 'ok');
+  }catch(e){
+    toast('No se pudo guardar: ' + (e && e.message ? e.message : 'error desconocido'), 'err');
+    console.error(e);
+  }
+}
+
+/* ---------- eliminar un negocio por completo (tienda + subcolecciones) ---------- */
+async function saDeleteCollectionDocs(colRef){
+  const snap = await colRef.get();
+  if(snap.empty) return;
+  // Firestore permite máximo 500 operaciones por batch; se trocea por si acaso.
+  const chunks = [];
+  for(let i=0;i<snap.docs.length;i+=450) chunks.push(snap.docs.slice(i,i+450));
+  for(const chunk of chunks){
+    const batch = db.batch();
+    chunk.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  }
+}
+async function saDeleteTenant(id){
+  const t = _saTenants.find(x=>x.id===id);
+  const nombre = t ? (t.nombre || id) : id;
+  if(!confirm('¿Seguro que querés eliminar "' + nombre + '"? Esto borra su tienda, productos, pedidos y estadísticas de forma permanente.')) return;
+  const check = prompt('Para confirmar, escribí exactamente el slug del negocio:\n' + id);
+  if(check !== id){ toast('Eliminación cancelada: el texto no coincide', 'err'); return; }
+  try{
+    const ref = db.collection('tenants').doc(id);
+    await saDeleteCollectionDocs(ref.collection('products'));
+    await saDeleteCollectionDocs(ref.collection('orders'));
+    await saDeleteCollectionDocs(ref.collection('settings'));
+    await saDeleteCollectionDocs(ref.collection('analytics'));
+    await ref.delete();
+    _saTenants = _saTenants.filter(x => x.id !== id);
+    renderSuperadminSummary();
+    renderSuperadminTable();
+    toast('Negocio eliminado', 'ok');
+  }catch(e){
+    toast('No se pudo eliminar: ' + (e && e.message ? e.message : 'error desconocido'), 'err');
     console.error(e);
   }
 }
