@@ -37,6 +37,11 @@
      variable se llena en tiempo real cuando la app detecta qué tienda
      (?tienda=slug) se está mostrando. */
   let ADMIN_EMAILS = [];
+  /* Correos autorizados como SUPERADMINISTRADOR de TODA la plataforma
+     (todas las tiendas y todos los profesionales, sin importar el
+     negocio). Se accede agregando ?superadmin=1 a la URL. Cambiá esta
+     lista por los correos reales que deban tener este acceso maestro. */
+  const SUPERADMIN_EMAILS = ["admin@prodigital.com"];
   /* Clave maestra para poder CREAR negocios nuevos desde la página de
      inicio (el selector de negocios). Solo protege quién puede crear un
      negocio nuevo desde la interfaz; es una capa de conveniencia, no
@@ -81,6 +86,18 @@ img{max-width:100%}
 .cart-btn:hover{background:var(--green-soft);border-color:var(--green)}
 .cart-btn svg{width:22px;height:22px;color:var(--ink)}
 .cart-badge{position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;border-radius:10px;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px}
+
+/* ============ MODO PROFESIONAL: sin carrito, solo contacto por WhatsApp ============ */
+body.professional-mode #headerCartBtn,
+body.professional-mode #trackOrderBtn,
+body.professional-mode .cart-drawer,
+body.professional-mode .overlay#cartOverlay{display:none !important}
+body.professional-mode .add-btn{display:none !important}
+.prof-item-wa-btn{position:relative;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;border-radius:12px;background:#25D366;color:#fff;font-size:13.5px;font-weight:700;border:none;cursor:pointer;transition:.15s;margin-top:8px}
+.prof-item-wa-btn:hover{background:#1EBE5B}
+.prof-item-wa-btn svg{width:17px;height:17px;flex-shrink:0}
+.prof-gallery-count{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;display:flex;align-items:center;gap:4px}
+.prof-gallery-count svg{width:12px;height:12px}
 .admin-link{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted);padding:10px 12px;border-radius:10px;flex-shrink:0}
 .admin-link:hover{background:#F3F4F6;color:var(--ink)}
 .admin-link svg{width:16px;height:16px}
@@ -793,6 +810,32 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
 .back-to-selector{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--muted);padding:4px 0}
 .back-to-selector svg{width:14px;height:14px}
 .biz-sec-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:10px 14px 4px}
+
+/* ============ SUPERADMINISTRADOR (vista maestra de toda la plataforma) ============ */
+#superadminView{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto}
+body.superadmin-mode #superadminView{display:block}
+body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.superadmin-mode .wa-float,body.superadmin-mode .ai-float,body.superadmin-mode .ai-panel{display:none}
+.sa-wrap{max-width:1200px;margin:0 auto;padding:28px 24px 90px}
+.sa-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:14px;flex-wrap:wrap}
+.sa-header h1{font-family:var(--font-display);font-size:26px;font-weight:600}
+.sa-header p{color:var(--muted);font-size:13.5px;margin-top:2px}
+.sa-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:26px}
+.sa-summary .stat-card{padding:16px 18px}
+.pay-pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px}
+.pay-pill.al_dia{background:var(--green-soft);color:var(--green-dark)}
+.pay-pill.pendiente{background:var(--yellow-soft);color:#92400E}
+.pay-pill.vencido{background:var(--danger-soft);color:var(--danger)}
+.pay-pill.tipo-tienda{background:var(--blue-soft);color:var(--blue)}
+.pay-pill.tipo-profesional{background:#F3E8FF;color:#7C3AED}
+.sa-table-wrap{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+.sa-table{width:100%;border-collapse:collapse;font-size:13px}
+.sa-table th{text-align:left;padding:12px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap}
+.sa-table td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+.sa-table tr:last-child td{border-bottom:none}
+.sa-table input.f-input,.sa-table select.sort-select{padding:8px 10px;font-size:12.5px;min-width:100px}
+.sa-mini-btn{font-size:12px;font-weight:700;padding:7px 12px;border-radius:9px;border:none;cursor:pointer;background:var(--green);color:#fff}
+.sa-mini-btn:hover{background:var(--green-dark)}
+.sa-mini-link{font-size:12px;font-weight:700;color:var(--blue);text-decoration:underline}
 </style>
 </head>
 <body>
@@ -862,11 +905,15 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input class="search-input" id="searchInput" name="storeSearchQuery" type="search" autocomplete="off" data-lpignore="true" data-1p-ignore="true" placeholder="Buscar producto" oninput="renderGrid();trackSearch(this.value)">
       </div>
-      <button class="admin-link" onclick="openTracking()" title="Rastrear mi pedido">
+      <button class="admin-link" onclick="openTracking()" title="Rastrear mi pedido" id="trackOrderBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>
         <span>Rastrear pedido</span>
       </button>
-      <button class="cart-btn" onclick="toggleCart(true)" title="Ver carrito">
+      <button class="admin-link" onclick="shareStoreLink()" title="Compartir esta tienda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5 15.4 6.5M8.6 13.5 15.4 17.5"/></svg>
+        <span>Compartir</span>
+      </button>
+      <button class="cart-btn" id="headerCartBtn" onclick="toggleCart(true)" title="Ver carrito">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/></svg>
         <span class="cart-badge" id="cartBadge" style="display:none">0</span>
       </button>
@@ -1143,6 +1190,12 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
           <div class="ac-lbl">Vistas de productos</div>
           <div class="ac-sub">Fichas de producto abiertas</div>
         </div>
+        <div class="analytics-card ac-green">
+          <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5 15.4 6.5M8.6 13.5 15.4 17.5"/></svg></div>
+          <div class="ac-val" id="stShares">0</div>
+          <div class="ac-lbl">Veces compartida</div>
+          <div class="ac-sub">Enlace de la tienda compartido</div>
+        </div>
       </div>
 
       <!-- Fuente de tráfico -->
@@ -1231,6 +1284,19 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
         <button type="button" class="btn-ghost" style="width:auto;padding:9px 16px;margin-top:8px" onclick="addBizImageField()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Agregar recuadro de foto
         </button>
+      </div>
+
+      <div class="settings-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Tipo de negocio</h4>
+        <div class="desc">Activá esta opción si sos un <b>profesional independiente</b> (ej. electricista, diseñador, fotógrafo). Tu tienda se muestra igual que un catálogo, pero <b>sin carrito de compras</b>: cada trabajo o servicio tiene un botón directo de "Contactar por WhatsApp", y tu perfil aparece en la sección "Contactá un profesional" de la página principal.</div>
+        <label class="radio-card sel" style="max-width:420px" id="rcTipoProf">
+          <input type="checkbox" id="sTipoProf" onchange="onTipoProfChanged(this)">
+          <div><b>Soy un profesional (sin carrito)</b><small>Catálogo de trabajos/servicios con contacto directo por WhatsApp</small></div>
+        </label>
+        <div class="f-row" id="profFieldsWrap" style="margin-top:14px;display:none">
+          <div class="f-group"><label>Categoría principal (ej: Electricista, Fotógrafo)</label><input class="f-input" id="sCategoriaProf" placeholder="Ej: Electricista"></div>
+          <div class="f-group"><label>Servicios que ofrecés (separados por coma)</label><input class="f-input" id="sServiciosProf" placeholder="Instalaciones, Reparaciones, Mantenimiento"></div>
+        </div>
       </div>
 
       <div class="settings-card">
@@ -1578,6 +1644,102 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
   </div>
 </div>
 
+<!-- ================= SUPERADMINISTRADOR (LOGIN) — acceso con ?superadmin=1 ================= -->
+<div class="modal" id="superadminLoginModal">
+  <div class="modal-bg"></div>
+  <div class="modal-card login-card">
+    <div class="modal-body" style="padding:30px 26px">
+      <div class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+      <h3>Superadministrador</h3>
+      <p>Acceso maestro a toda la plataforma: todas las tiendas y todos los profesionales.</p>
+      <div class="f-group" style="text-align:left"><label>Correo</label><input class="f-input" type="email" id="saEmail" autocomplete="username" placeholder="admin@prodigital.com" onkeydown="if(event.key==='Enter')document.getElementById('saPass').focus()"></div>
+      <div class="f-group" style="text-align:left"><label>Contraseña</label><input class="f-input" type="password" id="saPass" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSuperadminLogin()"></div>
+      <div id="saLoginMsg" style="color:var(--danger);font-size:12.5px;margin-top:4px;display:none"></div>
+      <button class="btn-primary" style="margin-top:14px" onclick="doSuperadminLogin()">Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SUPERADMINISTRADOR (PANEL) ================= -->
+<div id="superadminView">
+  <div class="sa-wrap">
+    <div class="sa-header">
+      <div>
+        <h1>Panel de superadministrador</h1>
+        <p>Todas las tiendas y profesionales inscritos en la plataforma PRO.DIGITAL.</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-ghost" style="width:auto;padding:10px 18px" onclick="loadSuperadminData()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:4px"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>Actualizar
+        </button>
+        <button class="btn-ghost" style="width:auto;padding:10px 18px" onclick="doSuperadminLogout()">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="sa-summary">
+      <div class="stat-card"><div class="lbl">Tiendas</div><div class="val" id="saCountTiendas">0</div></div>
+      <div class="stat-card"><div class="lbl">Profesionales</div><div class="val" id="saCountProf">0</div></div>
+      <div class="stat-card"><div class="lbl">Al día</div><div class="val" id="saCountAlDia">0</div></div>
+      <div class="stat-card"><div class="lbl">Pendientes</div><div class="val" id="saCountPend">0</div></div>
+      <div class="stat-card"><div class="lbl">Vencidos</div><div class="val" id="saCountVenc">0</div></div>
+      <div class="stat-card hl"><div class="lbl">Ingreso mensual esperado</div><div class="val" id="saMontoTotal">₡0</div></div>
+    </div>
+
+    <div class="settings-card" style="margin-bottom:20px">
+      <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Registrar nuevo negocio</h4>
+      <div class="desc">Creá el registro de una tienda o profesional nuevo. Luego, la persona dueña del negocio inicia sesión con el correo que le asignes aquí desde <b>Acceso administrador</b> en su propia URL (<code>?tienda=el-slug-que-pongas</code>).</div>
+      <div class="f-row">
+        <div class="f-group"><label>Slug / ID del negocio (sin espacios)</label><input class="f-input" id="saNewSlug" placeholder="ej: juan-electricista"></div>
+        <div class="f-group"><label>Nombre a mostrar</label><input class="f-input" id="saNewNombre" placeholder="ej: Juan Pérez Electricista"></div>
+      </div>
+      <div class="f-row">
+        <div class="f-group"><label>Tipo</label>
+          <select class="sort-select" id="saNewTipo" style="width:100%">
+            <option value="">Tienda (catálogo con carrito)</option>
+            <option value="profesional">Profesional (sin carrito)</option>
+          </select>
+        </div>
+        <div class="f-group"><label>Correo administrador (login)</label><input class="f-input" id="saNewAdminEmail" type="email" placeholder="correo@delnegocio.com"></div>
+      </div>
+      <div class="f-row">
+        <div class="f-group"><label>Monto mensual (₡)</label><input class="f-input" id="saNewMonto" type="number" inputmode="decimal" placeholder="ej: 15000"></div>
+        <div class="f-group"><label>Estado de pago inicial</label>
+          <select class="sort-select" id="saNewEstado" style="width:100%">
+            <option value="al_dia">Al día</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="vencido">Vencido</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" style="width:auto;padding:12px 22px" onclick="saCreateTenant()">Crear negocio</button>
+    </div>
+
+    <div class="adm-toolbar" style="margin-bottom:10px">
+      <input class="f-input" id="saFilterInput" placeholder="Buscar por nombre o slug…" style="max-width:260px" oninput="renderSuperadminTable()">
+      <select class="sort-select" id="saFilterTipo" onchange="renderSuperadminTable()">
+        <option value="">Todos los tipos</option>
+        <option value="tienda">Solo tiendas</option>
+        <option value="profesional">Solo profesionales</option>
+      </select>
+      <select class="sort-select" id="saFilterEstado" onchange="renderSuperadminTable()">
+        <option value="">Todos los estados de pago</option>
+        <option value="al_dia">Al día</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="vencido">Vencido</option>
+      </select>
+    </div>
+
+    <div class="sa-table-wrap">
+      <table class="sa-table">
+        <thead><tr>
+          <th>Negocio</th><th>Tipo</th><th>Fecha de registro</th><th>Monto mensual</th><th>Estado de pago</th><th>Activo</th><th>Enlace</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="saTableBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div id="printArea"></div>
 <div id="toast"></div>
 <script>
@@ -1603,6 +1765,9 @@ const DEFAULT_SETTINGS = {
   logoUrl:'',
   landingImages:[],
   iva:13,
+  tipo:'', // '' = tienda normal con carrito. 'profesional' = perfil de servicios, sin carrito, contacto directo por WhatsApp
+  categoria:'', // categoría principal mostrada en el landing de profesionales
+  servicios:[], // lista corta de servicios mostrada en el landing (independiente de "categories")
   aiEnabled:false,
   aiApiKey:'',
   aiAssistantName:'Cana',
@@ -1616,6 +1781,7 @@ const GRADS = [
 
 /* ---------- capa de datos (Firestore) ---------- */
 let settings = Object.assign({}, DEFAULT_SETTINGS);
+let isProfessionalStore = false; // true cuando settings.tipo === 'profesional': catálogo sin carrito, solo contacto por WhatsApp
 let products = [];
 let orders = [];
 let cart = {}; // {productId: qty}
@@ -1690,6 +1856,8 @@ function tryStoreFirstPaint(){
 function listenSettings(){
   settingsRef.onSnapshot(snap=>{
     settings = Object.assign({}, DEFAULT_SETTINGS, snap.exists ? snap.data() : {});
+    isProfessionalStore = settings.tipo === 'profesional';
+    document.body.classList.toggle('professional-mode', isProfessionalStore);
     settingsReady = true;
     renderHeader(); renderChips(); renderExternalLinks(); renderStoryVideo(); renderAIAssistant();
     if(document.body.classList.contains('in-admin') && !settingsFormDirty) loadSettingsForm();
@@ -2314,6 +2482,10 @@ function renderGrid(){
           '<button class="add-btn" ' + (st.can?'':'disabled') + ' data-add="' + esc(p.id) + '" data-variants="' + (p.hasVariants?'1':'0') + '" title="' + (p.hasVariants?'Elegir opción':'Agregar al carrito') + '">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></button>' +
           '</div>' +
+          (isProfessionalStore ?
+            '<button class="prof-item-wa-btn" data-prof-wa="' + esc(p.id) + '">' +
+              '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm4.6 12.1c-.3-.1-1.5-.7-1.7-.8s-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.4-3c-.3-.4 0-.5.2-.8l.4-.5c.1-.2.1-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.9.9-1.1 2.2-.2 3.9a11.6 11.6 0 0 0 4.5 4.2c1.7.8 2.4.9 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.1-.5-.2z"/></svg>' +
+              'Contactar por WhatsApp</button>' : '') +
         '</div></div>';
     }).join('');
     tickDealTimers();
@@ -2341,6 +2513,12 @@ document.getElementById('productGrid').addEventListener('click', function(e){
     if(editBtn){
       e.stopPropagation();
       if(isAdminSession) openProductModal(editBtn.dataset.edit);
+      return;
+    }
+    const profWaBtn = e.target.closest('[data-prof-wa]');
+    if(profWaBtn){
+      e.stopPropagation();
+      profItemContactWA(profWaBtn.dataset.profWa);
       return;
     }
     const addBtn = e.target.closest('[data-add]');
@@ -2405,11 +2583,18 @@ function openProductView(id){
 
   const addBtn = document.getElementById('pvAddBtn');
   updatePvAddBtn(p);
-  addBtn.onclick = () => {
-    if(p.hasVariants && !pvSelectedVariantId){ toast('Elegí una opción de ' + (p.variantGroupName||'tamaño').toLowerCase(), 'err'); return; }
-    addToCart(id, pvSelectedVariantId, pvQty);
-    closeProductView();
-  };
+  document.getElementById('pvQtyCtl').closest('.pv-qty-row').style.display = isProfessionalStore ? 'none' : '';
+  if(isProfessionalStore){
+    addBtn.disabled = false;
+    addBtn.textContent = 'Contactar por WhatsApp';
+    addBtn.onclick = () => { profItemContactWA(id); };
+  } else {
+    addBtn.onclick = () => {
+      if(p.hasVariants && !pvSelectedVariantId){ toast('Elegí una opción de ' + (p.variantGroupName||'tamaño').toLowerCase(), 'err'); return; }
+      addToCart(id, pvSelectedVariantId, pvQty);
+      closeProductView();
+    };
+  }
   document.getElementById('productViewModal').classList.add('show');
 }
 function renderPvVariants(p){
@@ -2477,6 +2662,7 @@ function updatePvTotal(p){
 }
 function updatePvAddBtn(p){
   const addBtn = document.getElementById('pvAddBtn');
+  if(isProfessionalStore){ addBtn.disabled = false; addBtn.textContent = 'Contactar por WhatsApp'; return; }
   const st = stockInfo(p);
   if(p.status === 'agotado'){ addBtn.disabled = true; addBtn.textContent = 'Agotado'; return; }
   if(p.hasVariants){
@@ -3805,6 +3991,10 @@ function loadSettingsForm(){
   document.getElementById('sHours').value = settings.hours;
   document.getElementById('sShip').value = settings.shipping;
   document.getElementById('sCats').value = settings.categories.join(', ');
+  document.getElementById('sTipoProf').checked = settings.tipo === 'profesional';
+  document.getElementById('sCategoriaProf').value = settings.categoria || '';
+  document.getElementById('sServiciosProf').value = (settings.servicios||[]).join(', ');
+  document.getElementById('profFieldsWrap').style.display = settings.tipo === 'profesional' ? '' : 'none';
   document.getElementById('sSinpe').value = settings.sinpe;
   document.getElementById('sWa').value = settings.whatsapp;
   document.getElementById('sWebLabel').value = settings.websiteLabel||'Sitio web';
@@ -3833,6 +4023,11 @@ function loadSettingsForm(){
     sponsEl.textContent = isSponsored ? '⭐ Plan ' + plan.charAt(0).toUpperCase()+plan.slice(1) + ' activo' : 'Plan Básico — sin destacar';
     sponsEl.style.color = isSponsored ? 'var(--green-dark)' : 'var(--muted)';
   }
+}
+
+function onTipoProfChanged(cb){
+  document.getElementById('profFieldsWrap').style.display = cb.checked ? '' : 'none';
+  markSettingsFormDirty();
 }
 
 /* ---------- diagnóstico visible de permisos (correo logueado vs adminEmails) ---------- */
@@ -3991,19 +4186,35 @@ async function saveSettings(){
     aiAssistantName: document.getElementById('sAiName').value.trim() || 'Cana',
     aiWelcomeMsg: document.getElementById('sAiWelcome').value.trim() || DEFAULT_SETTINGS.aiWelcomeMsg,
     logoUrl: pendingLogoDataUrl !== null ? pendingLogoDataUrl : (settings.logoUrl||''),
-    landingImages: bizImages.map(u=>u.trim()).filter(Boolean)
+    landingImages: bizImages.map(u=>u.trim()).filter(Boolean),
+    tipo: document.getElementById('sTipoProf').checked ? 'profesional' : '',
+    categoria: document.getElementById('sCategoriaProf').value.trim(),
+    servicios: document.getElementById('sServiciosProf').value.split(',').map(s=>s.trim()).filter(Boolean)
   };
   try{
     await saveSettingsToDB(data);
-    // Mantiene sincronizados el nombre, la descripción, el logo y las fotos
-    // de esta tienda con su tarjeta en la pantalla de inicio (tenants/{slug}),
-    // así lo que se edita acá aparece automáticamente en el landing.
-    await tenantRef().set({
+    // Mantiene sincronizados el nombre, la descripción, el logo, las fotos
+    // y el tipo de negocio (tienda / profesional) de esta tienda con su
+    // tarjeta en la pantalla de inicio (tenants/{slug}), así lo que se
+    // edita acá aparece automáticamente en el landing y en la sección
+    // "Contactá un profesional" cuando corresponda.
+    const tenantMirror = {
       nombre: data.storeName,
       tagline: data.tagline,
       logoUrl: data.logoUrl,
-      landingImages: data.landingImages
-    }, { merge:true });
+      landingImages: data.landingImages,
+      tipo: data.tipo,
+      categoria: data.categoria,
+      servicios: data.servicios,
+      whatsapp: data.whatsapp,
+      activo: true
+    };
+    // Fecha de registro para el panel de superadministrador: solo se
+    // fija la primera vez (si el tenant aún no la tiene), nunca se pisa.
+    if(!TENANT_DATA || !TENANT_DATA.createdAt){
+      tenantMirror.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    }
+    await tenantRef().set(tenantMirror, { merge:true });
     settingsFormDirty = false;
     pendingLogoDataUrl = null;
     document.getElementById('sinpePreview').textContent = sinpe;
@@ -4222,6 +4433,48 @@ async function trackWAClick(){
   }catch(e){}
 }
 
+/* Botón "Contactar por WhatsApp" de cada tarjeta/servicio, cuando la
+   tienda es de tipo "profesional" (sin carrito). Arma un mensaje con el
+   nombre del servicio/trabajo y registra el clic en analytics. */
+function profItemContactWA(id){
+  const p = products.find(x=>x.id===id);
+  const name = p ? p.name : '';
+  const msg = 'Hola ' + (settings.storeName||'') + ', vi "' + name + '" en tu perfil y quisiera más información.';
+  window.open('https://wa.me/' + waDigits(settings.whatsapp) + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  trackWAClick();
+}
+
+async function trackShare(){
+  if(!TENANT_ID) return;
+  try{
+    await analyticsCol().doc('summary').set({
+      shares: firebase.firestore.FieldValue.increment(1)
+    }, {merge:true});
+  }catch(e){}
+}
+
+/* Botón "Compartir" del encabezado: comparte el enlace propio de ESTE
+   tenant (la URL actual con ?tienda=slug) y registra el conteo en
+   analytics para que el administrador/profesional lo vea en su panel. */
+function shareStoreLink(){
+  const url = location.href;
+  const title = (settings.storeName || 'Tienda') + (isProfessionalStore ? ' — Perfil profesional' : ' — Tienda en línea');
+  const text = isProfessionalStore
+    ? 'Mirá el perfil de ' + (settings.storeName || 'este profesional') + ':'
+    : 'Mirá el catálogo de ' + (settings.storeName || 'esta tienda') + ':';
+  if(navigator.share){
+    navigator.share({ title, text, url }).then(()=>trackShare()).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>{
+      toast('Enlace copiado al portapapeles', 'ok');
+      trackShare();
+    }).catch(()=>{
+      window.prompt('Copiá el enlace de tu tienda:', url);
+      trackShare();
+    });
+  }
+}
+
 async function trackSearch(query){
   if(!TENANT_ID || !query || query.length < 2) return;
   try{
@@ -4251,11 +4504,14 @@ async function loadAnalytics(){
     const waClicks = d.waClicks || 0;
     const searches = d.totalSearches || 0;
     const pvs = d.productViews || 0;
+    const shares = d.shares || 0;
     document.getElementById('stVisits').textContent = visits.toLocaleString('es-CR');
     document.getElementById('stVisitsSub').textContent = d.lastVisit ? 'Última visita: ' + d.lastVisit : 'Sin visitas aún';
     document.getElementById('stWaClicks').textContent = waClicks.toLocaleString('es-CR');
     document.getElementById('stSearches').textContent = searches.toLocaleString('es-CR');
     document.getElementById('stProductViews').textContent = pvs.toLocaleString('es-CR');
+    const stSharesEl = document.getElementById('stShares');
+    if(stSharesEl) stSharesEl.textContent = shares.toLocaleString('es-CR');
 
     // Tabla de fuentes de tráfico
     const sources = d.sources || {};
@@ -4393,8 +4649,188 @@ function filterLanding(){
   renderProfessionals(fp);
 }
 
+/* ======================================================================
+   MÓDULO SUPERADMINISTRADOR — vista maestra de TODA la plataforma.
+   Se activa con ?superadmin=1 en la URL (ver bootPlatform). Usa el mismo
+   Firebase Auth que las tiendas, pero valida el correo contra
+   SUPERADMIN_EMAILS (arriba en la config) en vez de contra el
+   adminEmails de una tienda puntual. Lee y escribe directo en la
+   colección raíz "tenants" (todas las tiendas y profesionales).
+   ====================================================================== */
+let isSuperadminMode = false;
+let isSuperadminSession = false;
+let _saTenants = [];
+
+function initSuperadminMode(){
+  isSuperadminMode = true;
+  document.body.classList.add('superadmin-mode');
+  auth.onAuthStateChanged(user => {
+    isSuperadminSession = !!(user && SUPERADMIN_EMAILS.includes(user.email));
+    document.getElementById('superadminLoginModal').classList.toggle('show', !isSuperadminSession);
+    document.getElementById('superadminView').style.display = isSuperadminSession ? '' : 'none';
+    if(isSuperadminSession) loadSuperadminData();
+  });
+}
+
+async function doSuperadminLogin(){
+  const email = document.getElementById('saEmail').value.trim();
+  const pass = document.getElementById('saPass').value;
+  const msg = document.getElementById('saLoginMsg');
+  msg.style.display = 'none';
+  if(!email || !pass){ msg.textContent = 'Ingresá correo y contraseña.'; msg.style.display='block'; return; }
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    if(!SUPERADMIN_EMAILS.includes(email)){
+      await auth.signOut();
+      msg.textContent = 'Este correo no tiene acceso de superadministrador.';
+      msg.style.display = 'block';
+      return;
+    }
+  }catch(e){
+    msg.textContent = 'No se pudo iniciar sesión: ' + (e && e.message ? e.message : 'error desconocido');
+    msg.style.display = 'block';
+  }
+}
+async function doSuperadminLogout(){
+  await auth.signOut();
+  isSuperadminSession = false;
+  document.getElementById('superadminLoginModal').classList.add('show');
+  document.getElementById('superadminView').style.display = 'none';
+}
+
+async function loadSuperadminData(){
+  const tbody = document.getElementById('saTableBody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr>';
+  try{
+    const snap = await db.collection('tenants').get();
+    _saTenants = snap.docs.map(d => Object.assign({id:d.id}, d.data()));
+    _saTenants.sort((a,b) => (a.nombre||a.id).localeCompare(b.nombre||b.id, 'es'));
+    renderSuperadminSummary();
+    renderSuperadminTable();
+  }catch(e){
+    console.error(e);
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--danger);padding:24px">No se pudo cargar la lista de negocios: ' + esc(e && e.message ? e.message : 'error desconocido') + '</td></tr>';
+  }
+}
+
+function renderSuperadminSummary(){
+  const tiendas = _saTenants.filter(t => t.tipo !== 'profesional');
+  const profs = _saTenants.filter(t => t.tipo === 'profesional');
+  const alDia = _saTenants.filter(t => (t.estadoPago||'al_dia') === 'al_dia').length;
+  const pend = _saTenants.filter(t => t.estadoPago === 'pendiente').length;
+  const venc = _saTenants.filter(t => t.estadoPago === 'vencido').length;
+  const montoTotal = _saTenants.reduce((s,t) => s + (Number(t.montoMensual)||0), 0);
+  document.getElementById('saCountTiendas').textContent = tiendas.length;
+  document.getElementById('saCountProf').textContent = profs.length;
+  document.getElementById('saCountAlDia').textContent = alDia;
+  document.getElementById('saCountPend').textContent = pend;
+  document.getElementById('saCountVenc').textContent = venc;
+  document.getElementById('saMontoTotal').textContent = fmt(montoTotal);
+}
+
+function saFechaLabel(t){
+  try{
+    if(t.createdAt && typeof t.createdAt.toDate === 'function'){
+      return t.createdAt.toDate().toLocaleDateString('es-CR', {year:'numeric', month:'2-digit', day:'2-digit'});
+    }
+  }catch(e){}
+  return '—';
+}
+
+function renderSuperadminTable(){
+  const tbody = document.getElementById('saTableBody');
+  const q = (document.getElementById('saFilterInput').value||'').toLowerCase().trim();
+  const fTipo = document.getElementById('saFilterTipo').value;
+  const fEstado = document.getElementById('saFilterEstado').value;
+  let list = _saTenants.slice();
+  if(q) list = list.filter(t => (t.nombre||t.id).toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
+  if(fTipo) list = list.filter(t => t.tipo === 'profesional');
+  else if(document.getElementById('saFilterTipo').selectedIndex === 1) list = list.filter(t => t.tipo !== 'profesional');
+  if(fEstado) list = list.filter(t => (t.estadoPago||'al_dia') === fEstado);
+
+  if(!list.length){
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">No hay negocios que coincidan con el filtro.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(t => {
+    const tipoLabel = t.tipo === 'profesional'
+      ? '<span class="pay-pill tipo-profesional">Profesional</span>'
+      : '<span class="pay-pill tipo-tienda">Tienda</span>';
+    const estado = t.estadoPago || 'al_dia';
+    const activo = t.activo !== false;
+    const url = location.pathname + '?tienda=' + encodeURIComponent(t.id);
+    return '<tr data-tenant-row="' + esc(t.id) + '">' +
+      '<td><b>' + esc(t.nombre || t.id) + '</b><br><span style="color:var(--muted);font-size:11.5px">' + esc(t.id) + '</span></td>' +
+      '<td>' + tipoLabel + '</td>' +
+      '<td>' + saFechaLabel(t) + '</td>' +
+      '<td><input class="f-input" type="number" inputmode="decimal" data-sa-monto="' + esc(t.id) + '" value="' + (Number(t.montoMensual)||0) + '" style="width:110px"></td>' +
+      '<td><select class="sort-select" data-sa-estado="' + esc(t.id) + '">' +
+        '<option value="al_dia"' + (estado==='al_dia'?' selected':'') + '>Al día</option>' +
+        '<option value="pendiente"' + (estado==='pendiente'?' selected':'') + '>Pendiente</option>' +
+        '<option value="vencido"' + (estado==='vencido'?' selected':'') + '>Vencido</option>' +
+      '</select></td>' +
+      '<td><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" data-sa-activo="' + esc(t.id) + '" ' + (activo?'checked':'') + '> Activo</label></td>' +
+      '<td><a class="sa-mini-link" href="' + url + '" target="_blank" rel="noopener">Ver</a></td>' +
+      '<td><button class="sa-mini-btn" onclick="saSaveTenantRow(\'' + esc(t.id) + '\')">Guardar</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+async function saSaveTenantRow(id){
+  const monto = Number(document.querySelector('[data-sa-monto="'+id+'"]').value) || 0;
+  const estadoPago = document.querySelector('[data-sa-estado="'+id+'"]').value;
+  const activo = document.querySelector('[data-sa-activo="'+id+'"]').checked;
+  try{
+    await db.collection('tenants').doc(id).set({ montoMensual: monto, estadoPago, activo }, {merge:true});
+    const t = _saTenants.find(x=>x.id===id);
+    if(t){ t.montoMensual = monto; t.estadoPago = estadoPago; t.activo = activo; }
+    renderSuperadminSummary();
+    toast('Negocio actualizado', 'ok');
+  }catch(e){
+    toast('No se pudo guardar: ' + (e && e.message ? e.message : 'error desconocido'), 'err');
+    console.error(e);
+  }
+}
+
+async function saCreateTenant(){
+  const slug = slugify(document.getElementById('saNewSlug').value);
+  const nombre = document.getElementById('saNewNombre').value.trim();
+  const tipo = document.getElementById('saNewTipo').value;
+  const adminEmail = document.getElementById('saNewAdminEmail').value.trim();
+  const monto = Number(document.getElementById('saNewMonto').value) || 0;
+  const estadoPago = document.getElementById('saNewEstado').value;
+  if(!slug){ toast('Ingresá un slug válido para el negocio', 'err'); return; }
+  if(!nombre){ toast('Ingresá el nombre del negocio', 'err'); return; }
+  try{
+    const ref = db.collection('tenants').doc(slug);
+    const existing = await ref.get();
+    if(existing.exists){ toast('Ya existe un negocio con ese slug', 'err'); return; }
+    await ref.set({
+      nombre, tipo,
+      activo: true,
+      montoMensual: monto,
+      estadoPago,
+      adminEmails: adminEmail ? [adminEmail] : [],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('Negocio creado. Compartí este enlace con el dueño: ?tienda=' + slug, 'ok');
+    document.getElementById('saNewSlug').value = '';
+    document.getElementById('saNewNombre').value = '';
+    document.getElementById('saNewAdminEmail').value = '';
+    document.getElementById('saNewMonto').value = '';
+    loadSuperadminData();
+  }catch(e){
+    toast('No se pudo crear el negocio: ' + (e && e.message ? e.message : 'error desconocido'), 'err');
+    console.error(e);
+  }
+}
+
 async function bootPlatform(){
   renderHeader(); renderChips(); updateCartUI(); renderExternalLinks(); renderStoryVideo();
+  if(new URLSearchParams(location.search).get('superadmin') === '1'){
+    initSuperadminMode();
+    return;
+  }
   if(new URLSearchParams(location.search).get('sembrar') === '1'){
     seedDemoTenants();
     return;
