@@ -1768,6 +1768,18 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           </select>
         </div>
       </div>
+      <div class="f-group"><label>Logo del negocio</label>
+        <div class="logo-upload-row">
+          <span class="logo-preview" id="saEditLogoPreview"></span>
+          <input type="file" id="saEditLogoFileInput" accept="image/*" style="display:none" onchange="onSaEditLogoFileChosen(this)">
+          <button type="button" class="btn-ghost" style="width:auto;padding:10px 18px" onclick="document.getElementById('saEditLogoFileInput').click()">Subir logo</button>
+          <button type="button" class="btn-ghost" style="width:auto;padding:10px 18px" onclick="removeSaEditLogo()">Quitar</button>
+        </div>
+      </div>
+      <div class="f-group"><label>Fotos de portada / galería (aparecen en la tarjeta del negocio y, si es profesional, en su perfil)</label>
+        <input type="file" id="saEditBizImgFileInput" accept="image/*" style="display:none" onchange="onSaEditImageFileChosen(this)">
+        <div class="media-grid" id="saEditBizImgGrid"></div>
+      </div>
       <div class="f-row">
         <div class="f-group"><label>WhatsApp (con código de país)</label><input class="f-input" id="saEditWhatsapp" inputmode="tel"></div>
         <div class="f-group"><label>Categoría (solo profesionales)</label><input class="f-input" id="saEditCategoria"></div>
@@ -4864,6 +4876,56 @@ async function saSaveTenantRow(id){
 
 /* ---------- editar toda la información de un negocio (modal completo) ---------- */
 let _saEditingId = null;
+let saEditLogoDataUrl = null;   // null = sin cambios; '' = quitar; string = nuevo logo
+let saEditBizImages = ['','',''];
+let saEditImgSlot = null;
+function renderSaEditImageGrid(){
+  const grid = document.getElementById('saEditBizImgGrid');
+  if(!grid) return;
+  grid.innerHTML = saEditBizImages.map((url,i) => {
+    const preview = url ?
+      '<img src="' + url + '">' :
+      '<div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4m0 0 4 4m-4-4-4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Subir foto</span></div>';
+    return '<div class="media-item' + (url?' filled':' upload') + '" onclick="triggerSaEditImageUpload(' + i + ')" title="' + (url?'Cambiar foto':'Subir foto') + '">' +
+      preview +
+      (url ? '<button type="button" class="rm-btn" onclick="event.stopPropagation();removeSaEditImageField(' + i + ')" title="Quitar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' : '') +
+    '</div>';
+  }).join('');
+}
+function triggerSaEditImageUpload(i){ saEditImgSlot = i; document.getElementById('saEditBizImgFileInput').click(); }
+function onSaEditImageFileChosen(input){
+  const file = input.files && input.files[0];
+  const slot = saEditImgSlot;
+  if(!file || slot===null){ input.value=''; return; }
+  compressImageFile(file, 1600, 0.82).then(dataUrl => {
+    const otherBytes = saEditBizImages.reduce((s,u,i)=> s + (i===slot ? 0 : (u ? u.length : 0)), 0);
+    if(otherBytes + dataUrl.length > 900000){
+      toast('Esa foto es muy pesada junto con las demás. Quitá alguna foto o subí una más liviana', 'err');
+      return;
+    }
+    saEditBizImages[slot] = dataUrl;
+    renderSaEditImageGrid();
+  }).catch(()=> toast('No se pudo procesar esa foto', 'err'));
+  input.value = '';
+}
+function removeSaEditImageField(i){
+  saEditBizImages.splice(i,1);
+  while(saEditBizImages.length < 3) saEditBizImages.push('');
+  renderSaEditImageGrid();
+}
+function onSaEditLogoFileChosen(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  compressImageFile(file, 400, 0.85).then(dataUrl => {
+    saEditLogoDataUrl = dataUrl;
+    document.getElementById('saEditLogoPreview').innerHTML = '<img src="' + dataUrl + '" alt="Logo">';
+  }).catch(()=> toast('No se pudo procesar esa foto', 'err'));
+  input.value = '';
+}
+function removeSaEditLogo(){
+  saEditLogoDataUrl = '';
+  document.getElementById('saEditLogoPreview').innerHTML = logoSVG;
+}
 function saOpenEditModal(id){
   const t = _saTenants.find(x=>x.id===id);
   if(!t) return;
@@ -4878,6 +4940,11 @@ function saOpenEditModal(id){
   document.getElementById('saEditMonto').value = Number(t.montoMensual) || 0;
   document.getElementById('saEditEstado').value = t.estadoPago || 'al_dia';
   document.getElementById('saEditActivo').checked = t.activo !== false;
+  saEditLogoDataUrl = null;
+  document.getElementById('saEditLogoPreview').innerHTML = t.logoUrl ? '<img src="' + esc(t.logoUrl) + '" alt="Logo">' : logoSVG;
+  saEditBizImages = (t.landingImages && t.landingImages.length) ? t.landingImages.slice() : [];
+  while(saEditBizImages.length < 3) saEditBizImages.push('');
+  renderSaEditImageGrid();
   document.getElementById('saEditModal').classList.add('show');
 }
 function saCloseEditModal(){
@@ -4889,6 +4956,7 @@ async function saSaveEditModal(){
   const id = _saEditingId;
   const nombre = document.getElementById('saEditNombre').value.trim();
   if(!nombre){ toast('El nombre es obligatorio', 'err'); return; }
+  const prev = _saTenants.find(x=>x.id===id) || {};
   const data = {
     nombre,
     tipo: document.getElementById('saEditTipo').value,
@@ -4898,15 +4966,21 @@ async function saSaveEditModal(){
     adminEmails: document.getElementById('saEditAdminEmails').value.split(',').map(s=>s.trim()).filter(Boolean),
     montoMensual: Number(document.getElementById('saEditMonto').value) || 0,
     estadoPago: document.getElementById('saEditEstado').value,
-    activo: document.getElementById('saEditActivo').checked
+    activo: document.getElementById('saEditActivo').checked,
+    logoUrl: saEditLogoDataUrl !== null ? saEditLogoDataUrl : (prev.logoUrl || ''),
+    landingImages: saEditBizImages.map(u=>u.trim()).filter(Boolean)
   };
   try{
     await db.collection('tenants').doc(id).set(data, {merge:true});
     // También actualiza el documento de configuración de la tienda (settings/store)
-    // para que el tipo/whatsapp/categoría/servicios queden en sincronía con lo
-    // que ve el administrador de ese negocio en su propio panel.
+    // para que nombre/tipo/whatsapp/categoría/servicios/logo/fotos queden en
+    // sincronía con lo que ve el administrador de ese negocio en su propio panel.
+    // Esto aplica igual para tiendas que para profesionales: las fotos de un
+    // profesional se guardan y se muestran exactamente igual que las de un negocio.
     await db.collection('tenants').doc(id).collection('settings').doc('store').set({
-      tipo: data.tipo, whatsapp: data.whatsapp, categoria: data.categoria, servicios: data.servicios
+      storeName: data.nombre, tipo: data.tipo, whatsapp: data.whatsapp,
+      categoria: data.categoria, servicios: data.servicios,
+      logoUrl: data.logoUrl, landingImages: data.landingImages
     }, {merge:true});
     Object.assign(_saTenants.find(x=>x.id===id) || {}, data);
     renderSuperadminSummary();
