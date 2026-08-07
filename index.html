@@ -755,6 +755,11 @@ body.in-admin .ai-float,body.in-admin .ai-panel{display:none}
 .prof-wa-btn{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:12px;background:#25D366;color:#fff;font-size:13.5px;font-weight:700;border:none;cursor:pointer;transition:.15s;width:100%}
 .prof-wa-btn:hover{background:#1EBE5B}
 .prof-wa-btn svg{width:18px;height:18px}
+.prof-btn-row{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.prof-btn-row .prof-wa-btn{margin-top:0}
+.prof-view-store-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:12px;background:var(--green-soft);color:var(--green-dark);font-size:13.5px;font-weight:700;border:none;cursor:pointer;transition:.15s;width:100%}
+.prof-view-store-btn:hover{background:var(--yellow-soft);color:#92400E}
+.prof-view-store-btn svg{width:17px;height:17px}
 
 /* Rating en profesionales */
 .prof-rating{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
@@ -4580,13 +4585,15 @@ function renderProfessionals(list){
       ? '<button class="prof-wa-btn" onclick="event.stopPropagation();profContactWA(\'' + wa + '\',\'' + nombre + '\')">' +
         '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>Contactar por WhatsApp</button>'
       : '';
-    return '<div class="prof-card" onclick="openProfModal(\'' + p.id + '\')">' +
+    const viewStoreBtn = '<button class="prof-view-store-btn" onclick="event.stopPropagation();goToTenant(\'' + esc(p.id) + '\')">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg>Ver tienda</button>';
+    return '<div class="prof-card" onclick="goToTenant(\'' + esc(p.id) + '\')">' +
       '<div class="prof-card-media">' + mediaHTML + '<span class="prof-cat-badge">' + cat + '</span></div>' +
       '<div class="prof-card-body">' +
         '<div class="prof-name">' + nombre + '</div>' +
         (tagline ? '<div class="prof-tagline">' + tagline + '</div>' : '') +
         (services ? '<div class="prof-meta">' + services + '</div>' : '') +
-        waBtn +
+        '<div class="prof-btn-row">' + viewStoreBtn + waBtn + '</div>' +
       '</div></div>';
   }).join('');
 }
