@@ -3237,13 +3237,13 @@ async function doLogin(){
   if(!email || !pass){ toast('Ingresá correo y contraseña', 'err'); return; }
   try{
     const cred = await auth.signInWithEmailAndPassword(email, pass);
-    if(!ADMIN_EMAILS.includes(cred.user.email)){
+    if(!ADMIN_EMAILS.includes(cred.user.email) && !SUPERADMIN_EMAILS.includes(cred.user.email)){
       await auth.signOut();
       toast('Esta cuenta no tiene permisos de administrador', 'err');
       return;
     }
     document.getElementById('adminPass').value = '';
-    if(TENANT_DATA && TENANT_DATA.adminPasswordHash){
+    if(TENANT_DATA && TENANT_DATA.adminPasswordHash && !SUPERADMIN_EMAILS.includes(cred.user.email)){
       // esta tienda tiene una clave extra configurada: pedirla antes de entrar
       document.getElementById('loginStep1').style.display = 'none';
       document.getElementById('loginStep2').style.display = '';
@@ -3294,10 +3294,19 @@ function viewStore(){ document.body.classList.remove('in-admin'); renderHeader()
    (storePasswordVerified). Así el cliente puede navegar la tienda
    libremente pero no puede entrar a las funciones de administrador. */
 let storePasswordVerified = false;
+/* El superadministrador (SUPERADMIN_EMAILS) tiene permisos totales sobre
+   CUALQUIER negocio: cuenta como admin de la tienda aunque su correo no
+   esté en adminEmails, y no necesita la clave extra de tienda
+   (adminPasswordHash) porque esa clave es un secreto de cada dueño de
+   negocio que el superadmin no tiene por qué conocer. */
+function isSuperAdminUser(user){
+  return !!(user && SUPERADMIN_EMAILS.includes(user.email));
+}
 function refreshAdminSession(){
   const user = auth.currentUser;
-  const emailOk = !!(user && ADMIN_EMAILS.includes(user.email));
-  const needsStorePass = !!(TENANT_DATA && TENANT_DATA.adminPasswordHash);
+  const superAdmin = isSuperAdminUser(user);
+  const emailOk = !!(user && (ADMIN_EMAILS.includes(user.email) || superAdmin));
+  const needsStorePass = !!(TENANT_DATA && TENANT_DATA.adminPasswordHash) && !superAdmin;
   isAdminSession = emailOk && (!needsStorePass || storePasswordVerified);
   if(!isAdminSession && document.body.classList.contains('in-admin')){
     document.body.classList.remove('in-admin');
@@ -4088,10 +4097,12 @@ function showPermDebugHint(){
   if(!box) return;
   const me = (auth.currentUser && auth.currentUser.email) || '(sin sesión)';
   const list = (TENANT_DATA && TENANT_DATA.adminEmails) || [];
-  const autorizado = list.includes(me);
+  const superAdmin = isSuperAdminUser(auth.currentUser);
+  const autorizado = list.includes(me) || superAdmin;
   box.innerHTML = 'Sesión: <b>' + esc(me) + '</b> · Autorizados en Firestore: <b>' +
     (list.length ? esc(list.join(', ')) : '(vacío)') + '</b> · ' +
-    (autorizado ? '<span style="color:var(--ok,#1B7A43)">✔ coincide</span>' : '<span style="color:var(--danger)">✘ no coincide</span>');
+    (superAdmin ? '<span style="color:var(--ok,#1B7A43)">✔ superadministrador (acceso total)</span>' :
+      (autorizado ? '<span style="color:var(--ok,#1B7A43)">✔ coincide</span>' : '<span style="color:var(--danger)">✘ no coincide</span>'));
 }
 
 /* ---------- clave extra de la tienda (segundo factor del panel admin) ---------- */
@@ -4813,6 +4824,7 @@ function renderSuperadminTable(){
     const estado = t.estadoPago || 'al_dia';
     const activo = t.activo !== false;
     const url = location.pathname + '?tienda=' + encodeURIComponent(t.id);
+    const adminUrl = url + '&panel=admin';
     return '<tr data-tenant-row="' + esc(t.id) + '">' +
       '<td><b>' + esc(t.nombre || t.id) + '</b><br><span style="color:var(--muted);font-size:11.5px">' + esc(t.id) + '</span></td>' +
       '<td>' + tipoLabel + '</td>' +
@@ -4824,7 +4836,7 @@ function renderSuperadminTable(){
         '<option value="vencido"' + (estado==='vencido'?' selected':'') + '>Vencido</option>' +
       '</select></td>' +
       '<td><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" data-sa-activo="' + esc(t.id) + '" ' + (activo?'checked':'') + '> Activo</label></td>' +
-      '<td><a class="sa-mini-link" href="' + url + '" target="_blank" rel="noopener">Ver</a></td>' +
+      '<td><a class="sa-mini-link" href="' + url + '" target="_blank" rel="noopener">Ver</a> · <a class="sa-mini-link" href="' + adminUrl + '" target="_blank" rel="noopener" title="Entra directo al panel de administración de este negocio, con tu propia sesión de superadministrador">Administrar</a></td>' +
       '<td><div class="sa-actions-cell">' +
         '<button class="sa-mini-btn" onclick="saSaveTenantRow(\'' + esc(t.id) + '\')">Guardar</button>' +
         '<button class="sa-mini-btn ghost" onclick="saOpenEditModal(\'' + esc(t.id) + '\')">Editar</button>' +
@@ -5005,6 +5017,12 @@ async function bootPlatform(){
     document.title = (TENANT_DATA.nombre || 'Tienda') + ' — PRO.DIGITAL';
     bindTenantRefs();
     refreshAdminSession();
+    /* Si el superadministrador llega desde el botón "Administrar" del
+       panel maestro (?tienda=slug&panel=admin), y su sesión ya cuenta
+       como admin de esta tienda, entra directo al panel sin pasos extra. */
+    if(isAdminSession && new URLSearchParams(location.search).get('panel') === 'admin'){
+      enterAdmin();
+    }
     listenSettings();
     listenProducts();
     /* Registrar visita a esta tienda (con fuente de tráfico) */
