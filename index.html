@@ -681,6 +681,76 @@ body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float{disp
 @media (max-width:480px){.ai-panel{width:100vw;height:82vh;border-radius:16px 16px 0 0}.ai-head{border-radius:16px 16px 0 0}}
 body.in-admin .ai-float,body.in-admin .ai-panel{display:none}
 
+/* ============ PANEL DE ANALYTICS (Estadísticas del comerciante) ============ */
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.analytics-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:6px}
+.analytics-card .ac-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.analytics-card .ac-icon svg{width:20px;height:20px}
+.analytics-card .ac-val{font-size:26px;font-weight:800;line-height:1}
+.analytics-card .ac-lbl{font-size:12.5px;color:var(--muted);font-weight:600}
+.analytics-card .ac-sub{font-size:11.5px;color:var(--muted)}
+.analytics-card.ac-green .ac-icon{background:var(--green-soft);color:var(--green)}
+.analytics-card.ac-blue .ac-icon{background:var(--blue-soft);color:var(--blue)}
+.analytics-card.ac-yellow .ac-icon{background:var(--yellow-soft);color:#92400E}
+.analytics-card.ac-purple .ac-icon{background:#F3E8FF;color:#7C3AED}
+
+.traffic-table{width:100%;border-collapse:collapse;font-size:13px}
+.traffic-table th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+.traffic-table td{padding:9px 10px;border-bottom:1px solid #F1F5F9}
+.traffic-table .tf-bar{display:flex;align-items:center;gap:10px}
+.traffic-bar-bg{flex:1;height:7px;background:#F1F5F9;border-radius:999px;overflow:hidden;max-width:120px}
+.traffic-bar-fill{height:100%;border-radius:999px;background:var(--green);transition:width .4s ease}
+.traffic-source-icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+
+.sponsored-badge{background:linear-gradient(135deg,#FFD100,#F59E0B);color:#7C2D12;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:4px}
+.sponsored-badge svg{width:11px;height:11px}
+
+/* Tiendas patrocinadas en el selector */
+.ts-card.sponsored{box-shadow:0 0 0 2.5px var(--yellow),0 14px 34px rgba(0,0,0,.22)}
+.ts-sponsored-tag{position:absolute;top:10px;left:10px;z-index:3}
+.ts-plan-select{padding:6px 10px;border:1px solid var(--line);border-radius:9px;font-size:12px;font-weight:600;outline:none;background:#fff}
+
+/* Buscador potente en el landing */
+.ts-search-wrap{position:relative;max-width:480px;margin:0 auto 32px}
+.ts-search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:rgba(255,255,255,.6)}
+.ts-search-input{width:100%;padding:13px 18px 13px 44px;border-radius:14px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);backdrop-filter:blur(10px);color:#fff;font-size:14.5px;font-weight:600;outline:none;transition:.2s}
+.ts-search-input::placeholder{color:rgba(255,255,255,.55)}
+.ts-search-input:focus{border-color:var(--yellow);background:rgba(255,255,255,.18)}
+
+/* ============ SECCIÓN DE PROFESIONALES (landing) ============ */
+.prof-section{margin-top:56px;padding-top:40px;border-top:1px solid rgba(255,255,255,.14)}
+.prof-title{font-family:var(--font-display);font-size:clamp(22px,3.6vw,36px);font-weight:500;color:#fff;margin-bottom:8px}
+.prof-title em{font-style:italic;color:var(--yellow)}
+.prof-sub{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:28px;max-width:520px}
+.prof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+.prof-card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.18);display:flex;flex-direction:column;transition:transform .22s,box-shadow .22s;cursor:pointer}
+.prof-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.28)}
+.prof-card-media{position:relative;aspect-ratio:4/3;background:var(--green-soft);overflow:hidden}
+.prof-card-media img{width:100%;height:100%;object-fit:cover}
+.prof-card-media .prof-avatar-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:52px;font-weight:600;color:var(--green-dark)}
+.prof-cat-badge{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;backdrop-filter:blur(6px)}
+.prof-card-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.prof-name{font-size:16px;font-weight:800;color:var(--ink);line-height:1.25}
+.prof-tagline{font-size:13px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.prof-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.prof-chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--green-dark);background:var(--green-soft);padding:4px 9px;border-radius:999px}
+.prof-chip svg{width:12px;height:12px}
+.prof-wa-btn{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:12px;background:#25D366;color:#fff;font-size:13.5px;font-weight:700;border:none;cursor:pointer;transition:.15s;width:100%}
+.prof-wa-btn:hover{background:#1EBE5B}
+.prof-wa-btn svg{width:18px;height:18px}
+
+/* Rating en profesionales */
+.prof-rating{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.prof-rating .stars{display:flex;gap:1px}
+
+/* Modal de detalle del profesional */
+.prof-modal-card{max-width:580px}
+.prof-modal-header{display:flex;gap:16px;align-items:flex-start;margin-bottom:16px}
+.prof-modal-avatar{width:72px;height:72px;border-radius:50%;background:var(--green-soft);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:28px;font-weight:600;color:var(--green-dark);flex-shrink:0;overflow:hidden}
+.prof-modal-avatar img{width:100%;height:100%;object-fit:cover}
+.prof-services{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.prof-service-chip{background:#F3F4F6;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ink)}
+
 /* ============ SELECTOR DE NEGOCIOS (landing de la plataforma) ============ */
 .tenant-selector{
   display:none;position:fixed;inset:0;z-index:999;overflow-y:auto;
@@ -740,10 +810,39 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
     </svg>
     <h1 class="ts-title">Elegí dónde<br><em>comprar</em> hoy.</h1>
     <div class="ts-msg" id="tenantSelectorMsg" style="display:none"></div>
+
+    <!-- Buscador potente del landing -->
+    <div class="ts-search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input class="ts-search-input" id="tsSearchInput" type="search" placeholder="Buscar tienda o profesional…" oninput="filterLanding()" autocomplete="off">
+    </div>
+
     <div class="ts-grid" id="tenantSelectorList">
       <div class="ts-loading">Cargando negocios…</div>
     </div>
+
+    <!-- Sección de Profesionales -->
+    <div class="prof-section" id="profSection">
+      <div class="prof-title">Contactá un <em>profesional</em></div>
+      <p class="prof-sub">Servicios a domicilio y cotizaciones directas por WhatsApp. Sin intermediarios.</p>
+      <div class="prof-grid" id="profGrid">
+        <div class="ts-loading">Cargando profesionales…</div>
+      </div>
+    </div>
+
     <footer class="ts-footer">© <span id="tsYear"></span> PRO.DIGITAL — Todos los derechos reservados.</footer>
+  </div>
+
+  <!-- Modal detalle del profesional -->
+  <div class="modal" id="profModal" style="z-index:1100">
+    <div class="modal-bg" onclick="closeProfModal()"></div>
+    <div class="modal-card prof-modal-card">
+      <div class="modal-head">
+        <h3>Detalle del profesional</h3>
+        <button class="close-x" onclick="closeProfModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body" id="profModalBody"></div>
+    </div>
   </div>
 </div>
 
@@ -761,7 +860,7 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
       </button>
       <div class="search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input class="search-input" id="searchInput" name="storeSearchQuery" type="search" autocomplete="off" data-lpignore="true" data-1p-ignore="true" placeholder="Buscar producto" oninput="renderGrid()">
+        <input class="search-input" id="searchInput" name="storeSearchQuery" type="search" autocomplete="off" data-lpignore="true" data-1p-ignore="true" placeholder="Buscar producto" oninput="renderGrid();trackSearch(this.value)">
       </div>
       <button class="admin-link" onclick="openTracking()" title="Rastrear mi pedido">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>
@@ -800,7 +899,7 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
   </footer>
 </div>
 
-<a class="wa-float" id="waFloat" target="_blank" title="Escríbenos por WhatsApp">
+<a class="wa-float" id="waFloat" target="_blank" title="Escríbenos por WhatsApp" onclick="trackWAClick()">
   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-6.1c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.4-3c-.3-.4 0-.5.2-.8l.4-.5c.1-.2.1-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.9.9-1.1 2.2-.2 3.9a11.6 11.6 0 0 0 4.5 4.2c1.7.8 2.4.9 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.1-.5-.2z"/></svg>
 </a>
 
@@ -1000,16 +1099,63 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
     <!-- ESTADÍSTICAS -->
     <section class="panel active" id="panel-stats">
       <div class="adm-title">Estadísticas</div>
-      <div class="adm-sub">Resumen de ventas registradas en la tienda web.</div>
+      <div class="adm-sub">Resumen de ventas y tráfico de tu tienda web.</div>
       <div class="adm-toolbar" style="justify-content:flex-end">
         <button class="btn-export" onclick="exportStatsPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9.5 14.5 12 17l2.5-2.5"/></svg>Exportar PDF</button>
       </div>
+
+      <!-- Tarjetas de ventas -->
       <div class="stat-cards">
         <div class="stat-card hl"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Total ventas</div><div class="val" id="stSales">₡0</div><div class="sub" id="stSalesSub">0 pedidos</div></div>
         <div class="stat-card"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Pendientes</div><div class="val" id="stPend">0</div><div class="sub">por confirmar comprobante</div></div>
         <div class="stat-card"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Entregados</div><div class="val" id="stDone">0</div><div class="sub">pedidos completados</div></div>
         <div class="stat-card"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/></svg>Ticket promedio</div><div class="val" id="stAvg">₡0</div><div class="sub">por pedido</div></div>
       </div>
+
+      <!-- Tarjetas de tráfico/analytics -->
+      <h4 style="margin:24px 0 12px;font-size:15px;display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--green)"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Tráfico e interacciones
+        <span style="font-size:12px;font-weight:600;color:var(--muted);margin-left:4px">(últimos 30 días)</span>
+      </h4>
+      <div class="analytics-grid">
+        <div class="analytics-card ac-green">
+          <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <div class="ac-val" id="stVisits">0</div>
+          <div class="ac-lbl">Visitas totales</div>
+          <div class="ac-sub" id="stVisitsSub">—</div>
+        </div>
+        <div class="analytics-card ac-blue">
+          <div class="ac-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm4.6 12.1c-.3-.1-1.5-.7-1.7-.8s-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.4-3c-.3-.4 0-.5.2-.8l.4-.5c.1-.2.1-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.9.9-1.1 2.2-.2 3.9a11.6 11.6 0 0 0 4.5 4.2c1.7.8 2.4.9 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.1-.5-.2z"/></svg></div>
+          <div class="ac-val" id="stWaClicks">0</div>
+          <div class="ac-lbl">Clics en WhatsApp</div>
+          <div class="ac-sub">Conversaciones iniciadas</div>
+        </div>
+        <div class="analytics-card ac-yellow">
+          <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+          <div class="ac-val" id="stSearches">0</div>
+          <div class="ac-lbl">Búsquedas internas</div>
+          <div class="ac-sub">Desde el buscador de la tienda</div>
+        </div>
+        <div class="analytics-card ac-purple">
+          <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg></div>
+          <div class="ac-val" id="stProductViews">0</div>
+          <div class="ac-lbl">Vistas de productos</div>
+          <div class="ac-sub">Fichas de producto abiertas</div>
+        </div>
+      </div>
+
+      <!-- Fuente de tráfico -->
+      <div class="chart-card" style="margin-bottom:20px">
+        <h4>Fuente del tráfico</h4>
+        <div style="overflow-x:auto">
+          <table class="traffic-table">
+            <thead><tr><th>Fuente</th><th>Visitas</th><th>% del total</th><th style="min-width:140px">Proporción</th></tr></thead>
+            <tbody id="trafficSourceTable"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="chart-card"><h4>Ventas de los últimos 7 días</h4><canvas id="salesChart"></canvas></div>
       <div class="chart-card"><h4>Productos más vendidos</h4><div id="topProducts"></div></div>
     </section>
@@ -1174,6 +1320,16 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
         <div class="desc">Detectamos datos de esta tienda guardados en el formato anterior (antes de que la plataforma tuviera varios negocios). Podés copiarlos una sola vez hacia el espacio de esta tienda dentro de la plataforma. No borra nada del formato anterior.</div>
         <button type="button" class="btn-dark" style="width:auto;padding:10px 18px" id="migrationBtn" onclick="runLegacyMigration()">Migrar datos antiguos de esta tienda</button>
         <div class="hint" id="migrationStatus" style="display:none"></div>
+      </div>
+
+      <!-- Plan patrocinado -->
+      <div class="settings-card" style="border:2px solid var(--yellow);background:var(--yellow-soft)">
+        <h4><svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;color:#92400E"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Plan Destacado</h4>
+        <div class="desc">Las tiendas con plan <b>Destacado</b> aparecen primero en el selector y muestran una insignia amarilla. Para activarlo contactá a PRO.DIGITAL. El campo <code>plan</code> en Firestore debe tener el valor <b>destacado</b> o <b>premium</b>.</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px">
+          <span class="sponsored-badge"><svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Destacada</span>
+          <span style="font-size:13px;color:#78716C">Estado actual: <b id="sponsoredStatus">Cargando…</b></span>
+        </div>
       </div>
 
       <div class="hint" id="permDebugHint" style="max-width:760px;margin-bottom:6px"></div>
@@ -2508,6 +2664,12 @@ function renderPvRelated(p){
     }).join('') + '</div></div>';
 }
 function closeProductView(){ document.getElementById('productViewModal').classList.remove('show'); }
+/* Hook adicional: rastrear vista de producto */
+const _origOpenProductView = openProductView;
+openProductView = function(id){
+  _origOpenProductView(id);
+  trackProductView();
+};
 </script>
 <script>
 /* ---------- carrito (clave = id del producto, o "id::idVariante" si el producto tiene variantes) ---------- */
@@ -2884,6 +3046,7 @@ async function doLogout(){
 function enterAdmin(){
   document.body.classList.add('in-admin');
   renderHeader(); listenOrdersIfAdmin(); renderInventory(); loadSettingsForm();
+  loadAnalytics();
 }
 function viewStore(){ document.body.classList.remove('in-admin'); renderHeader(); renderChips(); renderGrid(); updateCartUI(); }
 
@@ -2911,7 +3074,7 @@ function showPanel(name, btn){
   document.getElementById('panel-'+name).classList.add('active');
   document.querySelectorAll('.adm-link[data-panel]').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  if(name==='stats') renderStats();
+  if(name==='stats'){ renderStats(); loadAnalytics(); }
   if(name==='inventory') renderInventory();
   if(name==='orders') renderOrders();
   if(name==='settings') loadSettingsForm();
@@ -3662,6 +3825,14 @@ function loadSettingsForm(){
   checkLegacyMigration();
   refreshStorePasswordStatus();
   showPermDebugHint();
+  // Plan destacado
+  const sponsEl = document.getElementById('sponsoredStatus');
+  if(sponsEl){
+    const plan = (TENANT_DATA && TENANT_DATA.plan) || 'básico';
+    const isSponsored = (plan==='premium' || plan==='destacado');
+    sponsEl.textContent = isSponsored ? '⭐ Plan ' + plan.charAt(0).toUpperCase()+plan.slice(1) + ' activo' : 'Plan Básico — sin destacar';
+    sponsEl.style.color = isSponsored ? 'var(--green-dark)' : 'var(--muted)';
+  }
 }
 
 /* ---------- diagnóstico visible de permisos (correo logueado vs adminEmails) ---------- */
@@ -3881,6 +4052,41 @@ function startTenantCarousel(){
     });
   }, 3200);
 }
+function renderTenantCards(docs){
+  const list = document.getElementById('tenantSelectorList');
+  if(tsCarouselTimer){ clearInterval(tsCarouselTimer); tsCarouselTimer = null; }
+  if(!docs || !docs.length){
+    list.innerHTML = '<div class="ts-empty" style="color:rgba(255,255,255,.75)">No encontramos tiendas con ese criterio.</div>';
+    return;
+  }
+  /* Ordenar: patrocinados primero */
+  const sorted = [...docs].sort((a,b)=>{
+    const rankA = a.planRank||0, rankB = b.planRank||0;
+    return rankB - rankA;
+  });
+  list.innerHTML = sorted.map(t=>{
+    const nombre = esc(t.nombre || t.id);
+    const logo = t.logoUrl
+      ? '<img src="' + t.logoUrl + '" alt="' + nombre + '">'
+      : '<span class="ts-fallback">' + nombre.charAt(0).toUpperCase() + '</span>';
+    const tag = t.tagline ? '<span class="ts-tag">' + esc(t.tagline) + '</span>' : '';
+    const media = tenantCardMedia(t.landingImages, nombre);
+    const isSponsored = (t.plan==='premium' || t.plan==='destacado');
+    const sponsoredTag = isSponsored
+      ? '<span class="ts-sponsored-tag"><span class="sponsored-badge"><svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Destacada</span></span>'
+      : '';
+    return '<button class="ts-card' + (isSponsored?' sponsored':'') + '" onclick="goToTenant(\'' + t.id.replace(/'/g,'') + '\')">' +
+      '<span class="ts-media" style="position:relative">' + media + sponsoredTag + '</span>' +
+      '<span class="ts-body">' +
+        '<span class="ts-name-row"><span class="ts-logo">' + logo + '</span><span class="ts-name">' + nombre + '</span></span>' +
+        tag +
+        '<span class="ts-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>' +
+      '</span>' +
+      '</button>';
+  }).join('');
+  startTenantCarousel();
+}
+
 async function renderTenantSelector(msg){
   document.body.classList.add('selector-mode');
   const yearEl = document.getElementById('tsYear');
@@ -3892,32 +4098,27 @@ async function renderTenantSelector(msg){
   list.innerHTML = '<div class="ts-loading">Cargando negocios…</div>';
   if(tsCarouselTimer){ clearInterval(tsCarouselTimer); tsCarouselTimer = null; }
   try{
+    /* Cargar tiendas (tipo != 'profesional' o sin campo tipo) */
     const q = await db.collection('tenants').where('activo','==', true).get();
-    if(q.empty){
-      list.innerHTML = '<div class="ts-empty">Todavía no hay negocios activos en la plataforma.</div>';
-      return;
+    const stores = [];
+    const profs = [];
+    q.docs.forEach(d=>{
+      const t = Object.assign({id:d.id}, d.data());
+      if(t.tipo === 'profesional') profs.push(t);
+      else stores.push(t);
+    });
+    _allTenants = stores;
+    _professionals = profs;
+    if(!stores.length){
+      list.innerHTML = '<div class="ts-empty" style="color:rgba(255,255,255,.75)">Todavía no hay negocios activos en la plataforma.</div>';
+    } else {
+      renderTenantCards(stores);
     }
-    list.innerHTML = q.docs.map(d=>{
-      const t = d.data();
-      const nombre = esc(t.nombre || d.id);
-      const logo = t.logoUrl
-        ? '<img src="' + t.logoUrl + '" alt="' + nombre + '">'
-        : '<span class="ts-fallback">' + nombre.charAt(0).toUpperCase() + '</span>';
-      const tag = t.tagline ? '<span class="ts-tag">' + esc(t.tagline) + '</span>' : '';
-      const media = tenantCardMedia(t.landingImages, nombre);
-      return '<button class="ts-card" onclick="goToTenant(\'' + d.id.replace(/'/g,"") + '\')">' +
-        '<span class="ts-media">' + media + '</span>' +
-        '<span class="ts-body">' +
-          '<span class="ts-name-row"><span class="ts-logo">' + logo + '</span><span class="ts-name">' + nombre + '</span></span>' +
-          tag +
-          '<span class="ts-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>' +
-        '</span>' +
-        '</button>';
-    }).join('');
-    startTenantCarousel();
+    /* Render de profesionales */
+    renderProfessionals(profs);
   }catch(e){
     console.error(e);
-    list.innerHTML = '<div class="ts-empty">No se pudieron cargar los negocios. Intentá de nuevo.</div>';
+    list.innerHTML = '<div class="ts-empty" style="color:rgba(255,255,255,.75)">No se pudieron cargar los negocios. Intentá de nuevo.</div>';
   }
 }
 
@@ -3966,6 +4167,232 @@ async function seedDemoTenants(){
   setTimeout(()=>{ location.href = location.pathname; }, 2200);
 }
 
+/* ======================================================================
+   MÓDULO DE ANALYTICS — rastrea visitas, clics WA, búsquedas y fuente
+   de tráfico en Firestore (tenants/{slug}/analytics/summary).
+   Los datos son acumulativos; se actualizan con FieldValue.increment
+   para ser seguros con múltiples visitantes simultáneos.
+   ====================================================================== */
+function detectTrafficSource(){
+  const ref = document.referrer || '';
+  if(!ref) return 'Directo';
+  if(ref.includes('facebook.com') || ref.includes('fb.com') || ref.includes('l.facebook')) return 'Facebook';
+  if(ref.includes('instagram.com')) return 'Instagram';
+  if(ref.includes('google.com') || ref.includes('google.co')) return 'Google';
+  if(ref.includes('tiktok.com')) return 'TikTok';
+  if(ref.includes('wa.me') || ref.includes('whatsapp.com')) return 'WhatsApp';
+  if(ref.includes('t.co') || ref.includes('twitter.com') || ref.includes('x.com')) return 'X / Twitter';
+  if(ref.includes('youtube.com') || ref.includes('youtu.be')) return 'YouTube';
+  // mismo dominio → directo (recarga)
+  try{ if(new URL(ref).hostname === location.hostname) return 'Directo'; }catch(e){}
+  return 'Otro enlace';
+}
+
+function analyticsCol(){ return TENANT_ID ? tenantRef().collection('analytics') : null; }
+let _analyticsSessionDone = false;
+
+async function trackPageVisit(){
+  if(_analyticsSessionDone || !TENANT_ID) return;
+  _analyticsSessionDone = true;
+  const source = detectTrafficSource();
+  const today = new Date().toISOString().slice(0,10);
+  const monthKey = today.slice(0,7); // "2026-08"
+  try{
+    const col = analyticsCol();
+    // Resumen total (últimos 30 días, acumulativo)
+    await col.doc('summary').set({
+      totalVisits: firebase.firestore.FieldValue.increment(1),
+      [`sources.${source}`]: firebase.firestore.FieldValue.increment(1),
+      lastVisit: today
+    }, {merge:true});
+    // Visitas por día (para futuras gráficas diarias)
+    await col.doc('daily_' + today).set({
+      visits: firebase.firestore.FieldValue.increment(1),
+      date: today, month: monthKey
+    }, {merge:true});
+  }catch(e){ console.warn('Analytics visit track error:', e); }
+}
+
+async function trackWAClick(){
+  if(!TENANT_ID) return;
+  try{
+    await analyticsCol().doc('summary').set({
+      waClicks: firebase.firestore.FieldValue.increment(1)
+    }, {merge:true});
+  }catch(e){}
+}
+
+async function trackSearch(query){
+  if(!TENANT_ID || !query || query.length < 2) return;
+  try{
+    await analyticsCol().doc('summary').set({
+      totalSearches: firebase.firestore.FieldValue.increment(1)
+    }, {merge:true});
+  }catch(e){}
+}
+
+async function trackProductView(){
+  if(!TENANT_ID) return;
+  try{
+    await analyticsCol().doc('summary').set({
+      productViews: firebase.firestore.FieldValue.increment(1)
+    }, {merge:true});
+  }catch(e){}
+}
+
+/* Carga y renderiza los datos de analytics en el panel de admin */
+async function loadAnalytics(){
+  const col = analyticsCol();
+  if(!col) return;
+  try{
+    const snap = await col.doc('summary').get();
+    const d = snap.exists ? snap.data() : {};
+    const visits = d.totalVisits || 0;
+    const waClicks = d.waClicks || 0;
+    const searches = d.totalSearches || 0;
+    const pvs = d.productViews || 0;
+    document.getElementById('stVisits').textContent = visits.toLocaleString('es-CR');
+    document.getElementById('stVisitsSub').textContent = d.lastVisit ? 'Última visita: ' + d.lastVisit : 'Sin visitas aún';
+    document.getElementById('stWaClicks').textContent = waClicks.toLocaleString('es-CR');
+    document.getElementById('stSearches').textContent = searches.toLocaleString('es-CR');
+    document.getElementById('stProductViews').textContent = pvs.toLocaleString('es-CR');
+
+    // Tabla de fuentes de tráfico
+    const sources = d.sources || {};
+    const SOURCE_ICONS = {
+      'Facebook':'🔵','Instagram':'🟣','Google':'🔴','TikTok':'⚫','WhatsApp':'🟢',
+      'YouTube':'🔴','X / Twitter':'⚪','Directo':'🏠','Otro enlace':'🔗'
+    };
+    const entries = Object.entries(sources).sort((a,b)=>b[1]-a[1]);
+    const totalSrc = entries.reduce((s,[,v])=>s+v, 0) || 1;
+    const tbody = document.getElementById('trafficSourceTable');
+    if(!entries.length){
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">Aún no hay datos de tráfico. Las visitas aparecerán aquí automáticamente.</td></tr>';
+    } else {
+      tbody.innerHTML = entries.map(([src,cnt])=>{
+        const pct = Math.round((cnt/totalSrc)*100);
+        return '<tr><td><span class="tf-bar"><span class="traffic-source-icon">' + (SOURCE_ICONS[src]||'🔗') + '</span>' + esc(src) + '</span></td>' +
+          '<td><b>' + cnt.toLocaleString('es-CR') + '</b></td>' +
+          '<td>' + pct + '%</td>' +
+          '<td><div class="tf-bar"><div class="traffic-bar-bg"><div class="traffic-bar-fill" style="width:' + pct + '%"></div></div></div></td></tr>';
+      }).join('');
+    }
+  }catch(e){ console.warn('Analytics load error:', e); }
+}
+
+/* ======================================================================
+   MÓDULO DE PROFESIONALES — tiendas con tipo "profesional" en Firestore
+   muestran tarjeta de contacto en lugar de catálogo de productos.
+   Campo en tenants/{slug}: tipo = "profesional"
+   Campos adicionales: nombre, tagline, whatsapp, categoria, servicios[],
+   logoUrl, landingImages[], activo:true
+   ====================================================================== */
+let _professionals = [];
+
+async function loadProfessionals(){
+  try{
+    const q = await db.collection('tenants')
+      .where('activo','==', true)
+      .where('tipo','==','profesional')
+      .get();
+    _professionals = q.docs.map(d => Object.assign({id:d.id}, d.data()));
+    renderProfessionals(_professionals);
+  }catch(e){
+    console.warn('Prof load error:', e);
+    document.getElementById('profGrid').innerHTML =
+      '<div class="ts-empty" style="color:rgba(255,255,255,.7)">No se pudieron cargar los profesionales.</div>';
+  }
+}
+
+function renderProfessionals(list){
+  const grid = document.getElementById('profGrid');
+  if(!list || !list.length){
+    grid.innerHTML = '<div class="ts-empty" style="color:rgba(255,255,255,.7);grid-column:1/-1">Próximamente profesionales disponibles.</div>';
+    return;
+  }
+  grid.innerHTML = list.map(p => {
+    const nombre = esc(p.nombre || p.id);
+    const cat = esc(p.categoria || 'Servicios');
+    const tagline = esc(p.tagline || '');
+    const wa = p.whatsapp ? String(p.whatsapp).replace(/\D/g,'') : '';
+    const img = (p.landingImages && p.landingImages[0]) ? p.landingImages[0] : null;
+    const mediaHTML = img
+      ? '<img src="' + img + '" alt="' + nombre + '" loading="lazy">'
+      : '<div class="prof-avatar-fallback">' + (p.nombre||'P').charAt(0).toUpperCase() + '</div>';
+    const services = (p.servicios || []).slice(0,3).map(s => '<span class="prof-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>' + esc(s) + '</span>').join('');
+    const waBtn = wa
+      ? '<button class="prof-wa-btn" onclick="event.stopPropagation();profContactWA(\'' + wa + '\',\'' + nombre + '\')">' +
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>Contactar por WhatsApp</button>'
+      : '';
+    return '<div class="prof-card" onclick="openProfModal(\'' + p.id + '\')">' +
+      '<div class="prof-card-media">' + mediaHTML + '<span class="prof-cat-badge">' + cat + '</span></div>' +
+      '<div class="prof-card-body">' +
+        '<div class="prof-name">' + nombre + '</div>' +
+        (tagline ? '<div class="prof-tagline">' + tagline + '</div>' : '') +
+        (services ? '<div class="prof-meta">' + services + '</div>' : '') +
+        waBtn +
+      '</div></div>';
+  }).join('');
+}
+
+function profContactWA(wa, nombre){
+  const msg = encodeURIComponent('Hola ' + nombre + ', vi tu perfil en PRO.DIGITAL y me gustaría cotizar un servicio.');
+  window.open('https://wa.me/' + wa + '?text=' + msg, '_blank', 'noopener');
+}
+
+function openProfModal(id){
+  const p = _professionals.find(x=>x.id===id);
+  if(!p) return;
+  const nombre = esc(p.nombre || p.id);
+  const wa = p.whatsapp ? String(p.whatsapp).replace(/\D/g,'') : '';
+  const img = (p.landingImages && p.landingImages[0]) ? p.landingImages[0] : null;
+  const avatarHTML = img
+    ? '<img src="' + img + '" alt="' + nombre + '">'
+    : (p.nombre||'P').charAt(0).toUpperCase();
+  const servicesHTML = (p.servicios || []).map(s =>
+    '<span class="prof-service-chip">' + esc(s) + '</span>'
+  ).join('');
+  const waBtn = wa
+    ? '<button class="prof-wa-btn" style="margin-top:16px" onclick="profContactWA(\'' + wa + '\',\'' + nombre + '\')">' +
+      '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>Contactar ahora por WhatsApp</button>'
+    : '';
+  document.getElementById('profModalBody').innerHTML =
+    '<div class="prof-modal-header">' +
+      '<div class="prof-modal-avatar">' + avatarHTML + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:18px;font-weight:800;line-height:1.2">' + nombre + '</div>' +
+        '<div style="font-size:13px;color:var(--muted);margin-top:4px">' + esc(p.categoria || 'Profesional independiente') + '</div>' +
+        (p.tagline ? '<div style="font-size:13.5px;margin-top:6px;color:var(--ink)">' + esc(p.tagline) + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+    (p.bio ? '<p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:12px">' + esc(p.bio) + '</p>' : '') +
+    (servicesHTML ? '<div style="margin-bottom:8px"><b style="font-size:13px">Servicios</b><div class="prof-services">' + servicesHTML + '</div></div>' : '') +
+    (p.zona ? '<div style="font-size:13px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' + esc(p.zona) + '</div>' : '') +
+    waBtn;
+  document.getElementById('profModal').classList.add('show');
+}
+function closeProfModal(){ document.getElementById('profModal').classList.remove('show'); }
+
+/* Filtro de búsqueda del landing (filtra tiendas Y profesionales) */
+let _allTenants = [];
+function filterLanding(){
+  const q = (document.getElementById('tsSearchInput').value||'').toLowerCase().trim();
+  if(!q){
+    renderTenantCards(_allTenants);
+    renderProfessionals(_professionals);
+    return;
+  }
+  const ft = _allTenants.filter(t => (t.nombre||t.id).toLowerCase().includes(q) || (t.tagline||'').toLowerCase().includes(q));
+  const fp = _professionals.filter(p =>
+    (p.nombre||p.id).toLowerCase().includes(q) ||
+    (p.tagline||'').toLowerCase().includes(q) ||
+    (p.categoria||'').toLowerCase().includes(q) ||
+    (p.servicios||[]).some(s=>s.toLowerCase().includes(q))
+  );
+  renderTenantCards(ft);
+  renderProfessionals(fp);
+}
+
 async function bootPlatform(){
   renderHeader(); renderChips(); updateCartUI(); renderExternalLinks(); renderStoryVideo();
   if(new URLSearchParams(location.search).get('sembrar') === '1'){
@@ -3993,6 +4420,8 @@ async function bootPlatform(){
     refreshAdminSession();
     listenSettings();
     listenProducts();
+    /* Registrar visita a esta tienda (con fuente de tráfico) */
+    setTimeout(trackPageVisit, 1200);
   }catch(e){
     console.error(e);
     renderTenantSelector('No se pudo cargar "' + TENANT_ID + '": ' + (e && e.message ? e.message : 'error desconocido'));
