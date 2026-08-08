@@ -848,6 +848,38 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 .sa-mini-btn.danger:hover{background:var(--danger);color:#fff}
 .sa-actions-cell{display:flex;gap:6px;flex-wrap:wrap}
 .sa-mini-link{font-size:12px;font-weight:700;color:var(--blue);text-decoration:underline}
+/* ============ PLAN PILLS — superadmin table ============ */
+.plan-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.plan-pill.emprendedor{background:#E7F5EC;color:#0F5A30}
+.plan-pill.profesional{background:#E3EDFF;color:#1D4ED8}
+.plan-pill.destacado{background:var(--yellow-soft);color:#92400E}
+.plan-pill.basico,.plan-pill.none{background:#F3F4F6;color:#6B7280}
+.plan-pill.pendiente-aprobacion{background:#FFF1DC;color:#B45309}
+.sa-plan-col{min-width:190px}
+/* ============ PLAN LOCK — aviso al negocio cuando el plan no está activo ============ */
+.plan-lock-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#0F5A30,#1B7A43);color:#fff;padding:14px 20px;text-align:center;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.plan-lock-banner.show{display:block}
+.plan-lock-banner a{color:var(--yellow);text-decoration:underline;cursor:pointer;font-weight:800}
+/* ============ PLAN UPGRADE WALL ============ */
+.plan-wall{display:none;position:fixed;inset:0;z-index:500;background:rgba(15,23,42,.72);align-items:center;justify-content:center;padding:24px}
+.plan-wall.show{display:flex}
+.plan-wall-card{background:#fff;border-radius:22px;max-width:560px;width:100%;padding:32px 28px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.plan-wall-card .pw-icon{width:64px;height:64px;border-radius:50%;background:var(--yellow-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:32px}
+.plan-wall-card h2{font-size:22px;font-weight:800;margin-bottom:8px}
+.plan-wall-card p{font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.plan-wall-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+.pw-plan{border:2px solid var(--line);border-radius:14px;padding:14px 10px;cursor:default}
+.pw-plan.current{border-color:var(--green);background:var(--green-soft)}
+.pw-plan.locked{opacity:.55}
+.pw-plan.required{border-color:var(--yellow);background:var(--yellow-soft)}
+.pw-plan-name{font-size:13px;font-weight:800;margin-bottom:4px}
+.pw-plan-price{font-size:12px;color:var(--muted);font-weight:600}
+/* ============ SA PLAN APPROVAL MODAL ============ */
+.sa-plan-modal-card{max-width:660px}
+.plan-request-card{background:#F9FAFB;border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.plan-request-card.pendiente{border-color:#F59E0B;background:#FFFBEB}
+.plan-request-card.aprobado{border-color:var(--green);background:var(--green-soft)}
+.plan-request-card.rechazado{border-color:var(--danger);background:var(--danger-soft)}
 </style>
 </head>
 <body>
@@ -1766,6 +1798,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <div class="stat-card"><div class="lbl">Pendientes</div><div class="val" id="saCountPend">0</div></div>
       <div class="stat-card"><div class="lbl">Vencidos</div><div class="val" id="saCountVenc">0</div></div>
       <div class="stat-card hl"><div class="lbl">Ingreso mensual esperado</div><div class="val" id="saMontoTotal">₡0</div></div>
+      <div class="stat-card" style="border:1.5px solid #F59E0B"><div class="lbl" style="color:#92400E">⏳ Planes pendientes</div><div class="val" id="saCountPendingPlans" style="color:#92400E">0</div></div>
     </div>
 
     <div class="settings-card" style="margin-bottom:20px">
@@ -1794,6 +1827,15 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           </select>
         </div>
       </div>
+      <div class="f-row">
+        <div class="f-group"><label>Plan inicial activo</label>
+          <select class="sort-select" id="saNewPlan" style="width:100%">
+            <option value="emprendedor">🌱 Emprendedor (₡9,900/mes)</option>
+            <option value="profesional">🚀 Profesional (₡15,000/mes)</option>
+            <option value="destacado">⭐ Destacado (₡25,000/mes)</option>
+          </select>
+        </div>
+      </div>
       <button class="btn-primary" style="width:auto;padding:12px 22px" onclick="saCreateTenant()">Crear negocio</button>
     </div>
 
@@ -1810,14 +1852,21 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <option value="pendiente">Pendiente</option>
         <option value="vencido">Vencido</option>
       </select>
+      <select class="sort-select" id="saFilterPlan" onchange="renderSuperadminTable()">
+        <option value="">Todos los planes</option>
+        <option value="emprendedor">Emprendedor</option>
+        <option value="profesional">Profesional</option>
+        <option value="destacado">Destacado</option>
+        <option value="pendiente_aprobacion">Pendientes de aprobación</option>
+      </select>
     </div>
 
     <div class="sa-table-wrap">
       <table class="sa-table">
         <thead><tr>
-          <th>Negocio</th><th>Tipo</th><th>Fecha de registro</th><th>Monto mensual</th><th>Estado de pago</th><th>Activo</th><th>Enlace</th><th>Acciones</th>
+          <th>Negocio</th><th>Tipo</th><th>Fecha de registro</th><th>Monto mensual</th><th>Estado de pago</th><th class="sa-plan-col">Plan activo</th><th>Activo</th><th>Enlace</th><th>Acciones</th>
         </tr></thead>
-        <tbody id="saTableBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr></tbody>
+        <tbody id="saTableBody"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -1869,6 +1918,14 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           </select>
         </div>
       </div>
+      <div class="f-group"><label>Plan activo (aprobado por superadmin)</label>
+        <select class="sort-select" id="saEditPlan" style="width:100%">
+          <option value="emprendedor">🌱 Emprendedor — Plan básico (₡9,900/mes)</option>
+          <option value="profesional">🚀 Profesional — Pedidos + estadísticas (₡15,000/mes)</option>
+          <option value="destacado">⭐ Destacado — Máxima exposición (₡25,000/mes)</option>
+        </select>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Este es el plan que el negocio puede usar ahora mismo. Cambiarlo no genera cobro, solo habilita/deshabilita funciones.</div>
+      </div>
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:6px 0 16px">
         <input type="checkbox" id="saEditActivo"> Negocio activo (visible en la plataforma)
       </label>
@@ -1888,6 +1945,41 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ================= PLAN LOCK BANNER (aparece arriba cuando el plan no está activo) ================= -->
+<div class="plan-lock-banner" id="planLockBanner">
+  🔒 Tu negocio está en <b>Plan Básico</b>. Para acceder a funciones avanzadas, <a onclick="enterAdmin();setTimeout(()=>{switchPanel('panel-membership')},600)">activá tu plan</a> desde el panel.
+</div>
+
+<!-- ================= PLAN WALL (bloqueo de funciones por plan) ================= -->
+<div class="plan-wall" id="planWall">
+  <div class="plan-wall-card">
+    <div class="pw-icon">🔒</div>
+    <h2 id="pwTitle">Función no disponible</h2>
+    <p id="pwDesc">Esta función requiere un plan superior. Actualizá tu plan para desbloquearla.</p>
+    <div class="plan-wall-plans" id="pwPlansGrid"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-primary" style="width:auto;padding:12px 22px" onclick="closePlanWall();enterAdmin();setTimeout(()=>{switchPanel('panel-membership')},600)">
+        Ver planes y pagar
+      </button>
+      <button class="btn-ghost" style="width:auto;padding:12px 18px" onclick="closePlanWall()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SUPERADMIN — MODAL GESTIÓN DE PLAN DEL NEGOCIO ================= -->
+<div class="modal" id="saPlanModal" style="z-index:400">
+  <div class="modal-bg" onclick="closeSaPlanModal()"></div>
+  <div class="modal-card sa-plan-modal-card">
+    <div class="modal-head">
+      <h3 id="saPlanModalTitle">Gestión de Plan</h3>
+      <button class="close-x" onclick="closeSaPlanModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div id="saPlanModalContent"></div>
+    </div>
   </div>
 </div>
 
@@ -3390,6 +3482,38 @@ function enterAdmin(){
   document.body.classList.add('in-admin');
   renderHeader(); listenOrdersIfAdmin(); renderInventory(); loadSettingsForm();
   loadAnalytics();
+  // Verificar plan y mostrar banner
+  checkAndRevertExpiredPlan().then(()=>{ updatePlanLockBanner(); });
+  // Aplicar restricciones visuales basadas en el plan
+  applyPlanRestrictions();
+}
+
+/* Aplica restricciones visuales al panel según el plan activo */
+function applyPlanRestrictions(){
+  const activePlan = getActivePlanId();
+  const rank = PLAN_RANK[activePlan]||1;
+  // Marcar pestañas bloqueadas visualmente
+  document.querySelectorAll('.adm-link[data-panel]').forEach(btn => {
+    const panel = btn.dataset.panel;
+    const featureKey = panel === 'orders' ? 'panel-orders' : panel === 'stats' ? 'panel-analytics' : null;
+    if(featureKey && !planAllows(featureKey)){
+      btn.style.opacity = '0.5';
+      btn.title = 'Requiere plan superior';
+      // Añadir ícono de candado si no tiene uno
+      if(!btn.querySelector('.lock-indicator')){
+        const lockSpan = document.createElement('span');
+        lockSpan.className = 'lock-indicator';
+        lockSpan.textContent = '🔒';
+        lockSpan.style.cssText = 'font-size:11px;margin-left:4px';
+        btn.appendChild(lockSpan);
+      }
+    } else {
+      btn.style.opacity = '';
+      btn.title = '';
+      const li = btn.querySelector('.lock-indicator');
+      if(li) li.remove();
+    }
+  });
 }
 function viewStore(){ document.body.classList.remove('in-admin'); renderHeader(); renderChips(); renderGrid(); updateCartUI(); }
 
@@ -3422,6 +3546,13 @@ function refreshAdminSession(){
    depende de la tienda que se está mostrando en la URL). */
 auth.onAuthStateChanged(user => { refreshAdminSession(); });
 function showPanel(name, btn){
+  // Verificar acceso al panel según plan activo
+  const PANEL_FEATURE = {orders:'panel-orders', stats:'panel-analytics'};
+  const featureKey = PANEL_FEATURE[name];
+  if(featureKey && !planAllows(featureKey)){
+    showPlanWall(featureKey);
+    return; // bloquear navegación
+  }
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   document.querySelectorAll('.adm-link[data-panel]').forEach(b=>b.classList.remove('active'));
@@ -3431,6 +3562,11 @@ function showPanel(name, btn){
   if(name==='orders') renderOrders();
   if(name==='settings') loadSettingsForm();
   if(name==='membership') loadMembershipPanel();
+}
+/* Helper para cambiar panel desde código (sin botón) */
+function switchPanel(panelId){
+  const btn = document.querySelector('.adm-link[data-panel="' + panelId.replace('panel-','') + '"]');
+  if(btn) showPanel(panelId.replace('panel-',''), btn);
 }
 
 /* ---------- estadísticas ---------- */
@@ -4875,7 +5011,7 @@ async function doSuperadminLogout(){
 
 async function loadSuperadminData(){
   const tbody = document.getElementById('saTableBody');
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr>';
   try{
     const snap = await db.collection('tenants').get();
     _saTenants = snap.docs.map(d => Object.assign({id:d.id}, d.data()));
@@ -4884,7 +5020,7 @@ async function loadSuperadminData(){
     renderSuperadminTable();
   }catch(e){
     console.error(e);
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--danger);padding:24px">No se pudo cargar la lista de negocios: ' + esc(e && e.message ? e.message : 'error desconocido') + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--danger);padding:24px">No se pudo cargar la lista de negocios: ' + esc(e && e.message ? e.message : 'error desconocido') + '</td></tr>';
   }
 }
 
@@ -4894,6 +5030,7 @@ function renderSuperadminSummary(){
   const alDia = _saTenants.filter(t => (t.estadoPago||'al_dia') === 'al_dia').length;
   const pend = _saTenants.filter(t => t.estadoPago === 'pendiente').length;
   const venc = _saTenants.filter(t => t.estadoPago === 'vencido').length;
+  const pendingPlans = _saTenants.filter(t => t.planApprovalStatus === 'pendiente').length;
   const montoTotal = _saTenants.reduce((s,t) => s + (Number(t.montoMensual)||0), 0);
   document.getElementById('saCountTiendas').textContent = tiendas.length;
   document.getElementById('saCountProf').textContent = profs.length;
@@ -4901,6 +5038,11 @@ function renderSuperadminSummary(){
   document.getElementById('saCountPend').textContent = pend;
   document.getElementById('saCountVenc').textContent = venc;
   document.getElementById('saMontoTotal').textContent = fmt(montoTotal);
+  const pendEl = document.getElementById('saCountPendingPlans');
+  if(pendEl){
+    pendEl.textContent = pendingPlans;
+    pendEl.closest('.stat-card').style.display = pendingPlans > 0 ? '' : 'none';
+  }
 }
 
 function saFechaLabel(t){
@@ -4917,14 +5059,17 @@ function renderSuperadminTable(){
   const q = (document.getElementById('saFilterInput').value||'').toLowerCase().trim();
   const fTipo = document.getElementById('saFilterTipo').value;
   const fEstado = document.getElementById('saFilterEstado').value;
+  const fPlan = document.getElementById('saFilterPlan').value;
   let list = _saTenants.slice();
   if(q) list = list.filter(t => (t.nombre||t.id).toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
-  if(fTipo) list = list.filter(t => t.tipo === 'profesional');
-  else if(document.getElementById('saFilterTipo').selectedIndex === 1) list = list.filter(t => t.tipo !== 'profesional');
+  if(fTipo === 'profesional') list = list.filter(t => t.tipo === 'profesional');
+  else if(fTipo === 'tienda') list = list.filter(t => t.tipo !== 'profesional');
   if(fEstado) list = list.filter(t => (t.estadoPago||'al_dia') === fEstado);
+  if(fPlan === 'pendiente_aprobacion') list = list.filter(t => t.planApprovalStatus === 'pendiente');
+  else if(fPlan) list = list.filter(t => (t.membershipPlan||'emprendedor') === fPlan);
 
   if(!list.length){
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">No hay negocios que coincidan con el filtro.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">No hay negocios que coincidan con el filtro.</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(t => {
@@ -4935,6 +5080,32 @@ function renderSuperadminTable(){
     const activo = t.activo !== false;
     const url = location.pathname + '?tienda=' + encodeURIComponent(t.id);
     const adminUrl = url + '&panel=admin';
+
+    // — columna de plan —
+    const planActivo = t.membershipPlan || 'emprendedor';
+    const planApproval = t.planApprovalStatus || 'aprobado'; // 'pendiente' | 'aprobado' | 'rechazado'
+    const planApprovedId = t.planApprovedId || 'emprendedor'; // plan que está realmente habilitado
+    const PLAN_NAMES = {emprendedor:'Emprendedor', profesional:'Profesional', destacado:'Destacado'};
+
+    let planHtml = '';
+    if(planApproval === 'pendiente'){
+      planHtml = '<div style="display:flex;flex-direction:column;gap:4px">' +
+        '<span class="plan-pill pendiente-aprobacion">⏳ Solicita: ' + esc(PLAN_NAMES[planActivo]||planActivo) + '</span>' +
+        '<span class="plan-pill basico" style="font-size:10px">Activo: ' + esc(PLAN_NAMES[planApprovedId]||planApprovedId) + '</span>' +
+        '<button class="sa-mini-btn" style="font-size:11px;padding:5px 10px;background:#F59E0B;margin-top:2px" onclick="openSaPlanModal(\'' + esc(t.id) + '\')">Revisar pago</button>' +
+      '</div>';
+    } else {
+      const planClass = planApprovedId === 'destacado' ? 'destacado' : (planApprovedId === 'profesional' ? 'profesional' : 'emprendedor');
+      planHtml = '<div style="display:flex;flex-direction:column;gap:4px">' +
+        '<span class="plan-pill ' + planClass + '">' +
+          (planApprovedId === 'destacado' ? '⭐' : planApprovedId === 'profesional' ? '🚀' : '🌱') + ' ' +
+          esc(PLAN_NAMES[planApprovedId]||planApprovedId) +
+        '</span>' +
+        (t.membershipNextDueDate ? '<span style="font-size:10.5px;color:var(--muted)">Vence: ' + new Date(t.membershipNextDueDate).toLocaleDateString('es-CR') + '</span>' : '') +
+        '<button class="sa-mini-btn ghost" style="font-size:11px;padding:5px 10px;margin-top:2px" onclick="openSaPlanModal(\'' + esc(t.id) + '\')">Gestionar plan</button>' +
+      '</div>';
+    }
+
     return '<tr data-tenant-row="' + esc(t.id) + '">' +
       '<td><b>' + esc(t.nombre || t.id) + '</b><br><span style="color:var(--muted);font-size:11.5px">' + esc(t.id) + '</span></td>' +
       '<td>' + tipoLabel + '</td>' +
@@ -4945,6 +5116,7 @@ function renderSuperadminTable(){
         '<option value="pendiente"' + (estado==='pendiente'?' selected':'') + '>Pendiente</option>' +
         '<option value="vencido"' + (estado==='vencido'?' selected':'') + '>Vencido</option>' +
       '</select></td>' +
+      '<td class="sa-plan-col">' + planHtml + '</td>' +
       '<td><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" data-sa-activo="' + esc(t.id) + '" ' + (activo?'checked':'') + '> Activo</label></td>' +
       '<td><a class="sa-mini-link" href="' + url + '" target="_blank" rel="noopener">Ver</a> · <a class="sa-mini-link" href="' + adminUrl + '" target="_blank" rel="noopener" title="Entra directo al panel de administración de este negocio, con tu propia sesión de superadministrador">Administrar</a></td>' +
       '<td><div class="sa-actions-cell">' +
@@ -5038,6 +5210,9 @@ function saOpenEditModal(id){
   document.getElementById('saEditMonto').value = Number(t.montoMensual) || 0;
   document.getElementById('saEditEstado').value = t.estadoPago || 'al_dia';
   document.getElementById('saEditActivo').checked = t.activo !== false;
+  const saEditPlanEl = document.getElementById('saEditPlan');
+  if(saEditPlanEl) saEditPlanEl.value = t.planApprovedId || t.membershipPlan || 'emprendedor';
+  loadPlanConfig().then(renderPlanConfigUI);
   saEditLogoDataUrl = null;
   document.getElementById('saEditLogoPreview').innerHTML = t.logoUrl ? '<img src="' + esc(t.logoUrl) + '" alt="Logo">' : logoSVG;
   saEditBizImages = (t.landingImages && t.landingImages.length) ? t.landingImages.slice() : [];
@@ -5055,6 +5230,8 @@ async function saSaveEditModal(){
   const nombre = document.getElementById('saEditNombre').value.trim();
   if(!nombre){ toast('El nombre es obligatorio', 'err'); return; }
   const prev = _saTenants.find(x=>x.id===id) || {};
+  const saEditPlanEl = document.getElementById('saEditPlan');
+  const saEditPlanId = saEditPlanEl ? saEditPlanEl.value : (prev.planApprovedId || 'emprendedor');
   const data = {
     nombre,
     tipo: document.getElementById('saEditTipo').value,
@@ -5066,7 +5243,13 @@ async function saSaveEditModal(){
     estadoPago: document.getElementById('saEditEstado').value,
     activo: document.getElementById('saEditActivo').checked,
     logoUrl: saEditLogoDataUrl !== null ? saEditLogoDataUrl : (prev.logoUrl || ''),
-    landingImages: saEditBizImages.map(u=>u.trim()).filter(Boolean)
+    landingImages: saEditBizImages.map(u=>u.trim()).filter(Boolean),
+    // Plan activo aprobado
+    planApprovedId: saEditPlanId,
+    membershipPlan: saEditPlanId,
+    planApprovalStatus: 'aprobado',
+    plan: saEditPlanId === 'destacado' ? 'destacado' : (saEditPlanId === 'profesional' ? 'premium' : 'basico'),
+    planRank: saEditPlanId === 'destacado' ? 3 : (saEditPlanId === 'profesional' ? 2 : 1)
   };
   try{
     await db.collection('tenants').doc(id).set(data, {merge:true});
@@ -5140,13 +5323,21 @@ async function saCreateTenant(){
     const ref = db.collection('tenants').doc(slug);
     const existing = await ref.get();
     if(existing.exists){ toast('Ya existe un negocio con ese slug', 'err'); return; }
+    const saNewPlan = document.getElementById('saNewPlan') ? document.getElementById('saNewPlan').value : 'emprendedor';
     await ref.set({
       nombre, tipo,
       activo: true,
       montoMensual: monto,
       estadoPago,
       adminEmails: adminEmail ? [adminEmail] : [],
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      membershipPlan: saNewPlan,
+      planApprovedId: saNewPlan,
+      planApprovalStatus: 'aprobado',
+      membershipStatus: estadoPago === 'al_dia' ? 'al_dia' : 'pendiente',
+      membershipNextDueDate: addMonths(new Date(),1).toISOString(),
+      plan: saNewPlan === 'destacado' ? 'destacado' : (saNewPlan === 'profesional' ? 'premium' : 'basico'),
+      planRank: saNewPlan === 'destacado' ? 3 : (saNewPlan === 'profesional' ? 2 : 1)
     });
     toast('Negocio creado. Compartí este enlace con el dueño: ?tienda=' + slug, 'ok');
     document.getElementById('saNewSlug').value = '';
@@ -5160,6 +5351,374 @@ async function saCreateTenant(){
   }
 }
 
+
+/* ================================================================
+   MÓDULO DE GESTIÓN DE PLANES (SUPERADMIN) — aprobación, rechazo
+   y vencimiento automático con regresión a plan básico.
+   ================================================================ */
+
+/* Jerarquía de planes: emprendedor=1, profesional=2, destacado=3 */
+const PLAN_RANK = {emprendedor:1, profesional:2, destacado:3};
+const PLAN_NAMES_MAP = {emprendedor:'Emprendedor', profesional:'Profesional', destacado:'Destacado'};
+const PLAN_ICONS = {emprendedor:'🌱', profesional:'🚀', destacado:'⭐'};
+
+/* ---------- modal de gestión de plan del superadmin ---------- */
+let _saPlanModalId = null;
+async function openSaPlanModal(id){
+  _saPlanModalId = id;
+  const t = _saTenants.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('saPlanModalTitle').textContent = 'Plan — ' + (t.nombre||id);
+  const modal = document.getElementById('saPlanModal');
+  modal.classList.add('show');
+  await renderSaPlanModalContent(id);
+}
+function closeSaPlanModal(){
+  document.getElementById('saPlanModal').classList.remove('show');
+  _saPlanModalId = null;
+}
+
+async function renderSaPlanModalContent(id){
+  const t = _saTenants.find(x=>x.id===id);
+  if(!t){ return; }
+  const body = document.getElementById('saPlanModalContent');
+
+  // Cargar historial de pagos
+  let payments = [];
+  try{
+    const snap = await db.collection('tenants').doc(id).collection('membershipPayments').orderBy('date','desc').limit(10).get();
+    payments = snap.docs.map(d=>Object.assign({id:d.id}, d.data()));
+  }catch(e){ console.warn('No se pudo cargar historial de pagos:', e); }
+
+  const planActivo = t.membershipPlan || 'emprendedor';
+  const planApproved = t.planApprovedId || 'emprendedor';
+  const approvalStatus = t.planApprovalStatus || 'aprobado';
+  const nextDue = t.membershipNextDueDate ? new Date(t.membershipNextDueDate) : null;
+  const lastPayment = t.membershipLastPaymentDate ? new Date(t.membershipLastPaymentDate) : null;
+
+  const planOptionsHtml = ['emprendedor','profesional','destacado'].map(pid => {
+    const isApproved = planApproved === pid;
+    return '<button class="sa-mini-btn ' + (isApproved?'':'ghost') + '" style="flex:1" onclick="saApprovePlan(\'' + esc(id) + '\',\'' + pid + '\')">' +
+      PLAN_ICONS[pid] + ' ' + PLAN_NAMES_MAP[pid] + (isApproved?' ✓':'') + '</button>';
+  }).join('');
+
+  const paymentsHtml = payments.length ? payments.map(p => {
+    const hasProof = p.proofImage && p.proofImage.length > 50;
+    const isVerified = p.verified === true;
+    const isRejected = p.verified === false;
+    return '<div class="plan-request-card ' + (isVerified?'aprobado':isRejected?'rechazado':'pendiente') + '">' +
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">' +
+        '<div>' +
+          '<div style="font-size:13.5px;font-weight:800">' + PLAN_NAMES_MAP[p.plan||'emprendedor'] + ' — ' + (p.periodLabel||p.period||'mensual') + '</div>' +
+          '<div style="font-size:12px;color:var(--muted)">' + new Date(p.date).toLocaleDateString('es-CR', {year:'numeric',month:'long',day:'2-digit'}) + '</div>' +
+          '<div style="font-size:13px;font-weight:700;color:var(--green);margin-top:2px">' + fmt(p.amount) + '</div>' +
+          (p.reference ? '<div style="font-size:12px;color:var(--muted)">Ref: ' + esc(p.reference) + '</div>' : '') +
+          (p.method ? '<div style="font-size:12px;color:var(--muted)">Método: ' + esc(p.method) + '</div>' : '') +
+        '</div>' +
+        (hasProof ? '<img src="' + p.proofImage + '" style="width:70px;height:70px;object-fit:cover;border-radius:10px;cursor:pointer;flex-shrink:0" onclick="openProofLightbox(\'' + esc(p.id) + '\',\'' + esc(id) + '\')" title="Ver comprobante">' : '') +
+      '</div>' +
+      '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">' +
+        (isVerified
+          ? '<span style="font-size:12px;font-weight:700;color:var(--green)">✓ Verificado</span>'
+          : isRejected
+            ? '<span style="font-size:12px;font-weight:700;color:var(--danger)">✗ Rechazado</span>'
+            : '<button class="sa-mini-btn" style="font-size:11px;padding:5px 12px" onclick="saVerifyPayment(\'' + esc(id) + '\',\'' + esc(p.id) + '\',true)">✓ Aprobar y activar plan</button>' +
+              '<button class="sa-mini-btn danger" style="font-size:11px;padding:5px 12px" onclick="saVerifyPayment(\'' + esc(id) + '\',\'' + esc(p.id) + '\',false)">✗ Rechazar</button>'
+        ) +
+      '</div>' +
+    '</div>';
+  }).join('') : '<div style="color:var(--muted);font-size:13px;padding:12px 0">Sin historial de pagos registrado.</div>';
+
+  body.innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">' +
+      '<div class="panel-card"><div style="font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Plan solicitado</div>' +
+        '<div style="font-size:18px;font-weight:800">' + PLAN_ICONS[planActivo] + ' ' + esc(PLAN_NAMES_MAP[planActivo]||planActivo) + '</div>' +
+        '<div style="font-size:12px;color:var(--muted)">' + (approvalStatus==='pendiente'?'⏳ Pendiente de aprobación':approvalStatus==='aprobado'?'✓ Aprobado':'—') + '</div>' +
+      '</div>' +
+      '<div class="panel-card"><div style="font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Plan activo actual</div>' +
+        '<div style="font-size:18px;font-weight:800">' + PLAN_ICONS[planApproved] + ' ' + esc(PLAN_NAMES_MAP[planApproved]||planApproved) + '</div>' +
+        '<div style="font-size:12px;color:var(--muted)">Habilitado para el negocio</div>' +
+      '</div>' +
+    '</div>' +
+    (nextDue ? '<div style="font-size:13px;color:var(--muted);margin-bottom:16px">📅 Próximo vencimiento: <b>' + nextDue.toLocaleDateString('es-CR',{year:'numeric',month:'long',day:'2-digit'}) + '</b></div>' : '') +
+
+    '<div style="margin-bottom:18px">' +
+      '<div style="font-size:13px;font-weight:700;margin-bottom:8px">Activar plan manualmente:</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' + planOptionsHtml + '</div>' +
+      '<p style="font-size:12px;color:var(--muted);margin-top:6px">Al activar un plan se habilita inmediatamente para el negocio y se marca como aprobado. Podés cambiar la fecha de vencimiento a continuación.</p>' +
+    '</div>' +
+
+    '<div style="margin-bottom:18px">' +
+      '<div style="font-size:13px;font-weight:700;margin-bottom:8px">Establecer fecha de vencimiento:</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+        '<input type="date" class="f-input" id="saPlanDueDate" style="max-width:200px" value="' + (nextDue ? nextDue.toISOString().substr(0,10) : '') + '">' +
+        '<button class="sa-mini-btn" onclick="saUpdateDueDate(\'' + esc(id) + '\')">Guardar fecha</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div>' +
+      '<div style="font-size:13px;font-weight:700;margin-bottom:10px">Historial de pagos y comprobantes:</div>' +
+      paymentsHtml +
+    '</div>';
+}
+
+/* Aprobar un plan manualmente desde el superadmin */
+async function saApprovePlan(tenantId, planId){
+  if(!confirm('¿Activar el plan ' + PLAN_NAMES_MAP[planId] + ' para este negocio?')) return;
+  const planValue = planId === 'destacado' ? 'destacado' : (planId === 'profesional' ? 'premium' : 'basico');
+  const rank = PLAN_RANK[planId] || 1;
+  const now = new Date();
+  const nextDue = addMonths(now, 1);
+  try{
+    await db.collection('tenants').doc(tenantId).set({
+      membershipPlan: planId,
+      planApprovedId: planId,
+      planApprovalStatus: 'aprobado',
+      membershipStatus: 'al_dia',
+      estadoPago: 'al_dia',
+      membershipLastPaymentDate: now.toISOString(),
+      membershipNextDueDate: nextDue.toISOString(),
+      membershipReminderSent: false,
+      plan: planValue,
+      planRank: rank,
+      montoMensual: planId==='destacado'?25000:(planId==='profesional'?15000:9900),
+      activo: true
+    }, {merge:true});
+    const t = _saTenants.find(x=>x.id===tenantId);
+    if(t){ Object.assign(t, {membershipPlan:planId, planApprovedId:planId, planApprovalStatus:'aprobado', plan:planValue, planRank:rank, membershipNextDueDate:nextDue.toISOString(), estadoPago:'al_dia', activo:true}); }
+    renderSuperadminTable();
+    toast('Plan ' + PLAN_NAMES_MAP[planId] + ' activado para el negocio', 'ok');
+    await renderSaPlanModalContent(tenantId);
+  }catch(e){
+    toast('Error al activar plan: ' + (e.message||'error'), 'err');
+    console.error(e);
+  }
+}
+
+/* Actualizar fecha de vencimiento desde el superadmin */
+async function saUpdateDueDate(tenantId){
+  const val = document.getElementById('saPlanDueDate').value;
+  if(!val){ toast('Seleccioná una fecha', 'err'); return; }
+  const newDate = new Date(val + 'T23:59:59');
+  try{
+    await db.collection('tenants').doc(tenantId).set({ membershipNextDueDate: newDate.toISOString(), membershipReminderSent: false }, {merge:true});
+    const t = _saTenants.find(x=>x.id===tenantId);
+    if(t) t.membershipNextDueDate = newDate.toISOString();
+    renderSuperadminTable();
+    toast('Fecha de vencimiento actualizada', 'ok');
+  }catch(e){
+    toast('Error al actualizar fecha: ' + (e.message||'error'), 'err');
+    console.error(e);
+  }
+}
+
+/* Verificar / rechazar un comprobante de pago */
+async function saVerifyPayment(tenantId, paymentId, approved){
+  const t = _saTenants.find(x=>x.id===tenantId);
+  try{
+    const payRef = db.collection('tenants').doc(tenantId).collection('membershipPayments').doc(paymentId);
+    // Leer el pago para obtener su plan y período
+    const paySnap = await payRef.get();
+    if(!paySnap.exists){ toast('Pago no encontrado', 'err'); return; }
+    const payData = paySnap.data();
+    await payRef.set({ verified: approved, verifiedAt: new Date().toISOString() }, {merge:true});
+
+    if(approved){
+      // Activar el plan pagado
+      const planId = payData.plan || 'emprendedor';
+      const months = payData.months || 1;
+      const planValue = planId === 'destacado' ? 'destacado' : (planId === 'profesional' ? 'premium' : 'basico');
+      const rank = PLAN_RANK[planId] || 1;
+      const now = new Date();
+      const nextDue = addMonths(now, months);
+      await db.collection('tenants').doc(tenantId).set({
+        membershipPlan: planId,
+        planApprovedId: planId,
+        planApprovalStatus: 'aprobado',
+        membershipStatus: 'al_dia',
+        estadoPago: 'al_dia',
+        membershipLastPaymentDate: now.toISOString(),
+        membershipNextDueDate: nextDue.toISOString(),
+        membershipReminderSent: false,
+        plan: planValue,
+        planRank: rank,
+        montoMensual: planId==='destacado'?25000:(planId==='profesional'?15000:9900),
+        activo: true
+      }, {merge:true});
+      if(t){ Object.assign(t, {membershipPlan:planId, planApprovedId:planId, planApprovalStatus:'aprobado', estadoPago:'al_dia', membershipNextDueDate:nextDue.toISOString(), plan:planValue, planRank:rank}); }
+      toast('Pago aprobado — plan ' + PLAN_NAMES_MAP[planId] + ' activado', 'ok');
+    } else {
+      // Rechazar sin cambiar el plan activo
+      await db.collection('tenants').doc(tenantId).set({ planApprovalStatus: t?.membershipPlan === (t?.planApprovedId||'emprendedor') ? 'aprobado' : 'rechazado' }, {merge:true});
+      toast('Pago rechazado', 'ok');
+    }
+    renderSuperadminTable();
+    await renderSaPlanModalContent(tenantId);
+  }catch(e){
+    toast('Error al procesar verificación: ' + (e.message||'error'), 'err');
+    console.error(e);
+  }
+}
+
+/* Abrir lightbox de comprobante de pago */
+async function openProofLightbox(paymentId, tenantId){
+  try{
+    const snap = await db.collection('tenants').doc(tenantId).collection('membershipPayments').doc(paymentId).get();
+    if(!snap.exists || !snap.data().proofImage) return;
+    const img = document.getElementById('lightboxImg');
+    if(img){
+      img.src = snap.data().proofImage;
+      document.getElementById('imgLightbox').classList.add('show');
+    }
+  }catch(e){ console.error(e); }
+}
+
+/* ================================================================
+   SISTEMA DE BLOQUEO DE FUNCIONES POR PLAN
+   ================================================================
+   Mapeo de funciones a plan mínimo requerido:
+   - emprendedor: catálogo básico, WhatsApp, perfil
+   - profesional: pedidos, inventario, SINPE, estadísticas, video, reseñas
+   - destacado: posición destacada, insignia de plataforma
+   ================================================================ */
+
+const PLAN_FEATURE_MAP = {
+  'panel-orders':   'profesional',  // panel de pedidos
+  'panel-analytics':'profesional',  // estadísticas avanzadas
+  'sinpe':          'profesional',  // pagos SINPE en tienda
+  'inventory':      'profesional',  // control de inventario
+  'video':          'profesional',  // video historia flotante
+  'reviews':        'profesional',  // reseñas de productos
+  'ai-assistant':   'profesional',  // asistente IA
+  'destacado-badge':'destacado',    // insignia y posición destacada
+  'games-link':     'profesional',  // botón de juegos/bingo
+};
+
+const PLAN_FEATURE_LABELS = {
+  'panel-orders':   'Panel de Pedidos',
+  'panel-analytics':'Estadísticas',
+  'sinpe':          'Pagos SINPE Móvil',
+  'inventory':      'Control de Inventario',
+  'video':          'Video Historia',
+  'reviews':        'Reseñas de Productos',
+  'ai-assistant':   'Asistente IA',
+  'destacado-badge':'Posición Destacada',
+  'games-link':     'Enlace de Juegos',
+};
+
+/* Plan activo aprobado del tenant actual */
+function getActivePlanId(){
+  if(!TENANT_DATA) return 'emprendedor';
+  // planApprovedId = el plan habilitado por superadmin
+  // Si no existe (tenant viejo), se usa membershipPlan si está al_dia, sino emprendedor
+  if(TENANT_DATA.planApprovedId) return TENANT_DATA.planApprovedId;
+  if((TENANT_DATA.membershipStatus==='al_dia') && TENANT_DATA.membershipPlan) return TENANT_DATA.membershipPlan;
+  return 'emprendedor';
+}
+
+/* Verifica si el plan activo permite una funcionalidad */
+function planAllows(featureKey){
+  const required = PLAN_FEATURE_MAP[featureKey];
+  if(!required) return true; // funcionalidades no mapeadas siempre están permitidas
+  const activePlanRank = PLAN_RANK[getActivePlanId()] || 1;
+  const requiredRank = PLAN_RANK[required] || 1;
+  return activePlanRank >= requiredRank;
+}
+
+/* Muestra el "plan wall" (muro de plan) cuando se intenta acceder a función bloqueada */
+function showPlanWall(featureKey){
+  const requiredPlan = PLAN_FEATURE_MAP[featureKey] || 'profesional';
+  const activePlan = getActivePlanId();
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  document.getElementById('pwTitle').textContent = (PLAN_FEATURE_LABELS[featureKey]||'Esta función') + ' requiere plan superior';
+  document.getElementById('pwDesc').textContent =
+    'Tu plan activo es ' + (PLAN_NAMES_MAP[activePlan]||activePlan) + '. Para usar ' +
+    (PLAN_FEATURE_LABELS[featureKey]||'esta función') + ', necesitás el plan ' +
+    (PLAN_NAMES_MAP[requiredPlan]||requiredPlan) + ' o superior.';
+
+  const plansHtml = cfg.plans.map(p => {
+    const rank = PLAN_RANK[p.id]||1;
+    const activeRank = PLAN_RANK[activePlan]||1;
+    const requiredRank = PLAN_RANK[requiredPlan]||1;
+    const isCurrent = p.id === activePlan;
+    const isRequired = rank === requiredRank;
+    const isLocked = rank < requiredRank;
+    return '<div class="pw-plan ' + (isCurrent?'current':isRequired?'required':isLocked?'locked':'') + '">' +
+      '<div style="font-size:20px;margin-bottom:4px">' + (PLAN_ICONS[p.id]||'📦') + '</div>' +
+      '<div class="pw-plan-name">' + esc(p.name) + '</div>' +
+      '<div class="pw-plan-price">' + fmt(p.price) + '/mes</div>' +
+      (isCurrent ? '<div style="font-size:10px;color:var(--green);font-weight:800;margin-top:4px">✓ Tu plan</div>' : '') +
+      (isRequired ? '<div style="font-size:10px;color:#92400E;font-weight:800;margin-top:4px">⬆ Requerido</div>' : '') +
+    '</div>';
+  }).join('');
+  document.getElementById('pwPlansGrid').innerHTML = plansHtml;
+  document.getElementById('planWall').classList.add('show');
+}
+function closePlanWall(){ document.getElementById('planWall').classList.remove('show'); }
+
+/* Muestra/oculta banner de plan básico cuando el negocio no tiene plan activo */
+function updatePlanLockBanner(){
+  const activePlan = getActivePlanId();
+  const banner = document.getElementById('planLockBanner');
+  if(!banner) return;
+  if(activePlan === 'emprendedor'){
+    banner.innerHTML = '🔒 Tu negocio está en <b>Plan Emprendedor (Básico)</b>. Para acceder a pedidos, estadísticas y más funciones, <a onclick="closePlanWall();switchPanel(\'panel-membership\')">activá un plan superior</a>.';
+    banner.classList.add('show');
+  } else {
+    const planName = PLAN_NAMES_MAP[activePlan]||activePlan;
+    const nextDue = TENANT_DATA && TENANT_DATA.membershipNextDueDate ? new Date(TENANT_DATA.membershipNextDueDate) : null;
+    if(nextDue && nextDue < new Date()){
+      banner.innerHTML = '⚠️ Tu plan <b>' + planName + '</b> <b>ha vencido</b>. Tu tienda regresó al plan Emprendedor hasta que renueves. <a onclick="switchPanel(\'panel-membership\')">Renovar ahora</a>.';
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+}
+
+/* Hook para interceptar navegación a paneles bloqueados */
+const _origSwitchPanel = typeof switchPanel !== 'undefined' ? switchPanel : null;
+function switchPanelWithPlanCheck(panelId){
+  if(!isAdminSession){ if(_origSwitchPanel) _origSwitchPanel(panelId); return; }
+  const featureKey = panelId === 'panel-orders' ? 'panel-orders' : panelId === 'panel-analytics' ? 'panel-analytics' : null;
+  if(featureKey && !planAllows(featureKey)){
+    showPlanWall(featureKey);
+    return;
+  }
+  if(typeof switchPanel === 'function') switchPanel(panelId);
+}
+
+/* Verificar y regresar al plan básico si venció */
+async function checkAndRevertExpiredPlan(){
+  if(!TENANT_DATA) return;
+  const approvedPlan = TENANT_DATA.planApprovedId || TENANT_DATA.membershipPlan || 'emprendedor';
+  if(approvedPlan === 'emprendedor') return; // ya en básico, nada que hacer
+  const nextDue = TENANT_DATA.membershipNextDueDate ? new Date(TENANT_DATA.membershipNextDueDate) : null;
+  if(!nextDue) return;
+  const now = new Date();
+  if(nextDue <= now){
+    // Plan vencido — regresar a emprendedor
+    const updates = {
+      planApprovedId: 'emprendedor',
+      planApprovalStatus: 'aprobado',
+      membershipStatus: 'vencido',
+      estadoPago: 'vencido',
+      plan: 'basico',
+      planRank: 1
+    };
+    // Suspender tienda si lleva 7+ días vencida
+    const daysPast = daysBetween(nextDue, now);
+    if(daysPast >= 7 && TENANT_DATA.membershipAutoSuspend !== false){
+      updates.activo = false;
+    }
+    try{
+      await tenantRef().set(updates, {merge:true});
+      Object.assign(TENANT_DATA, updates);
+      updatePlanLockBanner();
+      if(document.body.classList.contains('in-admin')) renderMembershipUI();
+    }catch(e){ console.error(e); }
+  }
+}
 
 /* ================================================================
    MÓDULO DE MEMBRESÍA — Pagos, planes, vencimientos y recordatorios
@@ -5335,14 +5894,36 @@ function getMembershipStatusColor(st){
 function renderMembershipUI(){
   const planCfg = planConfig || DEFAULT_PLAN_CONFIG;
   const t = TENANT_DATA || {};
-  const plan = planCfg.plans.find(p=>p.id===t.membershipPlan) || planCfg.plans[0];
+  // plan solicitado (puede estar pendiente de aprobación)
+  const planSolicitado = planCfg.plans.find(p=>p.id===t.membershipPlan) || planCfg.plans[0];
+  // plan APROBADO Y ACTIVO (el que realmente tiene el negocio)
+  const planAprobado = planCfg.plans.find(p=>p.id===(t.planApprovedId||t.membershipPlan)) || planCfg.plans[0];
+  const approvalStatus = t.planApprovalStatus || 'aprobado';
   const status = t.membershipStatus || 'al_dia';
   const nextDue = t.membershipNextDueDate ? new Date(t.membershipNextDueDate) : null;
   const now = new Date();
 
-  // Actualizar tarjetas
-  document.getElementById('memPlanName').textContent = plan ? plan.name : '—';
-  document.getElementById('memPlanPrice').textContent = plan ? fmt(plan.price) + '/mes' : '—';
+  // Mostrar plan activo real (aprobado) en la tarjeta principal
+  const displayPlan = planAprobado || planSolicitado;
+  document.getElementById('memPlanName').textContent = displayPlan ? displayPlan.name : '—';
+  document.getElementById('memPlanPrice').textContent = displayPlan ? fmt(displayPlan.price) + '/mes' : '—';
+
+  // Indicar si hay un plan superior pendiente de aprobación
+  const planCardEl = document.getElementById('memPlanCard');
+  let pendingBadge = document.getElementById('memPendingBadge');
+  if(approvalStatus === 'pendiente' && planSolicitado && planSolicitado.id !== (t.planApprovedId||'emprendedor')){
+    if(!pendingBadge){
+      pendingBadge = document.createElement('div');
+      pendingBadge.id = 'memPendingBadge';
+      pendingBadge.style.cssText = 'margin-top:6px;font-size:12px;font-weight:700;color:#B45309;background:#FFF7ED;border:1px solid #F59E0B;border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:6px';
+      planCardEl.appendChild(pendingBadge);
+    }
+    pendingBadge.innerHTML = '⏳ Plan <b>' + esc(planSolicitado.name) + '</b> pendiente de aprobación';
+    pendingBadge.style.display = 'flex';
+  } else if(pendingBadge){
+    pendingBadge.style.display = 'none';
+  }
+
   document.getElementById('memStatus').textContent = status.charAt(0).toUpperCase() + status.slice(1).replace('_',' ');
   document.getElementById('memStatus').style.color = status==='al_dia'?'var(--green)':(status==='suspendido'?'var(--danger)':'#B45309');
   document.getElementById('memStatusSub').textContent = status==='al_dia'?'Sin problemas':(status==='suspendido'?'Servicio suspendido':'Requiere atención');
@@ -5351,22 +5932,26 @@ function renderMembershipUI(){
   // Calcular saldo / balance
   let balance = 0;
   if(nextDue && nextDue < now && status!=='al_dia'){
-    balance = plan ? plan.price : 0;
+    balance = displayPlan ? displayPlan.price : 0;
   }
   document.getElementById('memBalance').textContent = fmt(balance);
 
-  // Alerta 24h
+  // Alerta 24h / vencido / suspendido / pendiente de aprobación
   const alertBox = document.getElementById('memAlertBox');
   const alertText = document.getElementById('memAlertText');
   const hoursLeft = nextDue ? hoursBetween(now, nextDue) : Infinity;
-  if(hoursLeft <= 24 && hoursLeft > 0 && status!=='suspendido'){
-    alertBox.style.display = 'flex';
+  alertBox.style.display = 'flex';
+  if(approvalStatus === 'pendiente'){
+    alertBox.style.background = '#FFFBEB'; alertBox.style.borderColor = '#F59E0B'; alertBox.style.color = '#92400E';
+    alertText.innerHTML = '⏳ <b>Pago enviado, en revisión.</b> El superadministrador verificará tu comprobante y activará tu plan en breve.';
+  }else if(hoursLeft <= 24 && hoursLeft > 0 && status!=='suspendido'){
+    alertBox.style.background = 'var(--danger-soft)'; alertBox.style.borderColor = 'var(--danger)'; alertBox.style.color = 'var(--danger)';
     alertText.textContent = '⏰ Tu membresía vence en menos de 24 horas (' + Math.floor(hoursLeft) + 'h). Pagá ahora para evitar la suspensión automática.';
   }else if(status==='vencido'){
-    alertBox.style.display = 'flex';
-    alertText.textContent = '⚠️ Tu membresía está vencida. El servicio se suspenderá automáticamente si no realizás el pago.';
+    alertBox.style.background = 'var(--danger-soft)'; alertBox.style.borderColor = 'var(--danger)'; alertBox.style.color = 'var(--danger)';
+    alertText.innerHTML = '⚠️ <b>Tu membresía está vencida.</b> Tu negocio regresó al Plan Emprendedor hasta que renueves. Algunas funciones están bloqueadas.';
   }else if(status==='suspendido'){
-    alertBox.style.display = 'flex';
+    alertBox.style.background = 'var(--danger-soft)'; alertBox.style.borderColor = 'var(--danger)'; alertBox.style.color = 'var(--danger)';
     alertText.textContent = '🔒 Servicio suspendido por falta de pago. Contactá al superadministrador para reactivar.';
   }else{
     alertBox.style.display = 'none';
@@ -5379,7 +5964,10 @@ function renderMembershipUI(){
   }else{
     tbody.innerHTML = membershipPayments.map(p=>{
       const d = p.date ? new Date(p.date) : null;
-      return '<tr><td>'+(d?d.toLocaleDateString('es-CR'):'—')+'</td><td>'+esc(p.periodLabel||p.period)+'</td><td>'+esc(p.planName||p.plan)+'</td><td><b>'+fmt(p.amount)+'</b></td><td><span class="pill '+(p.status==='completado'?'green':'amber')+'">'+(p.status==='completado'?'Completado':'Pendiente')+'</span></td><td>'+esc(p.reference||'—')+'</td></tr>';
+      const verifiedBadge = p.verified === true ? '<span style="color:var(--green);font-size:11px;font-weight:700">✓ Verificado</span>' :
+        p.verified === false ? '<span style="color:var(--danger);font-size:11px;font-weight:700">✗ Rechazado</span>' :
+        '<span style="color:#B45309;font-size:11px;font-weight:700">⏳ Pendiente</span>';
+      return '<tr><td>'+(d?d.toLocaleDateString('es-CR'):'—')+'</td><td>'+esc(p.periodLabel||p.period)+'</td><td>'+esc(p.planName||p.plan)+'</td><td><b>'+fmt(p.amount)+'</b></td><td>'+verifiedBadge+'</td><td>'+esc(p.reference||'—')+'</td></tr>';
     }).join('');
   }
 
@@ -5534,38 +6122,36 @@ async function processMembershipPayment(){
     proofImage: memPayProofDataUrl
   };
 
+  // Incluir cantidad de meses en el registro del pago (necesario para aprobación)
+  payment.months = months;
+
   try{
     await tenantRef().collection('membershipPayments').add(payment);
-    const planValue = currentPlan.id === 'destacado' ? 'destacado' : (currentPlan.id === 'profesional' ? 'premium' : 'basico');
+    // IMPORTANTE: el pago no activa el plan automáticamente.
+    // Se marca como "pendiente de aprobación" y el superadmin lo aprueba manualmente.
+    // Mientras tanto, el plan activo (planApprovedId) no cambia.
+    const currentApproved = TENANT_DATA.planApprovedId || TENANT_DATA.membershipPlan || 'emprendedor';
+    const isPlanChange = currentPlan.id !== currentApproved;
+
     await tenantRef().set({
-      membershipStatus: 'al_dia',
-      membershipNextDueDate: nextDue.toISOString(),
+      membershipPlan: currentPlan.id,     // plan SOLICITADO (puede diferir del aprobado)
+      planApprovalStatus: 'pendiente',    // superadmin debe aprobar
       membershipLastPaymentDate: now.toISOString(),
       membershipReminderSent: false,
       montoMensual: currentPlan.price,
-      estadoPago: 'al_dia',
-      plan: planValue,
-      planRank: currentPlan.id === 'destacado' ? 3 : (currentPlan.id === 'profesional' ? 2 : 1)
+      estadoPago: 'pendiente'            // pendiente de verificación
     }, {merge:true});
-    // Actualizar TENANT_DATA local
-    TENANT_DATA.membershipStatus = 'al_dia';
-    TENANT_DATA.membershipNextDueDate = nextDue.toISOString();
+
+    TENANT_DATA.membershipPlan = currentPlan.id;
+    TENANT_DATA.planApprovalStatus = 'pendiente';
     TENANT_DATA.membershipLastPaymentDate = now.toISOString();
     TENANT_DATA.montoMensual = currentPlan.price;
-    TENANT_DATA.estadoPago = 'al_dia';
-    TENANT_DATA.plan = planValue;
-    TENANT_DATA.planRank = currentPlan.id === 'destacado' ? 3 : (currentPlan.id === 'profesional' ? 2 : 1);
+    TENANT_DATA.estadoPago = 'pendiente';
 
     closeMemPaymentModal();
     renderMembershipUI();
-    // Actualizar visual de plan en settings si está visible
-    const sponsEl = document.getElementById('sponsoredStatus');
-    if(sponsEl){
-      const isSponsored = (planValue==='premium' || planValue==='destacado');
-      sponsEl.textContent = isSponsored ? '⭐ Plan ' + planValue.charAt(0).toUpperCase()+planValue.slice(1) + ' activo' : 'Plan Básico — sin destacar';
-      sponsEl.style.color = isSponsored ? 'var(--green-dark)' : 'var(--muted)';
-    }
-    toast('¡Pago registrado! Tu membresía está activa hasta el ' + nextDue.toLocaleDateString('es-CR'), 'ok');
+    updatePlanLockBanner();
+    toast('¡Pago enviado! Estamos verificando tu comprobante. Tu plan se activará en breve.', 'ok');
   }catch(e){
     toast('No se pudo registrar el pago: ' + (e.message||'error'), 'err');
     console.error(e);
@@ -5598,31 +6184,46 @@ async function changeMembershipPlan(planId){
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
   const plan = cfg.plans.find(p=>p.id===planId);
   if(!plan){ toast('Plan no encontrado', 'err'); return; }
+  const currentApproved = TENANT_DATA.planApprovedId || TENANT_DATA.membershipPlan || 'emprendedor';
+  // Si se selecciona un plan más alto al actual aprobado, se queda pendiente
+  // Si se baja de plan (downgrade), se aplica inmediatamente
+  const isUpgrade = (PLAN_RANK[planId]||1) > (PLAN_RANK[currentApproved]||1);
   try{
-    // Actualizar plan de membresía Y el plan visible de la tienda (para insignia, ranking, etc.)
-    const planValue = planId === 'destacado' ? 'destacado' : (planId === 'profesional' ? 'premium' : 'basico');
-    await tenantRef().set({ 
-      membershipPlan: planId, 
-      montoMensual: plan.price,
-      plan: planValue,
-      planRank: planId === 'destacado' ? 3 : (planId === 'profesional' ? 2 : 1)
-    }, {merge:true});
-    TENANT_DATA.membershipPlan = planId;
-    TENANT_DATA.montoMensual = plan.price;
-    TENANT_DATA.plan = planValue;
-    TENANT_DATA.planRank = planId === 'destacado' ? 3 : (planId === 'profesional' ? 2 : 1);
-    closeChangePlanModal();
-    renderMembershipUI();
-    // Actualizar visual de la tienda si estamos en el admin
-    if(document.body.classList.contains('in-admin')){
-      const sponsEl = document.getElementById('sponsoredStatus');
-      if(sponsEl){
-        const isSponsored = (planValue==='premium' || planValue==='destacado');
-        sponsEl.textContent = isSponsored ? '⭐ Plan ' + planValue.charAt(0).toUpperCase()+planValue.slice(1) + ' activo' : 'Plan Básico — sin destacar';
-        sponsEl.style.color = isSponsored ? 'var(--green-dark)' : 'var(--muted)';
-      }
+    if(isUpgrade){
+      // Marcar como solicitud pendiente — no se activa hasta que el superadmin apruebe
+      await tenantRef().set({
+        membershipPlan: planId,
+        montoMensual: plan.price,
+        planApprovalStatus: 'pendiente'
+      }, {merge:true});
+      TENANT_DATA.membershipPlan = planId;
+      TENANT_DATA.montoMensual = plan.price;
+      TENANT_DATA.planApprovalStatus = 'pendiente';
+      closeChangePlanModal();
+      renderMembershipUI();
+      toast('Solicitaste el plan ' + plan.name + '. Pagá el servicio para que el superadmin lo active.', 'ok');
+    } else {
+      // Downgrade o mismo plan: se aplica inmediatamente
+      const planValue = planId === 'destacado' ? 'destacado' : (planId === 'profesional' ? 'premium' : 'basico');
+      await tenantRef().set({
+        membershipPlan: planId,
+        planApprovedId: planId,
+        planApprovalStatus: 'aprobado',
+        montoMensual: plan.price,
+        plan: planValue,
+        planRank: PLAN_RANK[planId]||1
+      }, {merge:true});
+      TENANT_DATA.membershipPlan = planId;
+      TENANT_DATA.planApprovedId = planId;
+      TENANT_DATA.planApprovalStatus = 'aprobado';
+      TENANT_DATA.montoMensual = plan.price;
+      TENANT_DATA.plan = planValue;
+      TENANT_DATA.planRank = PLAN_RANK[planId]||1;
+      closeChangePlanModal();
+      renderMembershipUI();
+      updatePlanLockBanner();
+      toast('Plan cambiado a ' + plan.name, 'ok');
     }
-    toast('Plan cambiado a ' + plan.name + '. Tu tienda se actualizó automáticamente.', 'ok');
   }catch(e){
     toast('No se pudo cambiar el plan: ' + (e.message||'error'), 'err');
   }
@@ -5642,6 +6243,14 @@ async function checkMembershipExpiry(){
     newStatus = 'vencido';
     updates.membershipStatus = 'vencido';
     updates.estadoPago = 'vencido';
+    // REGRESAR AL PLAN BÁSICO automáticamente cuando vence
+    const currentApproved = t.planApprovedId || t.membershipPlan || 'emprendedor';
+    if(currentApproved !== 'emprendedor'){
+      updates.planApprovedId = 'emprendedor';
+      updates.plan = 'basico';
+      updates.planRank = 1;
+      // No tocamos membershipPlan — se preserva como "último plan pagado"
+    }
   }
   if(nextDue <= now && (newStatus === 'vencido' || newStatus === 'pendiente')){
     // Suspensión automática después de 7 días de vencido
@@ -5663,7 +6272,10 @@ async function checkMembershipExpiry(){
     try{
       await tenantRef().set(updates, {merge:true});
       Object.assign(TENANT_DATA, updates);
-      if(document.body.classList.contains('in-admin')) renderMembershipUI();
+      if(document.body.classList.contains('in-admin')){
+        renderMembershipUI();
+        updatePlanLockBanner();
+      }
     }catch(e){ console.error(e); }
   }
 }
@@ -5706,6 +6318,11 @@ async function bootPlatform(){
       TENANT_DATA.plan = 'basico';
       TENANT_DATA.planRank = 1;
       TENANT_DATA.montoMensual = 9900;
+    }
+    // Compatibilidad: si no tiene planApprovedId, asignarlo desde el plan actual
+    if(!TENANT_DATA.planApprovedId){
+      const st = TENANT_DATA.membershipStatus || 'al_dia';
+      TENANT_DATA.planApprovedId = (st === 'al_dia') ? (TENANT_DATA.membershipPlan || 'emprendedor') : 'emprendedor';
     }
     ADMIN_EMAILS = TENANT_DATA.adminEmails || [];
     document.title = (TENANT_DATA.nombre || 'Tienda') + ' — PRO.DIGITAL';
