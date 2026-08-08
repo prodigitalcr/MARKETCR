@@ -1815,9 +1815,9 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
     <div class="sa-table-wrap">
       <table class="sa-table">
         <thead><tr>
-          <th>Negocio</th><th>Tipo</th><th>Plan activo</th><th>Fecha de registro</th><th>Monto mensual</th><th>Estado de pago</th><th>Activo</th><th>Enlace</th><th>Acciones</th>
+          <th>Negocio</th><th>Tipo</th><th>Fecha de registro</th><th>Monto mensual</th><th>Estado de pago</th><th>Activo</th><th>Enlace</th><th>Acciones</th>
         </tr></thead>
-        <tbody id="saTableBody"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr></tbody>
+        <tbody id="saTableBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -3390,22 +3390,6 @@ function enterAdmin(){
   document.body.classList.add('in-admin');
   renderHeader(); listenOrdersIfAdmin(); renderInventory(); loadSettingsForm();
   loadAnalytics();
-  checkMembershipExpiry();
-  const planId = getEffectivePlanId();
-  const limits = getPlanLimits();
-  document.querySelectorAll('.adm-link[data-panel]').forEach(btn=>{
-    const panel = btn.dataset.panel;
-    let allowed = true;
-    if(panel==='inventory' && !limits.allowVariants) allowed = hasPlanFeature('catalogo_completo');
-    if(panel==='orders' && !hasPlanFeature('pedidos')) allowed = false;
-    if(panel==='stats' && !hasPlanFeature('estadisticas') && !hasPlanFeature('estadisticas_basicas')) allowed = false;
-    if(panel==='membership') allowed = true;
-    btn.style.display = allowed ? '' : 'none';
-  });
-  if(!hasPlanFeature('pedidos')){
-    const ob = document.querySelector('.adm-link[data-panel="orders"]');
-    if(ob) ob.style.display = 'none';
-  }
 }
 function viewStore(){ document.body.classList.remove('in-admin'); renderHeader(); renderChips(); renderGrid(); updateCartUI(); }
 
@@ -3960,29 +3944,7 @@ async function saveProduct(){
   const name = document.getElementById('pName').value.trim();
   const hasVariants = document.getElementById('pHasVariants').checked;
   const images = pmImages.map(u=>u.trim()).filter(Boolean);
-    // VALIDACION DE PLAN
-  const limits = getPlanLimits();
-  if(images.length > limits.maxImagesPerProduct){
-    toast('Tu plan permite maximo ' + limits.maxImagesPerProduct + ' foto(s) por producto.', 'err'); return;
-  }
-  if(hasVariants && !limits.allowVariants){
-    toast('Las variantes solo estan disponibles en plan Profesional o Destacado.', 'err'); return;
-  }
-  if(pmReviews.length > 0 && !limits.allowReviews){
-    toast('Las resenas solo estan disponibles en plan Profesional o Destacado.', 'err'); return;
-  }
-  if(!id){
-    const currentCount = products.filter(p=>p.active!==false).length;
-    if(currentCount >= limits.maxProducts){
-      toast('Llegaste al limite de ' + limits.maxProducts + ' productos de tu plan. Actualiza para agregar mas.', 'err'); return;
-    }
-  }
-  if(!hasPlanFeature('catalogo_completo') && !hasPlanFeature('catalogo_pequeno') && !hasPlanFeature('catalogo_5')){
-    toast('Tu plan no permite agregar productos.', 'err'); return;
-  }
-  // FIN VALIDACION DE PLAN
-
-if(!name){ toast('El nombre es obligatorio', 'err'); return; }
+  if(!name){ toast('El nombre es obligatorio', 'err'); return; }
   if(images.length < 1){ toast('Agregá al menos 1 foto del producto', 'err'); return; }
 
   let price, stock, unlimited, variants = [], variantGroupName = '';
@@ -4229,18 +4191,7 @@ function loadSettingsForm(){
     const isSponsored = (plan==='premium' || plan==='destacado');
     sponsEl.textContent = isSponsored ? '⭐ Plan ' + plan.charAt(0).toUpperCase()+plan.slice(1) + ' activo' : 'Plan Básico — sin destacar';
     sponsEl.style.color = isSponsored ? 'var(--green-dark)' : 'var(--muted)';
-  
-  // Restricciones visuales segun plan
-  const limits = getPlanLimits();
-  document.getElementById('sAiEnabled').disabled = !limits.allowAI;
-  document.getElementById('sAiKey').disabled = !limits.allowAI;
-  document.getElementById('sAiName').disabled = !limits.allowAI;
-  document.getElementById('sAiWelcome').disabled = !limits.allowAI;
-  document.getElementById('sStoryVideoUrl').disabled = !limits.allowStory;
-  if(!limits.allowAI && document.getElementById('sAiEnabled').checked){
-    document.getElementById('sAiEnabled').checked = false;
   }
-}
 }
 
 function onTipoProfChanged(cb){
@@ -4555,54 +4506,7 @@ async function renderTenantSelector(msg){
   }
 }
 
-/* ================================================================
-   SISTEMA DE PLANES Y PERMISOS
-   ================================================================ */
-const PLAN_FEATURES = {
-  basico:        ['perfil','catalogo_5','whatsapp'],
-  emprendedor:   ['perfil','catalogo_pequeno','whatsapp','fotos','servicios','estadisticas_basicas'],
-  profesional:   ['perfil','catalogo_completo','inventario','pedidos','sinpe','estadisticas','resenas','video','whatsapp','variantes','descuentos','ia'],
-  destacado:     ['perfil','catalogo_completo','inventario','pedidos','sinpe','estadisticas','resenas','video','whatsapp','variantes','descuentos','ia','destacado','insignia']
-};
-const PLAN_LIMITS = {
-  basico:      { maxProducts: 5,  maxImagesPerProduct: 1, allowVariants: false, allowReviews: false, allowAI: false, allowVideo: false, allowStory: false },
-  emprendedor: { maxProducts: 20, maxImagesPerProduct: 3, allowVariants: false, allowReviews: false, allowAI: false, allowVideo: false, allowStory: false },
-  profesional: { maxProducts: 200, maxImagesPerProduct: 7, allowVariants: true,  allowReviews: true,  allowAI: true,  allowVideo: true,  allowStory: true  },
-  destacado:   { maxProducts: 999, maxImagesPerProduct: 7, allowVariants: true,  allowReviews: true,  allowAI: true,  allowVideo: true,  allowStory: true  }
-};
-
-function getEffectivePlanId(){
-  const t = TENANT_DATA || {};
-  if((t.membershipStatus||'al_dia') !== 'al_dia') return 'basico';
-  return t.membershipPlan || 'basico';
-}
-
-function getCurrentPlan(){
-  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
-  const id = getEffectivePlanId();
-  return cfg.plans.find(p=>p.id===id) || {id:'basico', name:'Basico', price:0, features:[]};
-}
-
-function getPlanLimits(){
-  return PLAN_LIMITS[getEffectivePlanId()] || PLAN_LIMITS.basico;
-}
-
-function hasPlanFeature(feature){
-  const id = getEffectivePlanId();
-  const list = PLAN_FEATURES[id] || PLAN_FEATURES.basico;
-  return list.includes(feature);
-}
-
-function assertPlanFeature(feature, msg){
-  if(!hasPlanFeature(feature)){
-    toast(msg || 'Esta funcion requiere un plan superior. Contacta a PRO.DIGITAL para actualizar.', 'err');
-    return false;
-  }
-  return true;
-}
-
 /* ---------- init ---------- */
-
 /* ---------- siembra única de negocios de ejemplo ----------
    Se dispara visitando la página con ?sembrar=1 en la URL (no requiere
    abrir la consola del navegador). Crea 5 negocios de ejemplo si todavía
@@ -4971,7 +4875,7 @@ async function doSuperadminLogout(){
 
 async function loadSuperadminData(){
   const tbody = document.getElementById('saTableBody');
-  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr>';
   try{
     const snap = await db.collection('tenants').get();
     _saTenants = snap.docs.map(d => Object.assign({id:d.id}, d.data()));
@@ -5020,7 +4924,7 @@ function renderSuperadminTable(){
   if(fEstado) list = list.filter(t => (t.estadoPago||'al_dia') === fEstado);
 
   if(!list.length){
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">No hay negocios que coincidan con el filtro.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">No hay negocios que coincidan con el filtro.</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(t => {
@@ -5033,18 +4937,6 @@ function renderSuperadminTable(){
     const adminUrl = url + '&panel=admin';
     return '<tr data-tenant-row="' + esc(t.id) + '">' +
       '<td><b>' + esc(t.nombre || t.id) + '</b><br><span style="color:var(--muted);font-size:11.5px">' + esc(t.id) + '</span></td>' +
-      '<td>' +
-        '<select class="sort-select" data-sa-plan="' + esc(t.id) + '" style="min-width:130px;font-size:12px">' +
-          '<option value="basico"' + ((t.membershipPlan||'basico')==='basico'?' selected':'') + '>Basico (vencido)</option>' +
-          '<option value="emprendedor"' + (t.membershipPlan==='emprendedor'?' selected':'') + '>Emprendedor</option>' +
-          '<option value="profesional"' + (t.membershipPlan==='profesional'?' selected':'') + '>Profesional</option>' +
-          '<option value="destacado"' + (t.membershipPlan==='destacado'?' selected':'') + '>Destacado</option>' +
-        '</select>' +
-        '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">' +
-          '<button class="sa-mini-btn" style="padding:5px 10px;font-size:11px" onclick="saApprovePlan(\'' + esc(t.id) + '\')">✓ Aprobar plan</button>' +
-          '<button class="sa-mini-btn ghost" style="padding:5px 10px;font-size:11px" onclick="saRejectPlan(\'' + esc(t.id) + '\')">✗ Revertir a basico</button>' +
-        '</div>' +
-      '</td>' +
       '<td>' + tipoLabel + '</td>' +
       '<td>' + saFechaLabel(t) + '</td>' +
       '<td><input class="f-input" type="number" inputmode="decimal" data-sa-monto="' + esc(t.id) + '" value="' + (Number(t.montoMensual)||0) + '" style="width:110px"></td>' +
@@ -5078,44 +4970,6 @@ async function saSaveTenantRow(id){
     toast('No se pudo guardar: ' + (e && e.message ? e.message : 'error desconocido'), 'err');
     console.error(e);
   }
-}
-
-async function saApprovePlan(id){
-  const sel = document.querySelector('[data-sa-plan="'+id+'"]');
-  const planId = sel ? sel.value : 'basico';
-  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
-  const plan = cfg.plans.find(p=>p.id===planId);
-  if(!plan){ toast('Plan no valido', 'err'); return; }
-  const planValue = planId === 'destacado' ? 'destacado' : (planId === 'profesional' ? 'premium' : 'basico');
-  const now = new Date();
-  const nextDue = addMonths(now, 1);
-  try{
-    await db.collection('tenants').doc(id).set({
-      membershipPlan: planId, membershipStatus: 'al_dia', membershipNextDueDate: nextDue.toISOString(),
-      membershipLastPaymentDate: now.toISOString(), membershipReminderSent: false,
-      estadoPago: 'al_dia', plan: planValue,
-      planRank: planId === 'destacado' ? 3 : (planId === 'profesional' ? 2 : 1),
-      montoMensual: plan.price, activo: true
-    }, {merge:true});
-    const t = _saTenants.find(x=>x.id===id);
-    if(t){ t.membershipPlan=planId; t.membershipStatus='al_dia'; t.estadoPago='al_dia'; t.plan=planValue; t.planRank=planId==='destacado'?3:(planId==='profesional'?2:1); t.montoMensual=plan.price; t.activo=true; }
-    renderSuperadminSummary(); renderSuperadminTable();
-    toast('Plan '+plan.name+' aprobado para '+id, 'ok');
-  }catch(e){ toast('No se pudo aprobar: '+(e.message||'error'), 'err'); }
-}
-
-async function saRejectPlan(id){
-  if(!confirm('¿Revertir a plan Basico?')) return;
-  try{
-    await db.collection('tenants').doc(id).set({
-      membershipPlan:'basico', membershipStatus:'vencido', estadoPago:'vencido',
-      plan:'basico', planRank:0, montoMensual:0
-    }, {merge:true});
-    const t = _saTenants.find(x=>x.id===id);
-    if(t){ t.membershipPlan='basico'; t.membershipStatus='vencido'; t.estadoPago='vencido'; t.plan='basico'; t.planRank=0; t.montoMensual=0; }
-    renderSuperadminSummary(); renderSuperadminTable();
-    toast('Revertido a Basico', 'ok');
-  }catch(e){ toast('No se pudo revertir: '+(e.message||'error'), 'err'); }
 }
 
 /* ---------- editar toda la información de un negocio (modal completo) ---------- */
@@ -5775,7 +5629,7 @@ async function changeMembershipPlan(planId){
 }
 
 /* ---------- verificación automática de vencimiento ---------- */
-async async function checkMembershipExpiry(){
+async function checkMembershipExpiry(){
   const t = TENANT_DATA || {};
   if(!t.membershipNextDueDate) return;
   const nextDue = new Date(t.membershipNextDueDate);
@@ -5785,31 +5639,24 @@ async async function checkMembershipExpiry(){
   let updates = {};
 
   if(nextDue <= now && newStatus === 'al_dia'){
-    // VENCIMIENTO: se revierte automaticamente a plan Basico
     newStatus = 'vencido';
     updates.membershipStatus = 'vencido';
     updates.estadoPago = 'vencido';
-    updates.membershipPlan = 'basico';
-    updates.plan = 'basico';
-    updates.planRank = 0;
-    updates.montoMensual = 0;
-    toast('Tu membresia vencio. Tu tienda volvio al plan Basico. Contacta a PRO.DIGITAL para reactivar.', 'err');
   }
   if(nextDue <= now && (newStatus === 'vencido' || newStatus === 'pendiente')){
+    // Suspensión automática después de 7 días de vencido
     const daysPast = daysBetween(nextDue, now);
     if(daysPast >= 7 && newStatus !== 'suspendido' && t.membershipAutoSuspend !== false){
       newStatus = 'suspendido';
       updates.membershipStatus = 'suspendido';
       updates.estadoPago = 'vencido';
-      updates.activo = false;
-      updates.membershipPlan = 'basico';
-      updates.plan = 'basico';
-      updates.planRank = 0;
-      toast('Tu tienda fue suspendida por falta de pago.', 'err');
+      updates.activo = false; // desactivar tienda en plataforma
     }
   }
+  // Recordatorio 24h antes
   if(hoursLeft <= 24 && hoursLeft > 0 && !t.membershipReminderSent){
     updates.membershipReminderSent = true;
+    // Aquí se podría enviar notificación push/email
   }
 
   if(Object.keys(updates).length){
@@ -5817,10 +5664,6 @@ async async function checkMembershipExpiry(){
       await tenantRef().set(updates, {merge:true});
       Object.assign(TENANT_DATA, updates);
       if(document.body.classList.contains('in-admin')) renderMembershipUI();
-      if(updates.membershipPlan === 'basico' && document.body.classList.contains('in-admin')){
-        const sponsEl = document.getElementById('sponsoredStatus');
-        if(sponsEl){ sponsEl.textContent = 'Plan Basico — vencido'; sponsEl.style.color = 'var(--danger)'; }
-      }
     }catch(e){ console.error(e); }
   }
 }
@@ -5867,7 +5710,6 @@ async function bootPlatform(){
     ADMIN_EMAILS = TENANT_DATA.adminEmails || [];
     document.title = (TENANT_DATA.nombre || 'Tienda') + ' — PRO.DIGITAL';
     bindTenantRefs();
-    await checkMembershipExpiry();
     refreshAdminSession();
     /* Si el superadministrador llega desde el botón "Administrar" del
        panel maestro (?tienda=slug&panel=admin), y su sesión ya cuenta
