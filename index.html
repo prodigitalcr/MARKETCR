@@ -1943,6 +1943,11 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
     <div class="settings-card" style="margin-top:28px">
       <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2 3 7v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V7z"/></svg>Configuración de planes y pagos</h4>
       <div class="desc">Activá o desactivá los planes disponibles para los negocios, ajustá precios, descuentos por período y métodos de pago aceptados.</div>
+      <div class="f-group" style="margin-top:10px">
+        <label>Número SINPE Móvil para el pago de membresías</label>
+        <input class="f-input" id="saPlatformSinpe" placeholder="Ej: 8888 8888" inputmode="tel">
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Este es el número al que los negocios transfieren para pagar su plan (Emprendedor/Profesional/Destacado). Se muestra en el modal de pago de membresía.</div>
+      </div>
       <div id="saPlanConfigWrap" style="margin-top:12px">
         <div style="color:var(--muted);padding:12px 0">Cargando configuración…</div>
       </div>
@@ -5775,7 +5780,8 @@ const DEFAULT_PLAN_CONFIG = {
     {id:'quarterly', label:'Trimestral', months:3, discount:10, active:true},
     {id:'yearly', label:'Anual', months:12, discount:20, active:true}
   ],
-  paymentMethods:['SINPE Móvil','Transferencia bancaria']
+  paymentMethods:['SINPE Móvil','Transferencia bancaria'],
+  platformSinpe: ''
 };
 
 let planConfig = null;
@@ -5808,6 +5814,8 @@ async function loadPlanConfig(){
 /* ---------- guardar configuración de planes (superadmin) ---------- */
 async function savePlanConfig(){
   const wrap = document.getElementById('saPlanConfigWrap');
+  const sinpeEl = document.getElementById('saPlatformSinpe');
+  if(sinpeEl) planConfig.platformSinpe = sinpeEl.value.trim();
   const inputs = wrap.querySelectorAll('[data-plan-field]');
   const newPlans = [];
   const newPeriods = [];
@@ -5850,6 +5858,8 @@ function resetPlanConfigDefaults(){
 function renderPlanConfigUI(){
   const wrap = document.getElementById('saPlanConfigWrap');
   if(!wrap || !planConfig) return;
+  const sinpeEl = document.getElementById('saPlatformSinpe');
+  if(sinpeEl) sinpeEl.value = planConfig.platformSinpe || '';
   let html = '<div style="display:grid;gap:16px">';
   html += '<div><b style="font-size:14px">Planes disponibles</b><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:8px">';
   planConfig.plans.forEach((p,i)=>{
@@ -6101,6 +6111,12 @@ async function openMembershipPaymentModal(){
   if(!currentPlan){ toast('No se pudo determinar tu plan', 'err'); closeMemPaymentModal(); return; }
 
   document.getElementById('memPayPlan').value = currentPlan.name + ' — ' + fmt(currentPlan.price) + '/mes';
+  const sinpeBox = document.getElementById('memPaySinpeBox');
+  const sinpeNum = (cfg.platformSinpe || '').trim();
+  if(sinpeBox){
+    if(sinpeNum){ document.getElementById('memPaySinpeNum').textContent = sinpeNum; sinpeBox.style.display = 'flex'; }
+    else { sinpeBox.style.display = 'none'; }
+  }
   const periodSel = document.getElementById('memPayPeriod');
   periodSel.innerHTML = cfg.periods.filter(p=>p.active).map(p=>{
     const total = Math.round(currentPlan.price * p.months * (1 - p.discount/100));
@@ -6399,6 +6415,10 @@ bootPlatform();
     <div class="modal-body">
       <div class="f-group"><label>Plan actual</label><input class="f-input" id="memPayPlan" readonly></div>
       <div class="f-group"><label>Período de pago</label><select class="f-input" id="memPayPeriod" onchange="updateMemPayTotal()"></select></div>
+      <div class="sinpe-preview" id="memPaySinpeBox" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+        <span>Transferí por SINPE Móvil al <b id="memPaySinpeNum">—</b></span>
+      </div>
       <div class="sum-box" style="margin:14px 0">
         <div class="sum-line"><span>Precio base</span><span id="memPayBase">₡0</span></div>
         <div class="sum-line" id="memPayDiscountRow" style="color:#B45309"><span>Descuento por período</span><span id="memPayDiscount">−₡0</span></div>
