@@ -1466,9 +1466,6 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <span id="memAlertText">Recordatorio</span>
       </div>
 
-      <div id="memFeaturesBox" style="margin-bottom:20px;display:none"></div>
-      <div id="memProductLimitBox" style="margin-bottom:20px;display:none"></div>
-
       <div class="adm-toolbar" style="margin-bottom:16px">
         <button class="btn-dark" onclick="openMembershipPaymentModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 11h18M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -2147,7 +2144,7 @@ function storyYoutubeId(url){
 function renderStoryVideo(){
   const wrap = document.getElementById('storyFloat');
   const url = (settings.storyVideoUrl||'').trim();
-  if(!url || storyClosed || !hasFeature('story_video')){ wrap.classList.remove('show'); return; }
+  if(!url || storyClosed){ wrap.classList.remove('show'); return; }
   if(url !== storyLastUrl){
     storyLastUrl = url;
     const media = document.getElementById('storyMedia');
@@ -2181,7 +2178,7 @@ let aiHistory = [];
 let aiWelcomeShown = false;
 function renderAIAssistant(){
   const btn = document.getElementById('aiFloatBtn');
-  const canUse = !!(settings.aiEnabled && settings.aiApiKey && hasFeature('ia'));
+  const canUse = !!(settings.aiEnabled && settings.aiApiKey);
   btn.style.display = canUse ? 'flex' : 'none';
   document.getElementById('aiAssistantName').textContent = settings.aiAssistantName || 'Asistente';
   if(!canUse){
@@ -3389,95 +3386,10 @@ async function doLogout(){
   document.body.classList.remove('in-admin');
   toast('Sesión cerrada');
 }
-
-/* ---------- restricciones por plan en el panel de administrador ---------- */
-function applyPlanRestrictions(){
-  if(!document.body.classList.contains('in-admin')) return;
-  const maxProd = getPlanMaxProducts();
-  const currentProd = products.length;
-
-  // Restringir links del sidebar
-  const panelMap = {
-    'stats': ['estadisticas','estadisticas_basicas'],
-    'inventory': ['inventario','catalogo'],
-    'orders': ['pedidos'],
-    'settings': [], // siempre visible
-    'membership': [] // siempre visible
-  };
-  document.querySelectorAll('.adm-link[data-panel]').forEach(lnk => {
-    const panel = lnk.dataset.panel;
-    const required = panelMap[panel];
-    if(required && required.length){
-      const ok = required.some(fid => hasFeature(fid));
-      lnk.style.display = ok ? '' : 'none';
-    }
-  });
-
-  // Settings: ocultar cards que requieren features avanzadas
-  const settingsPanel = document.getElementById('panel-settings');
-  if(settingsPanel){
-    settingsPanel.querySelectorAll('.settings-card').forEach(card => {
-      // IA
-      if(card.querySelector('#sAiName')) card.style.display = hasFeature('ia') ? '' : 'none';
-      // Video flotante
-      if(card.querySelector('#sStoryVideoUrl')) card.style.display = hasFeature('story_video') ? '' : 'none';
-      // Enlaces externos
-      if(card.querySelector('#sWebUrl')) card.style.display = hasFeature('enlaces_externos') ? '' : 'none';
-      // Modo profesional
-      if(card.querySelector('#sTipoProf')) card.style.display = hasFeature('profesional_mode') ? '' : 'none';
-      // Descuentos globales (dentro de impuestos)
-      if(card.querySelector('#sDiscount')){
-        // Mostrar siempre, pero si no tiene descuentos, deshabilitar el campo
-        const discInput = card.querySelector('#sDiscount');
-        if(discInput && !hasFeature('descuentos')){ discInput.disabled = true; discInput.title = 'Disponible en plan Profesional o Destacado'; }
-      }
-    });
-  }
-
-  // Inventario: limitar creación de productos
-  const invPanel = document.getElementById('panel-inventory');
-  if(invPanel){
-    const createBtn = invPanel.querySelector('.btn-dark');
-    if(createBtn && maxProd !== Infinity && currentProd >= maxProd){
-      createBtn.disabled = true;
-      createBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> Límite alcanzado ('+currentProd+'/'+maxProd+')';
-      createBtn.title = 'Llegaste al límite de productos de tu plan. Actualizá a Profesional o Destacado.';
-    } else if(createBtn){
-      createBtn.disabled = false;
-      createBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> Crear producto';
-      createBtn.title = '';
-    }
-  }
-
-  // Modal de producto: variantes
-  const hasVar = hasFeature('variantes');
-  const varToggle = document.getElementById('pHasVariants');
-  if(varToggle && !hasVar){
-    varToggle.checked = false;
-    varToggle.disabled = true;
-    // Buscar el label padre para mostrar mensaje
-    const row = varToggle.closest('.toggle-row');
-    if(row && !row.querySelector('.plan-hint')){
-      const hint = document.createElement('div');
-      hint.className = 'plan-hint';
-      hint.style.cssText = 'font-size:11px;color:#B45309;font-weight:700;margin-top:4px';
-      hint.textContent = 'Variantes disponibles en plan Profesional o Destacado';
-      row.appendChild(hint);
-    }
-  } else if(varToggle){
-    varToggle.disabled = false;
-    const row = varToggle.closest('.toggle-row');
-    if(row){
-      const hint = row.querySelector('.plan-hint');
-      if(hint) hint.remove();
-    }
-  }
-}
-
 function enterAdmin(){
   document.body.classList.add('in-admin');
   renderHeader(); listenOrdersIfAdmin(); renderInventory(); loadSettingsForm();
-  loadAnalytics(); applyPlanRestrictions();
+  loadAnalytics();
 }
 function viewStore(){ document.body.classList.remove('in-admin'); renderHeader(); renderChips(); renderGrid(); updateCartUI(); }
 
@@ -3519,7 +3431,6 @@ function showPanel(name, btn){
   if(name==='orders') renderOrders();
   if(name==='settings') loadSettingsForm();
   if(name==='membership') loadMembershipPanel();
-  applyPlanRestrictions();
 }
 
 /* ---------- estadísticas ---------- */
@@ -3998,13 +3909,13 @@ function openProductModal(id){
     document.getElementById('pVideoLink').value = p.videoLink||'';
     document.getElementById('pTiktokUrl').value = p.tiktokUrl||'';
     pmImages = (p.images && p.images.length) ? p.images.slice() : [''];
-    document.getElementById('pHasVariants').checked = !!p.hasVariants && hasFeature('variantes');
+    document.getElementById('pHasVariants').checked = !!p.hasVariants;
     document.getElementById('pVariantGroup').value = p.variantGroupName || 'Tamaños';
-    pmVariants = (p.variants && p.variants.length && hasFeature('variantes')) ? p.variants.map(v=>Object.assign({},v)) : [];
+    pmVariants = (p.variants && p.variants.length) ? p.variants.map(v=>Object.assign({},v)) : [];
     document.getElementById('pCompareAt').value = p.compareAtPrice || '';
     document.getElementById('pSoldCount').value = p.soldCount || '';
     document.getElementById('pDealHours').value = '';
-    pmReviews = (p.reviews && p.reviews.length && hasFeature('resenas')) ? p.reviews.map(r=>Object.assign({},r)) : [];
+    pmReviews = (p.reviews && p.reviews.length) ? p.reviews.map(r=>Object.assign({},r)) : [];
   } else {
     document.getElementById('pmTitle').textContent = 'Crear producto';
     ['pId','pName','pDesc','pPrice','pStock','pVideoUrl','pVideoLink','pTiktokUrl'].forEach(i=>document.getElementById(i).value='');
@@ -4031,14 +3942,6 @@ function closeProductModal(){ document.getElementById('productModal').classList.
 async function saveProduct(){
   const id = document.getElementById('pId').value;
   const name = document.getElementById('pName').value.trim();
-  // Verificar límite de productos del plan
-  if(!id){
-    const maxProd = getPlanMaxProducts();
-    if(maxProd !== Infinity && products.length >= maxProd){
-      toast('Llegaste al límite de '+maxProd+' productos de tu plan. Actualizá a Profesional o Destacado.', 'err');
-      return;
-    }
-  }
   const hasVariants = document.getElementById('pHasVariants').checked;
   const images = pmImages.map(u=>u.trim()).filter(Boolean);
   if(!name){ toast('El nombre es obligatorio', 'err'); return; }
@@ -5263,31 +5166,9 @@ async function saCreateTenant(){
    ================================================================ */
 const DEFAULT_PLAN_CONFIG = {
   plans:[
-    {id:'emprendedor', name:'Emprendedor', price:9900, enabledFeatures:['catalogo','whatsapp','perfil','fotos','servicios_basicos','estadisticas_basicas','rastreo_pedidos'], active:true, maxProducts:15},
-    {id:'profesional', name:'Profesional', price:15000, enabledFeatures:['catalogo','inventario','pedidos','sinpe','estadisticas','resenas','video','whatsapp','variantes','descuentos','reportes_pdf','profesional_mode','enlaces_externos','story_video','multimedia_producto','analytics_trafico','rastreo_pedidos'], active:true, maxProducts:100},
-    {id:'destacado', name:'Destacado', price:25000, enabledFeatures:['*'], active:true, maxProducts:Infinity}
-  ],
-  features:[
-    {id:'catalogo', name:'Catálogo de productos', desc:'Publicar productos en la tienda'},
-    {id:'inventario', name:'Inventario avanzado', desc:'Control de stock, variantes y estados'},
-    {id:'pedidos', name:'Sistema de pedidos', desc:'Recibir pedidos online con facturación'},
-    {id:'sinpe', name:'Pagos SINPE Móvil', desc:'Cobrar mediante transferencias SINPE'},
-    {id:'whatsapp', name:'Botón WhatsApp', desc:'Contacto directo con clientes por WhatsApp'},
-    {id:'estadisticas', name:'Estadísticas avanzadas', desc:'Gráficas de ventas, tráfico y productos'},
-    {id:'resenas', name:'Reseñas de clientes', desc:'Calificaciones y comentarios en productos'},
-    {id:'video', name:'Video en productos', desc:'Agregar videos a la galería de productos'},
-    {id:'ia', name:'Asistente IA (Gemini)', desc:'Chatbot inteligente para recomendaciones'},
-    {id:'variantes', name:'Variantes de producto', desc:'Opciones como talla, color, tamaño'},
-    {id:'descuentos', name:'Descuentos y ofertas', desc:'Precios tachados, timers y urgencia'},
-    {id:'reportes_pdf', name:'Reportes PDF', desc:'Exportar inventario, pedidos y estadísticas'},
-    {id:'profesional_mode', name:'Modo profesional', desc:'Perfil de servicios sin carrito de compras'},
-    {id:'enlaces_externos', name:'Enlaces externos', desc:'Botones a sitio web, juegos u otros'},
-    {id:'story_video', name:'Video flotante (Story)', desc:'Video vertical tipo historia en la tienda'},
-    {id:'destacado_plataforma', name:'Destacar en inicio', desc:'Aparecer primero en el selector de negocios'},
-    {id:'multimedia_producto', name:'Multimedia ilimitada', desc:'YouTube, TikTok y videos por producto'},
-    {id:'soporte_prioritario', name:'Soporte prioritario', desc:'Atención preferencial de PRO.DIGITAL'},
-    {id:'analytics_trafico', name:'Analytics de tráfico', desc:'Fuentes de tráfico y comportamiento'},
-    {id:'rastreo_pedidos', name:'Rastreo de pedidos', desc:'Timeline estilo Uber para clientes'}
+    {id:'emprendedor', name:'Emprendedor', price:9900, features:['Catálogo pequeño','WhatsApp','Perfil','Fotos','Servicios','Estadísticas básicas'], active:true},
+    {id:'profesional', name:'Profesional', price:15000, features:['Catálogo completo','Inventario','Pedidos','SINPE','Estadísticas','Reseñas','Video','WhatsApp'], active:true},
+    {id:'destacado', name:'Destacado', price:25000, features:['Todo lo anterior','Mayor exposición','Aparece primero','Insignia','Promoción dentro de la plataforma','Mayor presencia en búsquedas'], active:true}
   ],
   periods:[
     {id:'monthly', label:'Mensual', months:1, discount:0, active:true},
@@ -5296,36 +5177,6 @@ const DEFAULT_PLAN_CONFIG = {
   ],
   paymentMethods:['SINPE Móvil','Transferencia bancaria']
 };
-/* ---------- helpers de planes y funciones ---------- */
-function getCurrentPlanConfig(){ return (planConfig || DEFAULT_PLAN_CONFIG); }
-function hasFeature(featureId){
-  const cfg = getCurrentPlanConfig();
-  const t = TENANT_DATA || {};
-  const planId = t.membershipPlan || 'emprendedor';
-  const plan = cfg.plans.find(p=>p.id===planId);
-  if(!plan) return false;
-  if(plan.enabledFeatures && plan.enabledFeatures.includes('*')) return true;
-  return plan.enabledFeatures && plan.enabledFeatures.includes(featureId);
-}
-function getPlanMaxProducts(){
-  const cfg = getCurrentPlanConfig();
-  const t = TENANT_DATA || {};
-  const plan = cfg.plans.find(p=>p.id===t.membershipPlan);
-  return plan ? (plan.maxProducts || 20) : 20;
-}
-function getPlanFeaturesList(){
-  const cfg = getCurrentPlanConfig();
-  const t = TENANT_DATA || {};
-  const planId = t.membershipPlan || 'emprendedor';
-  const plan = cfg.plans.find(p=>p.id===planId);
-  if(!plan) return [];
-  if(plan.enabledFeatures && plan.enabledFeatures.includes('*')) return cfg.features || [];
-  return (cfg.features || []).filter(f => plan.enabledFeatures && plan.enabledFeatures.includes(f.id));
-}
-function planFeatureBadge(fid){
-  return hasFeature(fid) ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--green)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"/></svg>Incluido</span>' : '<span style="font-size:11px;color:var(--muted)">—</span>';
-}
-
 
 let planConfig = null;
 let membershipPayments = [];
@@ -5357,61 +5208,38 @@ async function loadPlanConfig(){
 /* ---------- guardar configuración de planes (superadmin) ---------- */
 async function savePlanConfig(){
   const wrap = document.getElementById('saPlanConfigWrap');
-  const inputs = wrap.querySelectorAll('[data-plan-field], [data-plan-feature], [data-plan-all]');
+  const inputs = wrap.querySelectorAll('[data-plan-field]');
   const newPlans = [];
   const newPeriods = [];
-
-  // Inicializar estructuras
-  planConfig.plans.forEach((p,i) => newPlans[i] = Object.assign({}, p));
-  planConfig.periods.forEach((p,i) => newPeriods[i] = Object.assign({}, p));
-
-  inputs.forEach(el => {
+  inputs.forEach(el=>{
     const type = el.dataset.planField;
     const idx = parseInt(el.dataset.idx);
-
-    if(type === 'planActive'){
-      if(!isNaN(idx)) newPlans[idx].active = el.checked;
+    if(type==='planActive'){
+      if(!newPlans[idx]) newPlans[idx] = Object.assign({}, planConfig.plans[idx]);
+      newPlans[idx].active = el.checked;
     }
-    if(type === 'planPrice'){
-      if(!isNaN(idx)) newPlans[idx].price = Math.max(0, parseInt(el.value) || 0);
+    if(type==='planPrice'){
+      if(!newPlans[idx]) newPlans[idx] = Object.assign({}, planConfig.plans[idx]);
+      newPlans[idx].price = Math.max(0, parseInt(el.value)||0);
     }
-    if(type === 'planMaxProducts'){
-      if(!isNaN(idx)){
-        const val = parseInt(el.value) || 0;
-        newPlans[idx].maxProducts = val === 0 ? Infinity : val;
-      }
+    if(type==='periodActive'){
+      if(!newPeriods[idx]) newPeriods[idx] = Object.assign({}, planConfig.periods[idx]);
+      newPeriods[idx].active = el.checked;
     }
-    if(type === 'periodActive'){
-      if(!isNaN(idx)) newPeriods[idx].active = el.checked;
-    }
-    if(type === 'periodDiscount'){
-      if(!isNaN(idx)) newPeriods[idx].discount = Math.max(0, Math.min(100, parseInt(el.value) || 0));
+    if(type==='periodDiscount'){
+      if(!newPeriods[idx]) newPeriods[idx] = Object.assign({}, planConfig.periods[idx]);
+      newPeriods[idx].discount = Math.max(0, Math.min(100, parseInt(el.value)||0));
     }
   });
-
-  // Procesar features por plan
-  planConfig.plans.forEach((p,i) => {
-    const allCheckbox = wrap.querySelector('[data-plan-all="'+i+'"]');
-    if(allCheckbox && allCheckbox.checked){
-      newPlans[i].enabledFeatures = ['*'];
-    } else {
-      const feats = [];
-      wrap.querySelectorAll('[data-plan-idx="'+i+'"]').forEach(chk => {
-        if(chk.checked && chk.dataset.featId) feats.push(chk.dataset.featId);
-      });
-      newPlans[i].enabledFeatures = feats;
-    }
-  });
-
-  planConfig.plans.forEach((p,i) => { if(newPlans[i]) Object.assign(p, newPlans[i]); });
-  planConfig.periods.forEach((p,i) => { if(newPeriods[i]) Object.assign(p, newPeriods[i]); });
-
+  // mergear con existentes para no perder ids/nombres
+  planConfig.plans.forEach((p,i)=>{ if(newPlans[i]) Object.assign(p, newPlans[i]); });
+  planConfig.periods.forEach((p,i)=>{ if(newPeriods[i]) Object.assign(p, newPeriods[i]); });
   try{
     await db.collection('platform').doc('config').set(planConfig, {merge:true});
-    toast('Configuración de planes y funciones guardada', 'ok');
+    toast('Configuración de planes guardada', 'ok');
     renderPlanConfigUI();
   }catch(e){
-    toast('No se pudo guardar: ' + (e.message || 'error'), 'err');
+    toast('No se pudo guardar: ' + (e.message||'error'), 'err');
   }
 }
 function resetPlanConfigDefaults(){
@@ -5422,68 +5250,31 @@ function resetPlanConfigDefaults(){
 function renderPlanConfigUI(){
   const wrap = document.getElementById('saPlanConfigWrap');
   if(!wrap || !planConfig) return;
-  let html = '<div style="display:grid;gap:20px">';
-
-  // Sección de planes (precio + activo + features)
-  html += '<div><b style="font-size:15px;display:block;margin-bottom:10px">Planes y precios</b><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">';
+  let html = '<div style="display:grid;gap:16px">';
+  html += '<div><b style="font-size:14px">Planes disponibles</b><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:8px">';
   planConfig.plans.forEach((p,i)=>{
-    const isAll = p.enabledFeatures && p.enabledFeatures.includes('*');
-    html += '<div style="background:#fff;border:1.5px solid '+(p.active?'var(--green)':'var(--line)')+';border-radius:16px;padding:18px">' +
-      '<label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;margin-bottom:10px;cursor:pointer">' +
+    html += '<div style="background:#fff;border:1.5px solid '+(p.active?'var(--green)':'var(--line)')+';border-radius:14px;padding:14px">' +
+      '<label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:8px;cursor:pointer">' +
       '<input type="checkbox" data-plan-field="planActive" data-idx="'+i+'" '+(p.active?'checked':'')+'> ' + esc(p.name) + '</label>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:13px;white-space:nowrap">Precio ₡</span>' +
-      '<input type="number" class="f-input" data-plan-field="planPrice" data-idx="'+i+'" value="'+p.price+'" style="width:120px;padding:9px 12px"></div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:13px;white-space:nowrap">Máx. productos</span>' +
-      '<input type="number" class="f-input" data-plan-field="planMaxProducts" data-idx="'+i+'" value="'+(p.maxProducts===Infinity?'0':p.maxProducts)+'" style="width:100px;padding:9px 12px" title="0 = ilimitado"></div>' +
-      '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Funciones incluidas</div>' +
-      '<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;cursor:pointer;background:var(--yellow-soft);padding:8px 10px;border-radius:10px">' +
-      '<input type="checkbox" data-plan-all="'+i+'" '+(isAll?'checked':'')+'> <span>✨ Todas las funciones (indefinido)</span></label>' +
-      '<div style="display:grid;gap:5px;max-height:280px;overflow-y:auto;padding-right:4px">' +
-      (planConfig.features||[]).map((f,fi)=>{
-        const on = isAll || (p.enabledFeatures||[]).includes(f.id);
-        return '<label style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;cursor:pointer;padding:5px 8px;border-radius:8px;transition:.15s" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='none'">' +
-          '<input type="checkbox" style="margin-top:2px;flex-shrink:0" data-plan-feature="'+i+'-'+fi+'" data-plan-idx="'+i+'" data-feat-id="'+f.id+'" '+(on?'checked':'')+(isAll?' disabled':'')+'> ' +
-          '<span><b>'+esc(f.name)+'</b><div style="font-size:11px;color:var(--muted);line-height:1.3">'+esc(f.desc)+'</div></span></label>';
-      }).join('') +
-      '</div></div>';
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">'+p.features.map(f=>esc(f)).join(' · ')+'</div>' +
+      '<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px">Precio ₡</span>' +
+      '<input type="number" class="f-input" data-plan-field="planPrice" data-idx="'+i+'" value="'+p.price+'" style="width:110px;padding:8px 10px"></div>' +
+      '</div>';
   });
   html += '</div></div>';
-
-  // Sección de períodos
-  html += '<div><b style="font-size:15px;display:block;margin-bottom:10px">Períodos de pago y descuentos</b><div style="display:flex;gap:12px;flex-wrap:wrap">';
+  html += '<div><b style="font-size:14px">Períodos de pago y descuentos</b><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">';
   planConfig.periods.forEach((p,i)=>{
-    html += '<div style="background:#fff;border:1.5px solid '+(p.active?'var(--green)':'var(--line)')+';border-radius:14px;padding:16px;min-width:170px">' +
+    html += '<div style="background:#fff;border:1.5px solid '+(p.active?'var(--green)':'var(--line)')+';border-radius:14px;padding:14px;min-width:160px">' +
       '<label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:8px;cursor:pointer">' +
       '<input type="checkbox" data-plan-field="periodActive" data-idx="'+i+'" '+(p.active?'checked':'')+'> ' + esc(p.label) + '</label>' +
-      '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">'+p.months+' mes'+(p.months>1?'es':'')+'</div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+p.months+' mes'+(p.months>1?'es':'')+'</div>' +
       '<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px">Descuento %</span>' +
       '<input type="number" class="f-input" data-plan-field="periodDiscount" data-idx="'+i+'" value="'+p.discount+'" style="width:70px;padding:8px 10px"></div>' +
       '</div>';
   });
   html += '</div></div>';
-
-  // Sección de features globales (para referencia)
-  html += '<div><b style="font-size:15px;display:block;margin-bottom:10px">Funciones disponibles en la plataforma</b>' +
-    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">';
-  (planConfig.features||[]).forEach(f => {
-    html += '<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px">' +
-      '<div style="font-weight:700;font-size:13px">'+esc(f.name)+'</div>' +
-      '<div style="font-size:11.5px;color:var(--muted)">'+esc(f.desc)+'</div>' +
-      '<div style="font-size:11px;color:#9CA3AF;margin-top:4px">ID: <code>'+f.id+'</code></div></div>';
-  });
-  html += '</div></div>';
-
   html += '</div>';
   wrap.innerHTML = html;
-
-  // Event listeners para "Todas las funciones" (desactivar checkboxes individuales)
-  wrap.querySelectorAll('[data-plan-all]').forEach(chk => {
-    chk.addEventListener('change', function(){
-      const planIdx = this.dataset.planAll;
-      const disabled = this.checked;
-      wrap.querySelectorAll('[data-plan-idx="'+planIdx+'"]').forEach(c => c.disabled = disabled);
-    });
-  });
 }
 
 /* ---------- carga del panel de membresía (admin de tienda) ---------- */
@@ -5579,46 +5370,6 @@ function renderMembershipUI(){
     alertText.textContent = '🔒 Servicio suspendido por falta de pago. Contactá al superadministrador para reactivar.';
   }else{
     alertBox.style.display = 'none';
-  }
-
-  // Funciones incluidas en el plan
-  const featList = getPlanFeaturesList();
-  const featBox = document.getElementById('memFeaturesBox');
-  if(featBox){
-    if(!featList.length){
-      featBox.innerHTML = '';
-      featBox.style.display = 'none';
-    } else {
-      featBox.style.display = 'block';
-      featBox.innerHTML = '<h4 style="font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--green)"><path d="M12 2 3 7v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V7z"/></svg>Funciones de tu plan</h4>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">' +
-        featList.map(f =>
-          '<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:10px">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" style="width:18px;height:18px;color:var(--green);flex-shrink:0;margin-top:1px"><path d="M20 6 9 17l-5-5"/></svg>' +
-          '<div><div style="font-weight:700;font-size:13px">'+esc(f.name)+'</div><div style="font-size:11.5px;color:var(--muted)">'+esc(f.desc)+'</div></div></div>'
-        ).join('') +
-        '</div>';
-    }
-  }
-
-  // Límite de productos
-  const maxProd = getPlanMaxProducts();
-  const prodBox = document.getElementById('memProductLimitBox');
-  if(prodBox){
-    prodBox.style.display = 'block';
-    if(maxProd === Infinity){
-      prodBox.innerHTML = '<div style="background:var(--green-soft);border:1px solid var(--green);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;color:var(--green-dark);font-weight:700;font-size:13px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M12 2 3 7v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V7z"/></svg>Productos ilimitados</div>';
-    } else {
-      const current = products.length;
-      const pct = Math.min(100, Math.round((current/maxProd)*100));
-      const color = pct >= 90 ? 'var(--danger)' : (pct >= 70 ? '#B45309' : 'var(--green)');
-      const bg = pct >= 90 ? 'var(--danger-soft)' : (pct >= 70 ? '#FEF3C7' : 'var(--green-soft)');
-      prodBox.innerHTML = '<div style="background:'+bg+';border:1px solid '+color+';border-radius:12px;padding:12px 16px">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:'+color+'">Límite de productos</span><span style="font-weight:800;font-size:13px;color:'+color+'">'+current+' / '+maxProd+'</span></div>' +
-        '<div style="height:6px;border-radius:4px;background:#E5E7EB;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:4px;transition:width .4s"></div></div>' +
-        (pct>=100?'<div style="font-size:12px;color:var(--danger);margin-top:6px;font-weight:700">Llegaste al límite. Actualizá tu plan para agregar más productos.</div>':'') +
-        '</div>';
-    }
   }
 
   // Historial
