@@ -1240,7 +1240,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </div>
       <div style="overflow-x:auto">
         <table class="inv-table-adm">
-          <thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
+          <thead><tr><th>Producto</th><th>Precio</th><th>Costo</th><th>Stock</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
           <tbody id="invBody"></tbody>
         </table>
       </div>
@@ -1481,7 +1481,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 
             <div id="simplePricingBlock">
               <div class="f-row">
-                <div class="f-group"><label>Precio (₡) <span class="req">*</span></label><input class="f-input" id="pPrice" type="number" min="0" step="100" placeholder="5000"></div>
+                <div class="f-group"><label>Precio de venta (₡) <span class="req">*</span></label><input class="f-input" id="pPrice" type="number" min="0" step="100" placeholder="5000"></div>
+                <div class="f-group"><label>Costo / precio de compra (₡)</label><input class="f-input" id="pCost" type="number" min="0" step="100" placeholder="2500"><p class="hint" style="margin-top:4px">Privado — solo visible en el inventario. Se usa para calcular la inversión total.</p></div>
+              </div>
+              <div class="f-row">
                 <div class="f-group"><label>Stock disponible</label><input class="f-input" id="pStock" type="number" min="0" placeholder="10"></div>
               </div>
               <div class="f-group" style="display:flex;align-items:center;gap:10px">
@@ -1605,22 +1608,41 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 <div class="modal" id="reviewFormModal">
   <div class="modal-bg" onclick="closeReviewForm()"></div>
   <div class="modal-card">
-    <div class="modal-head"><h3>Tu reseña</h3>
+    <div class="modal-head">
+      <div>
+        <h3>Dejá tu reseña ✍️</h3>
+        <div id="csrProductName" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
       <button class="close-x" onclick="closeReviewForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body">
       <input type="file" id="csrPhotoInput" accept="image/*" style="display:none" onchange="onCsrPhotoChosen(this)">
-      <div class="f-group"><label>Tu nombre</label><input class="f-input" id="csrName" placeholder="Ej: María"></div>
-      <div class="f-group"><label>Calificación</label><div class="star-picker" id="csrStars"></div></div>
-      <div class="f-group"><label>Contanos qué te pareció</label><textarea class="f-input" id="csrText" placeholder="Tu comentario sobre el producto"></textarea></div>
+      <!-- Aviso de verificación -->
+      <div id="csrVerifiedBanner" style="display:none;background:var(--green-soft);border:1px solid var(--green);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--green-dark);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" style="width:16px;height:16px;flex-shrink:0"><path d="M20 6 9 17l-5-5"/></svg>
+        Compra verificada — ¡gracias por elegirnos!
+      </div>
+      <div id="csrUnverifiedBanner" style="display:none;background:var(--yellow-soft);border:1px dashed #EAB308;border-radius:12px;padding:10px 14px;font-size:13px;color:#92400E;margin-bottom:14px">
+        <b>¿Ya compraste este producto o contrataste el servicio?</b><br>
+        Podés dejar tu comentario aunque tu compra no esté en este dispositivo. El administrador verificará tu reseña antes de publicarla.
+      </div>
+      <div class="f-group"><label>Tu nombre <span class="req">*</span></label><input class="f-input" id="csrName" placeholder="Ej: María García"></div>
+      <div class="f-group"><label>¿Cómo calificás el producto?</label><div class="star-picker" id="csrStars"></div></div>
+      <div class="f-group"><label>Tu comentario <span class="req">*</span></label><textarea class="f-input" id="csrText" placeholder="¿Qué te gustó? ¿Cómo fue la experiencia?" style="min-height:90px"></textarea></div>
       <div class="f-group">
-        <label>Foto (opcional)</label>
+        <label>Foto de tu compra (opcional — le da más credibilidad a tu reseña)</label>
         <div class="logo-upload-row">
           <span class="logo-preview" id="csrPhotoPreview" style="cursor:pointer" onclick="document.getElementById('csrPhotoInput').click()"></span>
-          <button type="button" class="btn-ghost" style="width:auto;padding:9px 16px" onclick="document.getElementById('csrPhotoInput').click()">Subir foto</button>
+          <button type="button" class="btn-ghost" style="width:auto;padding:9px 16px" onclick="document.getElementById('csrPhotoInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+            Subir foto
+          </button>
         </div>
       </div>
-      <button class="btn-primary" style="margin-top:6px" onclick="submitCustomerReview()">Publicar reseña</button>
+      <button class="btn-primary" style="margin-top:6px" onclick="submitCustomerReview()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:6px"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>
+        Publicar reseña
+      </button>
     </div>
   </div>
 </div>
@@ -1758,7 +1780,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <button class="close-x" onclick="saCloseEditModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body">
-      <div class="f-group"><label>Slug / ID (no editable)</label><input class="f-input" id="saEditSlug" disabled></div>
+      <div class="f-row">
+        <div class="f-group"><label>Slug / ID (no editable)</label><input class="f-input" id="saEditSlug" disabled></div>
+        <div class="f-group"><label>Fecha de registro</label><input class="f-input" id="saEditFechaRegistro" disabled style="background:var(--bg);color:var(--muted)"></div>
+      </div>
       <div class="f-row">
         <div class="f-group"><label>Nombre a mostrar</label><input class="f-input" id="saEditNombre"></div>
         <div class="f-group"><label>Tipo</label>
@@ -1801,6 +1826,27 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </label>
       <button class="btn-primary" onclick="saSaveEditModal()">Guardar cambios</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== SUPERADMIN — PANEL INLINE PARA ADMINISTRAR TIENDA SIN CERRAR SESIÓN ===== -->
+<div id="saInlineAdminPanel" style="position:fixed;inset:0;z-index:400;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);display:none">
+  <div style="position:absolute;top:0;right:0;width:min(820px,100vw);height:100vh;background:var(--bg);display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,.2)">
+    <div style="padding:14px 20px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;color:var(--muted);font-weight:600">Panel de administración</div>
+        <div style="font-size:17px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="saInlineAdminTitle"></div>
+        <div style="font-size:11.5px;color:var(--muted)" id="saInlineAdminSlug"></div>
+      </div>
+      <a id="saInlineAdminWa" href="#" target="_blank" rel="noopener" style="display:none;align-items:center;gap:7px;background:#25D366;color:#fff;font-size:13px;font-weight:700;padding:9px 16px;border-radius:999px;text-decoration:none">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>
+        WhatsApp
+      </a>
+      <button onclick="saCloseInlineAdmin()" style="width:38px;height:38px;border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;background:#fff;flex-shrink:0;cursor:pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:18px;height:18px"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <iframe id="saInlineAdminFrame" src="about:blank" style="flex:1;border:0;width:100%"></iframe>
   </div>
 </div>
 
@@ -2893,8 +2939,12 @@ function renderPvReviews(p){
     '</div>'
   ).join('');
   const ctaHTML = '<div class="review-cta' + (canReview?' can-review':'') + '">' +
-    '<div class="msg">' + (canReview ? '¿Cómo te pareció tu compra? Dejá tu reseña de este producto' : 'Podés dejar tu reseña de este producto después de pedirlo') + '</div>' +
-    (canReview ? '<button type="button" class="btn-ghost" style="width:auto;padding:9px 18px" onclick="openReviewForm(\'' + p.id + '\')">Escribir mi reseña ✍️</button>' : '') +
+    '<div class="msg">' + (canReview
+      ? '¿Cómo te pareció tu compra? Compartí tu experiencia con otros clientes'
+      : '¿Ya compraste o contrataste este servicio? Podés dejar tu comentario') + '</div>' +
+    '<button type="button" class="btn-ghost" style="width:auto;padding:9px 18px;margin-top:6px" onclick="openReviewForm(\'' + p.id + '\')">' +
+      (canReview ? 'Escribir mi reseña ✍️' : 'Dejar comentario 💬') +
+    '</button>' +
   '</div>';
   box.innerHTML = '<div class="pv-reviews">' + headHTML + listHTML + ctaHTML + '</div>';
 }
@@ -3127,6 +3177,16 @@ function openReviewForm(id){
   document.getElementById('csrText').value = '';
   document.getElementById('csrPhotoPreview').innerHTML = logoSVG;
   renderCsrStars();
+  /* Mostrar nombre del producto en el encabezado del modal */
+  const prod = products.find(x=>x.id===id);
+  const nameEl = document.getElementById('csrProductName');
+  if(nameEl) nameEl.textContent = prod ? prod.name : '';
+  /* Mostrar banner según si la compra está verificada en este dispositivo */
+  const verified = getOrderedProducts().includes(id);
+  const vBanner = document.getElementById('csrVerifiedBanner');
+  const uvBanner = document.getElementById('csrUnverifiedBanner');
+  if(vBanner) vBanner.style.display = verified ? 'flex' : 'none';
+  if(uvBanner) uvBanner.style.display = verified ? 'none' : 'block';
   document.getElementById('reviewFormModal').classList.add('show');
 }
 function closeReviewForm(){ document.getElementById('reviewFormModal').classList.remove('show'); }
@@ -3575,8 +3635,17 @@ function exportCategoriesPDF(){
 function renderInventory(){
   const q = (document.getElementById('invSearch').value||'').toLowerCase().trim();
   const list = products.filter(p => !q || p.name.toLowerCase().includes(q));
-  document.getElementById('invSummary').textContent =
-    products.length + ' referencias · ' + products.filter(p=>{const c=stockInfo(p).cls; return c==='low'||c==='out';}).length + ' con stock bajo o agotado';
+  /* Calcular inversión total: sum(costo * stock) para productos con costo definido */
+  const totalInvertido = products.reduce((sum, p) => {
+    if(!p.cost || p.unlimited) return sum;
+    const stock = p.hasVariants ? activeVariants(p).reduce((s,v)=>s+(v.stock||0),0) : (p.stock||0);
+    return sum + (p.cost * stock);
+  }, 0);
+  const bajoStock = products.filter(p=>{const c=stockInfo(p).cls; return c==='low'||c==='out';}).length;
+  document.getElementById('invSummary').innerHTML =
+    '<span>' + products.length + ' referencias · ' + bajoStock + ' con stock bajo o agotado</span>' +
+    (totalInvertido > 0 ? '<span style="margin-left:16px;font-weight:700;color:var(--green)">💰 Inversión total en inventario: ' + fmt(totalInvertido) + '</span>' : '');
+
   document.getElementById('invBody').innerHTML = list.map(p => {
     const st = stockInfo(p);
     const g = gradFor(p.id);
@@ -3589,16 +3658,18 @@ function renderInventory(){
     const statusSel = '<select class="prod-status-sel st-' + manual + '" title="Estado del producto" onchange="setProductStatus(\'' + p.id + '\', this.value)">' +
       Object.keys(PROD_STATUS).map(k=>'<option value="'+k+'"'+(manual===k?' selected':'')+'>'+PROD_STATUS[k].lbl+'</option>').join('') +
       '</select>';
+    const costoCell = p.cost ? '<span style="color:var(--muted);font-size:12.5px">' + fmt(p.cost) + '</span>' : '<span style="color:#CBD5E1;font-size:12px">—</span>';
     return '<tr>' +
       '<td><div class="tbl-prod">' + thumb + '<span>' + esc(p.name) + '<div class="tbl-cat">' + esc(p.cat) + (p.hasVariants ? ' · ' + activeVariants(p).length + ' ' + esc((p.variantGroupName||'variantes').toLowerCase()) : '') + '</div></span></div></td>' +
       '<td><b>' + displayPrice(p) + '</b></td>' +
+      '<td>' + costoCell + '</td>' +
       '<td>' + (p.unlimited ? '<span class="pill blue">Servicio</span>' : totalStock) + '</td>' +
       '<td>' + statusSel + (st.cls==='low' ? '<div class="tbl-cat" style="margin-top:4px;color:#B45309">Pocas unidades</div>' : '') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
         '<button class="icon-btn" title="Editar" onclick="openProductModal(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>' +
         '<button class="icon-btn danger" title="Eliminar" onclick="deleteProduct(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
       '</td></tr>';
-  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Sin productos</td></tr>';
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Sin productos</td></tr>';
 }
 
 /* ---------- multimedia del producto (fotos subidas como archivo, comprimidas a base64) ---------- */
@@ -3795,6 +3866,23 @@ function onReviewImageFileChosen(input){
 }
 
 function openProductModal(id){
+  /* Si el panel admin no está activo (p.ej. el superadmin está viendo la
+     tienda o el botón se presiona desde el inventario sin haber entrado
+     formalmente al panel), lo activamos en silencio para que el modal
+     de producto tenga acceso a categorías y datos correctos. */
+  if(!document.body.classList.contains('in-admin')){
+    document.body.classList.add('in-admin');
+    renderHeader();
+    /* Mostrar el panel de inventario si no hay ningún panel activo */
+    const anyActive = document.querySelector('.panel.active');
+    if(!anyActive){
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      const invPanel = document.getElementById('panel-inventory');
+      if(invPanel) invPanel.classList.add('active');
+      const invBtn = document.querySelector('.adm-link[data-panel="inventory"]');
+      if(invBtn){ document.querySelectorAll('.adm-link[data-panel]').forEach(b=>b.classList.remove('active')); invBtn.classList.add('active'); }
+    }
+  }
   const modal = document.getElementById('productModal');
   const catSel = document.getElementById('pCat');
   catSel.innerHTML = settings.categories.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
@@ -3821,10 +3909,11 @@ function openProductModal(id){
     document.getElementById('pCompareAt').value = p.compareAtPrice || '';
     document.getElementById('pSoldCount').value = p.soldCount || '';
     document.getElementById('pDealHours').value = '';
+    document.getElementById('pCost').value = p.cost || '';
     pmReviews = (p.reviews && p.reviews.length) ? p.reviews.map(r=>Object.assign({},r)) : [];
   } else {
     document.getElementById('pmTitle').textContent = 'Crear producto';
-    ['pId','pName','pDesc','pPrice','pStock','pVideoUrl','pVideoLink','pTiktokUrl'].forEach(i=>document.getElementById(i).value='');
+    ['pId','pName','pDesc','pPrice','pStock','pVideoUrl','pVideoLink','pTiktokUrl','pCost'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('pIcon').value = 'leaf';
     document.getElementById('pUnlimited').checked = false;
     document.getElementById('pActive').checked = true;
@@ -3885,6 +3974,7 @@ async function saveProduct(){
     .map(r => ({ id:r.id, name:(r.name||'').trim(), rating:Math.min(5,Math.max(1,parseInt(r.rating)||5)), text:(r.text||'').trim(), photo:r.photo||'', date:r.date||todayStr() }))
     .filter(r => r.name || r.text);
 
+  const cost = Math.max(0, parseFloat(document.getElementById('pCost').value)||0);
   const data = {
     name, desc:document.getElementById('pDesc').value.trim(), price,
     stock, unlimited, cat:document.getElementById('pCat').value,
@@ -3894,7 +3984,7 @@ async function saveProduct(){
     videoLink:document.getElementById('pVideoLink').value.trim(),
     tiktokUrl:document.getElementById('pTiktokUrl').value.trim(),
     hasVariants, variantGroupName, variants,
-    compareAtPrice, soldCount, dealEndsAt, reviews
+    compareAtPrice, soldCount, dealEndsAt, reviews, cost
   };
   try{
     await saveProductToDB(id||null, data);
@@ -4848,10 +4938,15 @@ function renderSuperadminTable(){
         '<option value="vencido"' + (estado==='vencido'?' selected':'') + '>Vencido</option>' +
       '</select></td>' +
       '<td><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" data-sa-activo="' + esc(t.id) + '" ' + (activo?'checked':'') + '> Activo</label></td>' +
-      '<td><a class="sa-mini-link" href="' + url + '" target="_blank" rel="noopener">Ver</a> · <a class="sa-mini-link" href="' + adminUrl + '" target="_blank" rel="noopener" title="Entra directo al panel de administración de este negocio, con tu propia sesión de superadministrador">Administrar</a></td>' +
+      '<td>' +
+        '<a class="sa-mini-link" href="' + url + '" target="_blank" rel="noopener" title="Ver tienda pública">Ver</a> · ' +
+        '<a class="sa-mini-link" href="' + adminUrl + '" target="_blank" rel="noopener" title="Entra directo al panel de administración con tu sesión de superadministrador">Admin</a>' +
+        (t.whatsapp ? ' · <a class="sa-mini-link" style="color:#25D366" href="https://wa.me/' + esc(t.whatsapp.replace(/\D/g,'')) + '?text=' + encodeURIComponent('Hola ' + (t.nombre||t.id) + ', te escribo desde PRO.DIGITAL.') + '" target="_blank" rel="noopener" title="Escribir por WhatsApp a este negocio">WhatsApp</a>' : '') +
+      '</td>' +
       '<td><div class="sa-actions-cell">' +
         '<button class="sa-mini-btn" onclick="saSaveTenantRow(\'' + esc(t.id) + '\')">Guardar</button>' +
         '<button class="sa-mini-btn ghost" onclick="saOpenEditModal(\'' + esc(t.id) + '\')">Editar</button>' +
+        '<button class="sa-mini-btn" style="background:var(--blue);color:#fff" onclick="saAdminInline(\'' + esc(t.id) + '\')" title="Administrar este negocio sin cerrar tu sesión de superadmin">Panel</button>' +
         '<button class="sa-mini-btn danger" onclick="saDeleteTenant(\'' + esc(t.id) + '\')">Eliminar</button>' +
       '</div></td>' +
     '</tr>';
@@ -4931,6 +5026,9 @@ function saOpenEditModal(id){
   if(!t) return;
   _saEditingId = id;
   document.getElementById('saEditSlug').value = id;
+  /* Fecha de registro */
+  const fechaEl = document.getElementById('saEditFechaRegistro');
+  if(fechaEl) fechaEl.value = saFechaLabel(t) !== '—' ? saFechaLabel(t) : 'Sin fecha registrada';
   document.getElementById('saEditNombre').value = t.nombre || '';
   document.getElementById('saEditTipo').value = t.tipo === 'profesional' ? 'profesional' : '';
   document.getElementById('saEditWhatsapp').value = t.whatsapp || '';
@@ -4950,6 +5048,26 @@ function saOpenEditModal(id){
 function saCloseEditModal(){
   document.getElementById('saEditModal').classList.remove('show');
   _saEditingId = null;
+}
+
+/* ---- Panel inline: el superadmin administra una tienda sin cerrar su sesión ---- */
+function saAdminInline(id){
+  const t = _saTenants.find(x=>x.id===id);
+  if(!t){ toast('No se encontró el negocio', 'err'); return; }
+  const panel = document.getElementById('saInlineAdminPanel');
+  if(!panel){ toast('Abriendo tienda en pestaña…', 'ok'); const u = location.pathname+'?tienda='+encodeURIComponent(id)+'&panel=admin'; window.open(u,'_blank'); return; }
+  document.getElementById('saInlineAdminTitle').textContent = t.nombre || id;
+  document.getElementById('saInlineAdminSlug').textContent = id;
+  const wa = (t.whatsapp||'').replace(/\D/g,'');
+  const waLink = document.getElementById('saInlineAdminWa');
+  if(waLink){ waLink.href = wa ? 'https://wa.me/'+wa+'?text='+encodeURIComponent('Hola '+t.nombre+', te escribe el equipo de PRO.DIGITAL.') : '#'; waLink.style.display = wa ? 'flex' : 'none'; }
+  const iframe = document.getElementById('saInlineAdminFrame');
+  iframe.src = location.pathname + '?tienda=' + encodeURIComponent(id) + '&panel=admin';
+  panel.style.display = 'block';
+}
+function saCloseInlineAdmin(){
+  const panel = document.getElementById('saInlineAdminPanel');
+  if(panel){ panel.style.display = 'none'; document.getElementById('saInlineAdminFrame').src='about:blank'; }
 }
 async function saSaveEditModal(){
   if(!_saEditingId) return;
