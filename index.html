@@ -1220,25 +1220,25 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <div class="ac-lbl">Visitas totales</div>
           <div class="ac-sub" id="stVisitsSub">—</div>
         </div>
-        <div class="analytics-card ac-blue">
-          <div class="ac-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm4.6 12.1c-.3-.1-1.5-.7-1.7-.8s-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.4-3c-.3-.4 0-.5.2-.8l.4-.5c.1-.2.1-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.9.9-1.1 2.2-.2 3.9a11.6 11.6 0 0 0 4.5 4.2c1.7.8 2.4.9 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.1-.5-.2z"/></svg></div>
-          <div class="ac-val" id="stWaClicks">0</div>
-          <div class="ac-lbl">Clics en WhatsApp</div>
-          <div class="ac-sub">Conversaciones iniciadas</div>
-        </div>
-        <div class="analytics-card ac-yellow">
-          <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
-          <div class="ac-val" id="stSearches">0</div>
-          <div class="ac-lbl">Búsquedas internas</div>
-          <div class="ac-sub">Desde el buscador de la tienda</div>
-        </div>
         <div class="analytics-card ac-purple">
           <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg></div>
           <div class="ac-val" id="stProductViews">0</div>
           <div class="ac-lbl">Vistas de productos</div>
           <div class="ac-sub">Fichas de producto abiertas</div>
         </div>
-        <div class="analytics-card ac-green">
+        <div class="analytics-card ac-blue stats-advanced-item">
+          <div class="ac-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm4.6 12.1c-.3-.1-1.5-.7-1.7-.8s-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.4-3c-.3-.4 0-.5.2-.8l.4-.5c.1-.2.1-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.9.9-1.1 2.2-.2 3.9a11.6 11.6 0 0 0 4.5 4.2c1.7.8 2.4.9 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.1-.5-.2z"/></svg></div>
+          <div class="ac-val" id="stWaClicks">0</div>
+          <div class="ac-lbl">Clics en WhatsApp</div>
+          <div class="ac-sub">Conversaciones iniciadas</div>
+        </div>
+        <div class="analytics-card ac-yellow stats-advanced-item">
+          <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+          <div class="ac-val" id="stSearches">0</div>
+          <div class="ac-lbl">Búsquedas internas</div>
+          <div class="ac-sub">Desde el buscador de la tienda</div>
+        </div>
+        <div class="analytics-card ac-green stats-advanced-item">
           <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5 15.4 6.5M8.6 13.5 15.4 17.5"/></svg></div>
           <div class="ac-val" id="stShares">0</div>
           <div class="ac-lbl">Veces compartida</div>
@@ -1246,8 +1246,14 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
       </div>
 
+      <!-- Aviso de estadísticas básicas (solo plan Emprendedor) -->
+      <div class="sinpe-preview" id="statsBasicNotice" style="display:none;background:var(--green-soft, #E7F5EC);border-color:#0F5A30;color:#0F5A30;margin-bottom:20px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg>
+        <span>Estás viendo las <b>estadísticas básicas</b> de tu plan Emprendedor. Subí a plan Profesional para ver clics en WhatsApp, búsquedas, veces compartida, fuente del tráfico y el gráfico de ventas.</span>
+      </div>
+
       <!-- Fuente de tráfico -->
-      <div class="chart-card" style="margin-bottom:20px">
+      <div class="chart-card stats-advanced-item" style="margin-bottom:20px" id="statsTrafficSourceCard">
         <h4>Fuente del tráfico</h4>
         <div style="overflow-x:auto">
           <table class="traffic-table">
@@ -1257,7 +1263,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
       </div>
 
-      <div class="chart-card"><h4>Ventas de los últimos 7 días</h4><canvas id="salesChart"></canvas></div>
+      <div class="chart-card stats-advanced-item" id="statsSalesChartCard"><h4>Ventas de los últimos 7 días</h4><canvas id="salesChart"></canvas></div>
       <div class="chart-card"><h4>Productos más vendidos</h4><div id="topProducts"></div></div>
     </section>
 
@@ -1408,6 +1414,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <div class="settings-card">
         <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 18h.01"/></svg>Video flotante (formato historia)</h4>
         <div class="desc">Un video vertical, tipo historia, que flota sobre la tienda para los clientes. Aceptá un enlace de YouTube o un enlace directo a un archivo de video. Dejalo vacío para ocultarlo.</div>
+        <div class="desc" id="sStoryVideoLockNotice" style="display:none;color:#92400E;font-weight:700">🔒 Esta función requiere plan Profesional o superior. Podés guardar el enlace, pero no se mostrará a tus clientes hasta que subas de plan.</div>
         <div class="f-group"><label>Enlace del video</label><input class="f-input" id="sStoryVideoUrl" placeholder="https://youtube.com/watch?v=... o enlace directo a un .mp4"></div>
       </div>
 
@@ -2236,7 +2243,8 @@ function storyYoutubeId(url){
 function renderStoryVideo(){
   const wrap = document.getElementById('storyFloat');
   const url = (settings.storyVideoUrl||'').trim();
-  if(!url || storyClosed){ wrap.classList.remove('show'); return; }
+  const planOk = (typeof getActivePlanId !== 'function') || getActivePlanId() !== 'emprendedor';
+  if(!url || storyClosed || !planOk){ wrap.classList.remove('show'); return; }
   if(url !== storyLastUrl){
     storyLastUrl = url;
     const media = document.getElementById('storyMedia');
@@ -3571,7 +3579,17 @@ function switchPanel(panelId){
 
 /* ---------- estadísticas ---------- */
 function activeOrders(){ return orders.filter(o=>o.status!=='cancelado'); }
+/* Muestra estadísticas básicas (Emprendedor) o completas (Profesional/Destacado) */
+function applyStatsPlanView(){
+  const isBasic = getActivePlanId() === 'emprendedor';
+  document.querySelectorAll('.stats-advanced-item').forEach(el => {
+    el.style.display = isBasic ? 'none' : '';
+  });
+  const notice = document.getElementById('statsBasicNotice');
+  if(notice) notice.style.display = isBasic ? 'flex' : 'none';
+}
 function renderStats(){
+  applyStatsPlanView();
   const act = activeOrders();
   const total = act.reduce((s,o)=>s+o.total,0);
   document.getElementById('stSales').textContent = fmt(total);
@@ -4025,6 +4043,13 @@ function onReviewImageFileChosen(input){
 }
 
 function openProductModal(id){
+  if(!id){
+    const limit = getProductLimit();
+    if(products.length >= limit){
+      toast('Alcanzaste el límite de ' + limit + ' productos de tu plan actual (' + (PLAN_NAMES_MAP[getActivePlanId()]||getActivePlanId()) + '). Subí de plan para agregar más.', 'err');
+      return;
+    }
+  }
   const modal = document.getElementById('productModal');
   const catSel = document.getElementById('pCat');
   catSel.innerHTML = settings.categories.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
@@ -4082,6 +4107,13 @@ async function saveProduct(){
   const images = pmImages.map(u=>u.trim()).filter(Boolean);
   if(!name){ toast('El nombre es obligatorio', 'err'); return; }
   if(images.length < 1){ toast('Agregá al menos 1 foto del producto', 'err'); return; }
+  if(!id){
+    const limit = getProductLimit();
+    if(products.length >= limit){
+      toast('Alcanzaste el límite de ' + limit + ' productos de tu plan actual (' + (PLAN_NAMES_MAP[getActivePlanId()]||getActivePlanId()) + '). Subí de plan para agregar más.', 'err');
+      return;
+    }
+  }
 
   let price, stock, unlimited, variants = [], variantGroupName = '';
   if(hasVariants){
@@ -4305,6 +4337,8 @@ function loadSettingsForm(){
   document.getElementById('sBingoLabel').value = settings.bingoLabel||'Bingo de Plantas';
   document.getElementById('sBingoUrl').value = settings.bingoUrl||'';
   document.getElementById('sStoryVideoUrl').value = settings.storyVideoUrl||'';
+  const svLockEl = document.getElementById('sStoryVideoLockNotice');
+  if(svLockEl) svLockEl.style.display = (getActivePlanId() === 'emprendedor') ? '' : 'none';
   document.getElementById('sIva').value = settings.iva || 13;
   document.getElementById('sDiscount').value = settings.globalDiscountPercent || 0;
   document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
@@ -5359,6 +5393,12 @@ async function saCreateTenant(){
 
 /* Jerarquía de planes: emprendedor=1, profesional=2, destacado=3 */
 const PLAN_RANK = {emprendedor:1, profesional:2, destacado:3};
+/* Límite de productos en el catálogo según el plan activo. Sin entrada = sin límite. */
+const PLAN_PRODUCT_LIMITS = {emprendedor:20, profesional:200};
+function getProductLimit(){
+  const plan = getActivePlanId();
+  return PLAN_PRODUCT_LIMITS.hasOwnProperty(plan) ? PLAN_PRODUCT_LIMITS[plan] : Infinity;
+}
 const PLAN_NAMES_MAP = {emprendedor:'Emprendedor', profesional:'Profesional', destacado:'Destacado'};
 const PLAN_ICONS = {emprendedor:'🌱', profesional:'🚀', destacado:'⭐'};
 
@@ -5584,7 +5624,8 @@ async function openProofLightbox(paymentId, tenantId){
 
 const PLAN_FEATURE_MAP = {
   'panel-orders':   'profesional',  // panel de pedidos
-  'panel-analytics':'profesional',  // estadísticas avanzadas
+  /* panel-analytics ya no requiere plan: Emprendedor ve estadísticas básicas,
+     Profesional/Destacado ven el panel completo (ver renderStats/applyStatsPlanView) */
   'sinpe':          'profesional',  // pagos SINPE en tienda
   'inventory':      'profesional',  // control de inventario
   'video':          'profesional',  // video historia flotante
@@ -5662,8 +5703,8 @@ function updatePlanLockBanner(){
   const banner = document.getElementById('planLockBanner');
   if(!banner) return;
   if(activePlan === 'emprendedor'){
-    banner.innerHTML = '🔒 Tu negocio está en <b>Plan Emprendedor (Básico)</b>. Para acceder a pedidos, estadísticas y más funciones, <a onclick="closePlanWall();switchPanel(\'panel-membership\')">activá un plan superior</a>.';
-    banner.classList.add('show');
+    // Plan Emprendedor: sin viñeta verde superior (queda oculta, ya no molesta a este plan)
+    banner.classList.remove('show');
   } else {
     const planName = PLAN_NAMES_MAP[activePlan]||activePlan;
     const nextDue = TENANT_DATA && TENANT_DATA.membershipNextDueDate ? new Date(TENANT_DATA.membershipNextDueDate) : null;
