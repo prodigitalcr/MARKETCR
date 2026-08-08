@@ -1144,6 +1144,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <button class="adm-link" data-panel="settings" onclick="showPanel('settings',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Configuraciones</span>
       </button>
+      <button class="adm-link" data-panel="membership" onclick="showPanel('membership',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Membresía</span>
+        <span class="nav-badge" id="membershipNavBadge" style="display:none">!</span>
+      </button>
       <button class="adm-link" onclick="viewStore()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5M3 9v11h18V9M3 9h18M9 20v-7h6v7"/></svg><span>Ver tienda</span>
       </button>
@@ -1337,6 +1341,18 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <span>Los clientes verán: “Transferí por SINPE Móvil al <b id="sinpePreview">—</b>”</span>
         </div>
       </div>
+      <div class="settings-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Impuestos y descuentos</h4>
+        <div class="desc">Configurá el porcentaje de impuesto de ventas (IVA) y un descuento global opcional que se aplicará a todos los pedidos de tu tienda.</div>
+        <div class="f-row">
+          <div class="f-group"><label>IVA (%)</label><input class="f-input" id="sIva" type="number" min="0" max="100" step="0.5" placeholder="13"></div>
+          <div class="f-group"><label>Descuento global (%)</label><input class="f-input" id="sDiscount" type="number" min="0" max="100" step="0.5" placeholder="0"></div>
+        </div>
+        <div class="sinpe-preview" style="background:var(--blue-soft);border-color:var(--blue);color:var(--blue)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg>
+          <span>El descuento global se aplica al subtotal antes de calcular el IVA. Ej: si el subtotal es ₡10.000, el descuento es 10% y el IVA 13%, el cliente paga: ₡9.000 + ₡1.170 = ₡10.170</span>
+        </div>
+      </div>
 
       <div class="settings-card">
         <h4><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>WhatsApp del negocio</h4>
@@ -1414,6 +1430,61 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <div style="max-width:760px;display:flex;gap:10px;justify-content:flex-end">
         <button class="btn-ghost" style="width:auto;padding:12px 22px" onclick="settingsFormDirty=false; loadSettingsForm()">Descartar</button>
         <button class="btn-dark" style="padding:12px 26px" onclick="saveSettings()">Guardar cambios</button>
+      </div>
+    </section>
+
+    <!-- MEMBRESÍA -->
+    <section class="panel" id="panel-membership">
+      <div class="adm-title">Membresía PRO.DIGITAL</div>
+      <div class="adm-sub">Gestioná tu plan, pagos y estado de cuenta.</div>
+
+      <div class="stat-cards" style="margin-bottom:20px">
+        <div class="stat-card hl" id="memPlanCard">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Plan actual</div>
+          <div class="val" id="memPlanName">—</div>
+          <div class="sub" id="memPlanPrice">—</div>
+        </div>
+        <div class="stat-card" id="memStatusCard">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Estado</div>
+          <div class="val" id="memStatus">—</div>
+          <div class="sub" id="memStatusSub">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Próximo vencimiento</div>
+          <div class="val" id="memDueDate">—</div>
+          <div class="sub" id="memCountdown">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Saldo pendiente</div>
+          <div class="val" id="memBalance">₡0</div>
+          <div class="sub">mensualidad actual</div>
+        </div>
+      </div>
+
+      <div id="memAlertBox" style="display:none;margin-bottom:18px;background:var(--danger-soft);border:1.5px solid var(--danger);border-radius:14px;padding:14px 18px;color:var(--danger);font-weight:700;display:flex;align-items:center;gap:10px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:22px;height:22px;flex-shrink:0"><path d="M12 9v4M12 17h.01M10.3 3.9 2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        <span id="memAlertText">Recordatorio</span>
+      </div>
+
+      <div class="adm-toolbar" style="margin-bottom:16px">
+        <button class="btn-dark" onclick="openMembershipPaymentModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 11h18M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Pagar servicio
+        </button>
+        <button class="btn-export" onclick="openChangePlanModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+          Cambiar plan
+        </button>
+      </div>
+
+      <div class="chart-card">
+        <h4>Historial de pagos</h4>
+        <div style="overflow-x:auto">
+          <table class="mini-table" style="width:100%">
+            <thead><tr><th>Fecha</th><th>Período</th><th>Plan</th><th>Monto</th><th>Estado</th><th>Referencia</th></tr></thead>
+            <tbody id="memHistoryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Cargando historial…</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </main>
@@ -1803,6 +1874,20 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </label>
       <button class="btn-primary" onclick="saSaveEditModal()">Guardar cambios</button>
     </div>
+
+    <!-- CONFIGURACIÓN DE PLANES (SUPERADMIN) -->
+    <div class="settings-card" style="margin-top:28px">
+      <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2 3 7v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V7z"/></svg>Configuración de planes y pagos</h4>
+      <div class="desc">Activá o desactivá los planes disponibles para los negocios, ajustá precios, descuentos por período y métodos de pago aceptados.</div>
+      <div id="saPlanConfigWrap" style="margin-top:12px">
+        <div style="color:var(--muted);padding:12px 0">Cargando configuración…</div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px">
+        <button class="btn-primary" style="width:auto;padding:10px 18px" onclick="savePlanConfig()">Guardar configuración</button>
+        <button class="btn-ghost" style="width:auto;padding:10px 18px" onclick="resetPlanConfigDefaults()">Restaurar predeterminados</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1830,7 +1915,7 @@ const DEFAULT_SETTINGS = {
   otherBusinesses:[],
   logoUrl:'',
   landingImages:[],
-  iva:13,
+  iva:13, globalDiscountPercent:0,
   tipo:'', // '' = tienda normal con carrito. 'profesional' = perfil de servicios, sin carrito, contacto directo por WhatsApp
   categoria:'', // categoría principal mostrada en el landing de profesionales
   servicios:[], // lista corta de servicios mostrada en el landing (independiente de "categories")
@@ -2972,8 +3057,11 @@ function cartTotals(){
     if(!info) continue;
     sub += info.unitPrice * cart[key]; count += cart[key];
   }
-  const iva = Math.round(sub * (settings.iva||0) / 100);
-  return { sub, iva, total: sub + iva, count };
+  const discountPercent = Math.max(0, Math.min(100, settings.globalDiscountPercent || 0));
+  const discountAmt = Math.round(sub * discountPercent / 100);
+  const discountedSub = sub - discountAmt;
+  const iva = Math.round(discountedSub * (settings.iva||0) / 100);
+  return { sub, discountAmt, discountPercent, discountedSub, iva, total: discountedSub + iva, count };
 }
 
 function updateCartUI(){
@@ -3047,6 +3135,7 @@ function openCheckout(){
       return '<div class="sum-line"><span>' + cart[key] + ' × ' + esc(info.label) + '</span><b>' + fmt(info.unitPrice*cart[key]) + '</b></div>';
     }).join('') +
     '<div class="sum-line"><span>Subtotal</span><b>' + fmt(t.sub) + '</b></div>' +
+    (t.discountAmt ? '<div class="sum-line" style="color:#B45309"><span>Descuento global (' + t.discountPercent + '%)</span><b>−' + fmt(t.discountAmt) + '</b></div>' : '') +
     '<div class="sum-line"><span>IVA (' + settings.iva + '%)</span><b>' + fmt(t.iva) + '</b></div>' +
     '<div class="sum-line grand"><span>Total a pagar</span><span>' + fmt(t.total) + '</span></div>';
   document.getElementById('coTitle').textContent = 'Datos para tu pedido';
@@ -3084,7 +3173,7 @@ async function submitOrder(){
 
   const items = Object.keys(cart).map(key => {
     const info = cartLineInfo(key);
-    return info ? { id:info.p.id, name:info.label, price:info.unitPrice, qty:cart[key] } : null;
+    return info ? { id:info.p.id, name:info.label, price:info.unitPrice, qty:cart[key], image: (info.p.images && info.p.images[0]) || '' } : null;
   }).filter(Boolean);
 
   const now = new Date();
@@ -3094,7 +3183,7 @@ async function submitOrder(){
     number:num, date:now.toISOString(), createdAtMs: now.getTime(),
     customer:{ name, phone, email, address, delivery, notes },
     trackPhone4: digits.slice(-4),
-    items, subtotal:t.sub, iva:t.iva, total:t.total,
+    items, subtotal:t.sub, discountAmt:t.discountAmt||0, discountPercent:t.discountPercent||0, iva:t.iva, total:t.total,
     status:'recibido',
     timeline:[{status:'recibido', at: now.toISOString()}]
   };
@@ -3167,9 +3256,10 @@ async function submitCustomerReview(){
 function invoiceHTML(order){
   const d = new Date(order.date);
   const fecha = d.toLocaleDateString('es-CR',{day:'2-digit',month:'long',year:'numeric'}) + ' ' + d.toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'});
-  const rows = order.items.map(it =>
-    '<tr><td>' + esc(it.name) + '</td><td class="c">' + it.qty + '</td><td class="r">' + fmt(it.price) + '</td><td class="r">' + fmt(it.price*it.qty) + '</td></tr>'
-  ).join('');
+  const rows = order.items.map(it => {
+    const prodImg = it.image ? '<img src="' + esc(it.image) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;vertical-align:middle;margin-right:8px">' : '';
+    return '<tr><td>' + prodImg + esc(it.name) + '</td><td class="c">' + it.qty + '</td><td class="r">' + fmt(it.price) + '</td><td class="r">' + fmt(it.price*it.qty) + '</td></tr>';
+  }).join('');
   return '<div class="inv-head">' +
       '<div><div class="store">' + esc(settings.storeName) + '</div><div class="meta">' + esc(settings.tagline) + '</div></div>' +
       '<div class="inv-num"><b>FACTURA ' + order.number + '</b><span>' + fecha + '</span></div>' +
@@ -3182,6 +3272,7 @@ function invoiceHTML(order){
       '<table class="inv-table"><thead><tr><th>Producto</th><th class="c">Cant.</th><th class="r">Precio</th><th class="r">Importe</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<div class="inv-totals">' +
         '<div class="row"><span>Subtotal</span><span>' + fmt(order.subtotal) + '</span></div>' +
+        (order.discountAmt ? '<div class="row" style="color:#B45309"><span>Descuento global (' + (order.discountPercent||0) + '%)</span><span>−' + fmt(order.discountAmt) + '</span></div>' : '') +
         '<div class="row"><span>IVA (' + settings.iva + '%)</span><span>' + fmt(order.iva) + '</span></div>' +
         '<div class="row tt"><span>TOTAL</span><span>' + fmt(order.total) + '</span></div>' +
       '</div>' +
@@ -3339,6 +3430,7 @@ function showPanel(name, btn){
   if(name==='inventory') renderInventory();
   if(name==='orders') renderOrders();
   if(name==='settings') loadSettingsForm();
+  if(name==='membership') loadMembershipPanel();
 }
 
 /* ---------- estadísticas ---------- */
@@ -4077,6 +4169,8 @@ function loadSettingsForm(){
   document.getElementById('sBingoLabel').value = settings.bingoLabel||'Bingo de Plantas';
   document.getElementById('sBingoUrl').value = settings.bingoUrl||'';
   document.getElementById('sStoryVideoUrl').value = settings.storyVideoUrl||'';
+  document.getElementById('sIva').value = settings.iva || 13;
+  document.getElementById('sDiscount').value = settings.globalDiscountPercent || 0;
   document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
   document.getElementById('sAiKey').value = settings.aiApiKey||'';
   document.getElementById('sAiWelcome').value = settings.aiWelcomeMsg||'';
@@ -4257,6 +4351,8 @@ async function saveSettings(){
     websiteLabel:document.getElementById('sWebLabel').value.trim() || 'Sitio web',
     bingoUrl:document.getElementById('sBingoUrl').value.trim(),
     bingoLabel:document.getElementById('sBingoLabel').value.trim() || 'Bingo de Plantas',
+    iva: parseFloat(document.getElementById('sIva').value) || 13,
+    globalDiscountPercent: parseFloat(document.getElementById('sDiscount').value) || 0,
     storyVideoUrl:document.getElementById('sStoryVideoUrl').value.trim(),
     aiEnabled: document.getElementById('sAiEnabled').checked,
     aiApiKey: document.getElementById('sAiKey').value.trim(),
@@ -5064,6 +5160,516 @@ async function saCreateTenant(){
   }
 }
 
+
+/* ================================================================
+   MÓDULO DE MEMBRESÍA — Pagos, planes, vencimientos y recordatorios
+   ================================================================ */
+const DEFAULT_PLAN_CONFIG = {
+  plans:[
+    {id:'emprendedor', name:'Emprendedor', price:9900, features:['Catálogo pequeño','WhatsApp','Perfil','Fotos','Servicios','Estadísticas básicas'], active:true},
+    {id:'profesional', name:'Profesional', price:15000, features:['Catálogo completo','Inventario','Pedidos','SINPE','Estadísticas','Reseñas','Video','WhatsApp'], active:true},
+    {id:'destacado', name:'Destacado', price:25000, features:['Todo lo anterior','Mayor exposición','Aparece primero','Insignia','Promoción dentro de la plataforma','Mayor presencia en búsquedas'], active:true}
+  ],
+  periods:[
+    {id:'monthly', label:'Mensual', months:1, discount:0, active:true},
+    {id:'quarterly', label:'Trimestral', months:3, discount:10, active:true},
+    {id:'yearly', label:'Anual', months:12, discount:20, active:true}
+  ],
+  paymentMethods:['SINPE Móvil','Transferencia bancaria']
+};
+
+let planConfig = null;
+let membershipPayments = [];
+let unsubMembership = null;
+let memTimerInterval = null;
+
+/* ---------- utilidades de fecha ---------- */
+function addMonths(date, months){
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+function daysBetween(a,b){ return Math.floor((b-a)/(1000*60*60*24)); }
+function hoursBetween(a,b){ return Math.floor((b-a)/(1000*60*60)); }
+
+/* ---------- cargar configuración global de planes (superadmin / admin) ---------- */
+async function loadPlanConfig(){
+  if(planConfig) return planConfig;
+  planConfig = DEFAULT_PLAN_CONFIG; // fallback inmediato
+  try{
+    const snap = await db.collection('platform').doc('config').get();
+    if(snap.exists) planConfig = Object.assign({}, DEFAULT_PLAN_CONFIG, snap.data());
+  }catch(e){
+    console.warn('loadPlanConfig error, usando defaults:', e);
+  }
+  return planConfig;
+}
+
+/* ---------- guardar configuración de planes (superadmin) ---------- */
+async function savePlanConfig(){
+  const wrap = document.getElementById('saPlanConfigWrap');
+  const inputs = wrap.querySelectorAll('[data-plan-field]');
+  const newPlans = [];
+  const newPeriods = [];
+  inputs.forEach(el=>{
+    const type = el.dataset.planField;
+    const idx = parseInt(el.dataset.idx);
+    if(type==='planActive'){
+      if(!newPlans[idx]) newPlans[idx] = Object.assign({}, planConfig.plans[idx]);
+      newPlans[idx].active = el.checked;
+    }
+    if(type==='planPrice'){
+      if(!newPlans[idx]) newPlans[idx] = Object.assign({}, planConfig.plans[idx]);
+      newPlans[idx].price = Math.max(0, parseInt(el.value)||0);
+    }
+    if(type==='periodActive'){
+      if(!newPeriods[idx]) newPeriods[idx] = Object.assign({}, planConfig.periods[idx]);
+      newPeriods[idx].active = el.checked;
+    }
+    if(type==='periodDiscount'){
+      if(!newPeriods[idx]) newPeriods[idx] = Object.assign({}, planConfig.periods[idx]);
+      newPeriods[idx].discount = Math.max(0, Math.min(100, parseInt(el.value)||0));
+    }
+  });
+  // mergear con existentes para no perder ids/nombres
+  planConfig.plans.forEach((p,i)=>{ if(newPlans[i]) Object.assign(p, newPlans[i]); });
+  planConfig.periods.forEach((p,i)=>{ if(newPeriods[i]) Object.assign(p, newPeriods[i]); });
+  try{
+    await db.collection('platform').doc('config').set(planConfig, {merge:true});
+    toast('Configuración de planes guardada', 'ok');
+    renderPlanConfigUI();
+  }catch(e){
+    toast('No se pudo guardar: ' + (e.message||'error'), 'err');
+  }
+}
+function resetPlanConfigDefaults(){
+  planConfig = JSON.parse(JSON.stringify(DEFAULT_PLAN_CONFIG));
+  renderPlanConfigUI();
+  toast('Valores restaurados (recordá guardar)', 'ok');
+}
+function renderPlanConfigUI(){
+  const wrap = document.getElementById('saPlanConfigWrap');
+  if(!wrap || !planConfig) return;
+  let html = '<div style="display:grid;gap:16px">';
+  html += '<div><b style="font-size:14px">Planes disponibles</b><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:8px">';
+  planConfig.plans.forEach((p,i)=>{
+    html += '<div style="background:#fff;border:1.5px solid '+(p.active?'var(--green)':'var(--line)')+';border-radius:14px;padding:14px">' +
+      '<label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:8px;cursor:pointer">' +
+      '<input type="checkbox" data-plan-field="planActive" data-idx="'+i+'" '+(p.active?'checked':'')+'> ' + esc(p.name) + '</label>' +
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">'+p.features.map(f=>esc(f)).join(' · ')+'</div>' +
+      '<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px">Precio ₡</span>' +
+      '<input type="number" class="f-input" data-plan-field="planPrice" data-idx="'+i+'" value="'+p.price+'" style="width:110px;padding:8px 10px"></div>' +
+      '</div>';
+  });
+  html += '</div></div>';
+  html += '<div><b style="font-size:14px">Períodos de pago y descuentos</b><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">';
+  planConfig.periods.forEach((p,i)=>{
+    html += '<div style="background:#fff;border:1.5px solid '+(p.active?'var(--green)':'var(--line)')+';border-radius:14px;padding:14px;min-width:160px">' +
+      '<label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:8px;cursor:pointer">' +
+      '<input type="checkbox" data-plan-field="periodActive" data-idx="'+i+'" '+(p.active?'checked':'')+'> ' + esc(p.label) + '</label>' +
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+p.months+' mes'+(p.months>1?'es':'')+'</div>' +
+      '<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px">Descuento %</span>' +
+      '<input type="number" class="f-input" data-plan-field="periodDiscount" data-idx="'+i+'" value="'+p.discount+'" style="width:70px;padding:8px 10px"></div>' +
+      '</div>';
+  });
+  html += '</div></div>';
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+/* ---------- carga del panel de membresía (admin de tienda) ---------- */
+async function loadMembershipPanel(){
+  await loadPlanConfig();
+  // Recargar TENANT_DATA fresco desde Firestore para tener el estado actual
+  try{
+    const fresh = await tenantRef().get();
+    if(fresh.exists) TENANT_DATA = Object.assign(TENANT_DATA||{}, fresh.data());
+  }catch(e){ console.warn('No se pudo recargar TENANT_DATA', e); }
+  await loadMembershipData();
+  renderMembershipUI();
+  startMemCountdown();
+}
+
+async function loadMembershipData(){
+  if(unsubMembership) unsubMembership();
+  try{
+    const snap = await tenantRef().get();
+    const data = snap.exists ? snap.data() : {};
+    // Normalizar datos de membresía
+    if(!data.membershipPlan){
+      // Inicializar por primera vez con plan emprendedor
+      const initPlan = 'emprendedor';
+      const initPlanValue = 'basico';
+      await tenantRef().set({
+        membershipPlan: initPlan,
+        membershipPeriod:'monthly',
+        membershipStatus:'al_dia',
+        membershipNextDueDate: addMonths(new Date(),1).toISOString(),
+        membershipLastPaymentDate: new Date().toISOString(),
+        membershipAutoSuspend:true,
+        membershipReminderSent:false,
+        plan: initPlanValue,
+        planRank: 1,
+        montoMensual: 9900
+      }, {merge:true});
+      TENANT_DATA.membershipPlan = initPlan;
+      TENANT_DATA.plan = initPlanValue;
+      TENANT_DATA.planRank = 1;
+      TENANT_DATA.montoMensual = 9900;
+    }
+  }catch(e){ console.error(e); }
+
+  // Escuchar historial de pagos
+  unsubMembership = tenantRef().collection('membershipPayments').orderBy('date','desc').onSnapshot(snap=>{
+    membershipPayments = snap.docs.map(d=>Object.assign({id:d.id}, d.data()));
+    if(document.body.classList.contains('in-admin') && document.getElementById('panel-membership').classList.contains('active')){
+      renderMembershipUI();
+    }
+  });
+}
+
+function getMembershipStatusColor(st){
+  return {al_dia:'green', pendiente:'amber', vencido:'red', suspendido:'red'}[st] || 'gray';
+}
+
+function renderMembershipUI(){
+  const planCfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const t = TENANT_DATA || {};
+  const plan = planCfg.plans.find(p=>p.id===t.membershipPlan) || planCfg.plans[0];
+  const status = t.membershipStatus || 'al_dia';
+  const nextDue = t.membershipNextDueDate ? new Date(t.membershipNextDueDate) : null;
+  const now = new Date();
+
+  // Actualizar tarjetas
+  document.getElementById('memPlanName').textContent = plan ? plan.name : '—';
+  document.getElementById('memPlanPrice').textContent = plan ? fmt(plan.price) + '/mes' : '—';
+  document.getElementById('memStatus').textContent = status.charAt(0).toUpperCase() + status.slice(1).replace('_',' ');
+  document.getElementById('memStatus').style.color = status==='al_dia'?'var(--green)':(status==='suspendido'?'var(--danger)':'#B45309');
+  document.getElementById('memStatusSub').textContent = status==='al_dia'?'Sin problemas':(status==='suspendido'?'Servicio suspendido':'Requiere atención');
+  document.getElementById('memDueDate').textContent = nextDue ? nextDue.toLocaleDateString('es-CR',{day:'2-digit',month:'long',year:'numeric'}) : '—';
+
+  // Calcular saldo / balance
+  let balance = 0;
+  if(nextDue && nextDue < now && status!=='al_dia'){
+    balance = plan ? plan.price : 0;
+  }
+  document.getElementById('memBalance').textContent = fmt(balance);
+
+  // Alerta 24h
+  const alertBox = document.getElementById('memAlertBox');
+  const alertText = document.getElementById('memAlertText');
+  const hoursLeft = nextDue ? hoursBetween(now, nextDue) : Infinity;
+  if(hoursLeft <= 24 && hoursLeft > 0 && status!=='suspendido'){
+    alertBox.style.display = 'flex';
+    alertText.textContent = '⏰ Tu membresía vence en menos de 24 horas (' + Math.floor(hoursLeft) + 'h). Pagá ahora para evitar la suspensión automática.';
+  }else if(status==='vencido'){
+    alertBox.style.display = 'flex';
+    alertText.textContent = '⚠️ Tu membresía está vencida. El servicio se suspenderá automáticamente si no realizás el pago.';
+  }else if(status==='suspendido'){
+    alertBox.style.display = 'flex';
+    alertText.textContent = '🔒 Servicio suspendido por falta de pago. Contactá al superadministrador para reactivar.';
+  }else{
+    alertBox.style.display = 'none';
+  }
+
+  // Historial
+  const tbody = document.getElementById('memHistoryBody');
+  if(!membershipPayments.length){
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Aún no hay pagos registrados.</td></tr>';
+  }else{
+    tbody.innerHTML = membershipPayments.map(p=>{
+      const d = p.date ? new Date(p.date) : null;
+      return '<tr><td>'+(d?d.toLocaleDateString('es-CR'):'—')+'</td><td>'+esc(p.periodLabel||p.period)+'</td><td>'+esc(p.planName||p.plan)+'</td><td><b>'+fmt(p.amount)+'</b></td><td><span class="pill '+(p.status==='completado'?'green':'amber')+'">'+(p.status==='completado'?'Completado':'Pendiente')+'</span></td><td>'+esc(p.reference||'—')+'</td></tr>';
+    }).join('');
+  }
+
+  updateMembershipNavBadge();
+}
+
+function startMemCountdown(){
+  if(memTimerInterval) clearInterval(memTimerInterval);
+  memTimerInterval = setInterval(()=>{
+    const t = TENANT_DATA || {};
+    const nextDue = t.membershipNextDueDate ? new Date(t.membershipNextDueDate) : null;
+    const now = new Date();
+    const el = document.getElementById('memCountdown');
+    if(!el) return;
+    if(!nextDue){ el.textContent = '—'; return; }
+    const diff = nextDue - now;
+    if(diff <= 0){ el.textContent = 'Vencido'; el.style.color='var(--danger)'; return; }
+    const d = Math.floor(diff/(1000*60*60*24));
+    const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+    const m = Math.floor((diff%(1000*60*60))/(1000*60));
+    el.textContent = (d>0?d+'d ':'') + h+'h ' + m+'m restantes';
+    el.style.color = diff < 24*60*60*1000 ? 'var(--danger)' : 'var(--green)';
+  }, 60000);
+  // Ejecutar inmediatamente
+  const evt = new Event('interval');
+  // Hack: llamar manualmente una vez
+  setTimeout(()=>{
+    const t = TENANT_DATA || {};
+    const nextDue = t.membershipNextDueDate ? new Date(t.membershipNextDueDate) : null;
+    const now = new Date();
+    const el = document.getElementById('memCountdown');
+    if(el && nextDue){
+      const diff = nextDue - now;
+      if(diff <= 0){ el.textContent = 'Vencido'; el.style.color='var(--danger)'; }
+      else {
+        const d = Math.floor(diff/(1000*60*60*24));
+        const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+        const m = Math.floor((diff%(1000*60*60))/(1000*60));
+        el.textContent = (d>0?d+'d ':'') + h+'h ' + m+'m restantes';
+        el.style.color = diff < 24*60*60*1000 ? 'var(--danger)' : 'var(--green)';
+      }
+    }
+  }, 500);
+}
+
+function updateMembershipNavBadge(){
+  const badge = document.getElementById('membershipNavBadge');
+  const t = TENANT_DATA || {};
+  const status = t.membershipStatus || 'al_dia';
+  const nextDue = t.membershipNextDueDate ? new Date(t.membershipNextDueDate) : null;
+  const hoursLeft = nextDue ? hoursBetween(new Date(), nextDue) : Infinity;
+  const show = status==='vencido' || status==='suspendido' || (hoursLeft <= 24 && hoursLeft > 0);
+  badge.style.display = show ? 'flex' : 'none';
+  badge.textContent = '!';
+}
+
+/* ---------- modal pagar membresía ---------- */
+
+let memPayProofDataUrl = null;
+function onMemPayProofChosen(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  compressImageFile(file, 1200, 0.8).then(dataUrl => {
+    memPayProofDataUrl = dataUrl;
+    document.getElementById('memPayProofPreview').innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:12px">';
+    document.getElementById('memPayProofHint').textContent = 'Comprobante cargado ✓';
+    document.getElementById('memPayProofHint').style.color = 'var(--green)';
+    document.getElementById('memPayConfirmBtn').disabled = false;
+    toast('Comprobante cargado', 'ok');
+  }).catch(()=>{
+    toast('No se pudo procesar la foto del comprobante', 'err');
+    memPayProofDataUrl = null;
+  });
+  input.value = '';
+}
+function resetMemPayForm(){
+  memPayProofDataUrl = null;
+  document.getElementById('memPayProofPreview').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:36px;height:36px"><path d="M12 16V4m0 0 4 4m-4-4-4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
+  document.getElementById('memPayProofHint').textContent = 'Tocá el recuadro o el botón para subir el comprobante';
+  document.getElementById('memPayProofHint').style.color = 'var(--muted)';
+  document.getElementById('memPayRef').value = '';
+}
+
+async function openMembershipPaymentModal(){
+  document.getElementById('memPaymentModal').classList.add('show'); // abrir inmediatamente
+  await loadPlanConfig();
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const t = TENANT_DATA || {};
+  const currentPlan = cfg.plans.find(p=>p.id===t.membershipPlan) || cfg.plans[0];
+  if(!currentPlan){ toast('No se pudo determinar tu plan', 'err'); closeMemPaymentModal(); return; }
+
+  document.getElementById('memPayPlan').value = currentPlan.name + ' — ' + fmt(currentPlan.price) + '/mes';
+  const periodSel = document.getElementById('memPayPeriod');
+  periodSel.innerHTML = cfg.periods.filter(p=>p.active).map(p=>{
+    const total = Math.round(currentPlan.price * p.months * (1 - p.discount/100));
+    return '<option value="'+p.id+'" data-months="'+p.months+'" data-discount="'+p.discount+'" data-total="'+total+'">'+esc(p.label)+' — '+fmt(total)+ (p.discount>0?' (ahorrás '+p.discount+'%)':'') +'</option>';
+  }).join('');
+  updateMemPayTotal();
+}
+function closeMemPaymentModal(){ document.getElementById('memPaymentModal').classList.remove('show'); resetMemPayForm(); }
+function updateMemPayTotal(){
+  const sel = document.getElementById('memPayPeriod');
+  const opt = sel.options[sel.selectedIndex];
+  if(!opt){ return; }
+  const base = parseInt(opt.dataset.total) || 0;
+  const discount = parseInt(opt.dataset.discount) || 0;
+  const months = parseInt(opt.dataset.months) || 1;
+  // Recalcular base sin descuento para mostrar
+  const t = TENANT_DATA || {};
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const currentPlan = cfg.plans.find(p=>p.id===t.membershipPlan) || cfg.plans[0];
+  const rawTotal = currentPlan ? currentPlan.price * months : 0;
+  document.getElementById('memPayBase').textContent = fmt(rawTotal);
+  const discRow = document.getElementById('memPayDiscountRow');
+  if(discount > 0){
+    discRow.style.display = 'flex';
+    document.getElementById('memPayDiscount').textContent = '−' + fmt(rawTotal - base);
+  }else{
+    discRow.style.display = 'none';
+  }
+  document.getElementById('memPayTotal').textContent = fmt(base);
+}
+
+async function processMembershipPayment(){
+  const sel = document.getElementById('memPayPeriod');
+  const opt = sel.options[sel.selectedIndex];
+  if(!opt){ toast('Seleccioná un período de pago', 'err'); return; }
+  const periodId = opt.value;
+  const months = parseInt(opt.dataset.months) || 1;
+  const amount = parseInt(opt.dataset.total) || 0;
+  const reference = document.getElementById('memPayRef').value.trim();
+
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const t = TENANT_DATA || {};
+  const currentPlan = cfg.plans.find(p=>p.id===t.membershipPlan) || cfg.plans[0];
+  const periodCfg = cfg.periods.find(p=>p.id===periodId) || {label:periodId};
+
+  const now = new Date();
+  const nextDue = addMonths(now, months);
+
+  if(!memPayProofDataUrl){
+    toast('Subí una foto del comprobante de pago para continuar', 'err');
+    return;
+  }
+  const payment = {
+    date: now.toISOString(),
+    amount, period: periodId, periodLabel: periodCfg.label,
+    plan: currentPlan.id, planName: currentPlan.name,
+    status: 'completado',
+    method: 'SINPE Móvil',
+    reference: reference || 'Pago manual',
+    proofImage: memPayProofDataUrl
+  };
+
+  try{
+    await tenantRef().collection('membershipPayments').add(payment);
+    const planValue = currentPlan.id === 'destacado' ? 'destacado' : (currentPlan.id === 'profesional' ? 'premium' : 'basico');
+    await tenantRef().set({
+      membershipStatus: 'al_dia',
+      membershipNextDueDate: nextDue.toISOString(),
+      membershipLastPaymentDate: now.toISOString(),
+      membershipReminderSent: false,
+      montoMensual: currentPlan.price,
+      estadoPago: 'al_dia',
+      plan: planValue,
+      planRank: currentPlan.id === 'destacado' ? 3 : (currentPlan.id === 'profesional' ? 2 : 1)
+    }, {merge:true});
+    // Actualizar TENANT_DATA local
+    TENANT_DATA.membershipStatus = 'al_dia';
+    TENANT_DATA.membershipNextDueDate = nextDue.toISOString();
+    TENANT_DATA.membershipLastPaymentDate = now.toISOString();
+    TENANT_DATA.montoMensual = currentPlan.price;
+    TENANT_DATA.estadoPago = 'al_dia';
+    TENANT_DATA.plan = planValue;
+    TENANT_DATA.planRank = currentPlan.id === 'destacado' ? 3 : (currentPlan.id === 'profesional' ? 2 : 1);
+
+    closeMemPaymentModal();
+    renderMembershipUI();
+    // Actualizar visual de plan en settings si está visible
+    const sponsEl = document.getElementById('sponsoredStatus');
+    if(sponsEl){
+      const isSponsored = (planValue==='premium' || planValue==='destacado');
+      sponsEl.textContent = isSponsored ? '⭐ Plan ' + planValue.charAt(0).toUpperCase()+planValue.slice(1) + ' activo' : 'Plan Básico — sin destacar';
+      sponsEl.style.color = isSponsored ? 'var(--green-dark)' : 'var(--muted)';
+    }
+    toast('¡Pago registrado! Tu membresía está activa hasta el ' + nextDue.toLocaleDateString('es-CR'), 'ok');
+  }catch(e){
+    toast('No se pudo registrar el pago: ' + (e.message||'error'), 'err');
+    console.error(e);
+  }
+}
+
+/* ---------- modal cambiar plan ---------- */
+async function openChangePlanModal(){
+  await loadPlanConfig();
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const t = TENANT_DATA || {};
+  const currentId = t.membershipPlan || 'emprendedor';
+  const body = document.getElementById('memChangePlanBody');
+  body.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">' +
+    cfg.plans.filter(p=>p.active).map(p=>{
+      const isCurrent = p.id === currentId;
+      return '<div style="background:#fff;border:2px solid '+(isCurrent?'var(--green)':'var(--line)')+';border-radius:16px;padding:18px;position:relative">' +
+        (isCurrent?'<span class="sponsored-badge" style="position:absolute;top:10px;right:10px"><svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Actual</span>':'') +
+        '<div style="font-size:18px;font-weight:800;margin-bottom:4px">'+esc(p.name)+'</div>' +
+        '<div style="font-size:24px;font-weight:900;color:var(--green);margin-bottom:10px">'+fmt(p.price)+'<span style="font-size:13px;color:var(--muted);font-weight:600">/mes</span></div>' +
+        '<ul style="font-size:13px;color:var(--muted);line-height:1.6;padding-left:18px;margin-bottom:14px">'+p.features.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul>' +
+        '<button class="btn-primary" style="width:100%" '+(isCurrent?'disabled':'onclick="changeMembershipPlan(\''+p.id+'\')"')+'>'+(isCurrent?'Plan actual':'Elegir este plan')+'</button>' +
+        '</div>';
+    }).join('') + '</div>';
+  document.getElementById('memChangePlanModal').classList.add('show');
+}
+function closeChangePlanModal(){ document.getElementById('memChangePlanModal').classList.remove('show'); }
+
+async function changeMembershipPlan(planId){
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const plan = cfg.plans.find(p=>p.id===planId);
+  if(!plan){ toast('Plan no encontrado', 'err'); return; }
+  try{
+    // Actualizar plan de membresía Y el plan visible de la tienda (para insignia, ranking, etc.)
+    const planValue = planId === 'destacado' ? 'destacado' : (planId === 'profesional' ? 'premium' : 'basico');
+    await tenantRef().set({ 
+      membershipPlan: planId, 
+      montoMensual: plan.price,
+      plan: planValue,
+      planRank: planId === 'destacado' ? 3 : (planId === 'profesional' ? 2 : 1)
+    }, {merge:true});
+    TENANT_DATA.membershipPlan = planId;
+    TENANT_DATA.montoMensual = plan.price;
+    TENANT_DATA.plan = planValue;
+    TENANT_DATA.planRank = planId === 'destacado' ? 3 : (planId === 'profesional' ? 2 : 1);
+    closeChangePlanModal();
+    renderMembershipUI();
+    // Actualizar visual de la tienda si estamos en el admin
+    if(document.body.classList.contains('in-admin')){
+      const sponsEl = document.getElementById('sponsoredStatus');
+      if(sponsEl){
+        const isSponsored = (planValue==='premium' || planValue==='destacado');
+        sponsEl.textContent = isSponsored ? '⭐ Plan ' + planValue.charAt(0).toUpperCase()+planValue.slice(1) + ' activo' : 'Plan Básico — sin destacar';
+        sponsEl.style.color = isSponsored ? 'var(--green-dark)' : 'var(--muted)';
+      }
+    }
+    toast('Plan cambiado a ' + plan.name + '. Tu tienda se actualizó automáticamente.', 'ok');
+  }catch(e){
+    toast('No se pudo cambiar el plan: ' + (e.message||'error'), 'err');
+  }
+}
+
+/* ---------- verificación automática de vencimiento ---------- */
+async function checkMembershipExpiry(){
+  const t = TENANT_DATA || {};
+  if(!t.membershipNextDueDate) return;
+  const nextDue = new Date(t.membershipNextDueDate);
+  const now = new Date();
+  const hoursLeft = hoursBetween(now, nextDue);
+  let newStatus = t.membershipStatus || 'al_dia';
+  let updates = {};
+
+  if(nextDue <= now && newStatus === 'al_dia'){
+    newStatus = 'vencido';
+    updates.membershipStatus = 'vencido';
+    updates.estadoPago = 'vencido';
+  }
+  if(nextDue <= now && (newStatus === 'vencido' || newStatus === 'pendiente')){
+    // Suspensión automática después de 7 días de vencido
+    const daysPast = daysBetween(nextDue, now);
+    if(daysPast >= 7 && newStatus !== 'suspendido' && t.membershipAutoSuspend !== false){
+      newStatus = 'suspendido';
+      updates.membershipStatus = 'suspendido';
+      updates.estadoPago = 'vencido';
+      updates.activo = false; // desactivar tienda en plataforma
+    }
+  }
+  // Recordatorio 24h antes
+  if(hoursLeft <= 24 && hoursLeft > 0 && !t.membershipReminderSent){
+    updates.membershipReminderSent = true;
+    // Aquí se podría enviar notificación push/email
+  }
+
+  if(Object.keys(updates).length){
+    try{
+      await tenantRef().set(updates, {merge:true});
+      Object.assign(TENANT_DATA, updates);
+      if(document.body.classList.contains('in-admin')) renderMembershipUI();
+    }catch(e){ console.error(e); }
+  }
+}
+
+/* ---------- integrar en bootPlatform ---------- */
+
 async function bootPlatform(){
   renderHeader(); renderChips(); updateCartUI(); renderExternalLinks(); renderStoryVideo();
   if(new URLSearchParams(location.search).get('superadmin') === '1'){
@@ -5089,6 +5695,18 @@ async function bootPlatform(){
       return;
     }
     TENANT_DATA = snap.data();
+    // Asegurar valores por defecto de membresía si no existen
+    if(!TENANT_DATA.membershipPlan){
+      TENANT_DATA.membershipPlan = 'emprendedor';
+      TENANT_DATA.membershipStatus = 'al_dia';
+      TENANT_DATA.membershipNextDueDate = addMonths(new Date(),1).toISOString();
+      TENANT_DATA.membershipLastPaymentDate = new Date().toISOString();
+      TENANT_DATA.membershipAutoSuspend = true;
+      TENANT_DATA.membershipReminderSent = false;
+      TENANT_DATA.plan = 'basico';
+      TENANT_DATA.planRank = 1;
+      TENANT_DATA.montoMensual = 9900;
+    }
     ADMIN_EMAILS = TENANT_DATA.adminEmails || [];
     document.title = (TENANT_DATA.nombre || 'Tienda') + ' — PRO.DIGITAL';
     bindTenantRefs();
@@ -5112,5 +5730,54 @@ bootPlatform();
 /* La primera vez que el administrador entre y presione "Guardar cambios" en
    Configuraciones, se crea el documento tenants/{slug}/settings/store en Firestore. */
 </script>
+
+<!-- Modal: Pagar membresía -->
+<div class="modal" id="memPaymentModal" style="z-index:300">
+  <div class="modal-bg" onclick="closeMemPaymentModal()"></div>
+  <div class="modal-card">
+    <div class="modal-head"><h3>Pagar servicio PRO.DIGITAL</h3>
+      <button class="close-x" onclick="closeMemPaymentModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="f-group"><label>Plan actual</label><input class="f-input" id="memPayPlan" readonly></div>
+      <div class="f-group"><label>Período de pago</label><select class="f-input" id="memPayPeriod" onchange="updateMemPayTotal()"></select></div>
+      <div class="sum-box" style="margin:14px 0">
+        <div class="sum-line"><span>Precio base</span><span id="memPayBase">₡0</span></div>
+        <div class="sum-line" id="memPayDiscountRow" style="color:#B45309"><span>Descuento por período</span><span id="memPayDiscount">−₡0</span></div>
+        <div class="sum-line grand"><span>Total a pagar</span><span id="memPayTotal">₡0</span></div>
+      </div>
+      <input type="file" id="memPayProofInput" accept="image/*" style="display:none" onchange="onMemPayProofChosen(this)">
+      <div class="f-group"><label>Referencia / comprobante (opcional)</label><input class="f-input" id="memPayRef" placeholder="Número de SINPE o referencia"></div>
+      <div class="f-group">
+        <label>Comprobante de pago <span class="req">*</span></label>
+        <div class="logo-upload-row" id="memPayProofRow">
+          <span class="logo-preview" id="memPayProofPreview" style="cursor:pointer;width:90px;height:90px;border-radius:12px" onclick="document.getElementById('memPayProofInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:36px;height:36px"><path d="M12 16V4m0 0 4 4m-4-4-4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button type="button" class="btn-ghost" style="width:auto;padding:9px 16px" onclick="document.getElementById('memPayProofInput').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px"><path d="M12 16V4m0 0 4 4m-4-4-4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Subir foto del SINPE
+            </button>
+            <span style="font-size:12px;color:var(--muted)" id="memPayProofHint">Tocá el recuadro o el botón para subir el comprobante</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" id="memPayConfirmBtn" onclick="processMembershipPayment()">Confirmar pago</button>
+      <p class="hint" style="text-align:center;margin-top:8px">Al confirmar se registra tu pago y se extiende tu membresía. El comprobante lo verificamos manualmente.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Cambiar plan -->
+<div class="modal" id="memChangePlanModal" style="z-index:300">
+  <div class="modal-bg" onclick="closeChangePlanModal()"></div>
+  <div class="modal-card">
+    <div class="modal-head"><h3>Cambiar de plan</h3>
+      <button class="close-x" onclick="closeChangePlanModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="memChangePlanBody"></div>
+  </div>
+</div>
+
 </body>
 </html>
