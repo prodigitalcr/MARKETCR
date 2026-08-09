@@ -58,6 +58,7 @@
   --bg:#F4F6F8; --card:#FFFFFF; --ink:#17202A; --muted:#6B7280;
   --line:#E5E7EB; --danger:#DC2626; --danger-soft:#FDE8E8;
   --blue:#1D4ED8; --blue-soft:#E3EDFF;
+  --ruby:#7C3AED; --ruby-dark:#5B21B6; --ruby-accent:#BE185D; --ruby-soft:#F5E9FB;
   --radius:18px; --shadow:0 10px 28px rgba(16,24,40,.10);
   --font:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
   --font-display:"Fraunces","Georgia",serif;
@@ -302,6 +303,9 @@ textarea.f-input{resize:vertical;min-height:70px}
 .media-item .cover-tag{position:absolute;top:6px;left:6px;background:var(--ink);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px}
 .media-item .rm-btn{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(220,38,38,.92);color:#fff;display:flex;align-items:center;justify-content:center}
 .media-item .rm-btn svg{width:12px;height:12px}
+.media-item .ai-bg-btn{position:absolute;bottom:6px;left:6px;right:6px;height:24px;border-radius:8px;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent));color:#fff;display:flex;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:800;letter-spacing:.2px;box-shadow:0 3px 8px rgba(124,58,237,.4)}
+.media-item .ai-bg-btn:disabled{opacity:.65;cursor:wait}
+.media-item .ai-bg-btn svg{width:11px;height:11px}
 .media-item .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#CBD5E1}
 .media-item.upload{cursor:pointer;transition:.15s}
 .media-item.upload:hover{border-color:var(--green);background:var(--green-soft)}
@@ -721,11 +725,11 @@ body.in-admin .ai-float,body.in-admin .ai-panel{display:none}
 .traffic-bar-fill{height:100%;border-radius:999px;background:var(--green);transition:width .4s ease}
 .traffic-source-icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 
-.sponsored-badge{background:linear-gradient(135deg,#FFD100,#F59E0B);color:#7C2D12;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:4px}
+.sponsored-badge{background:linear-gradient(135deg,var(--ruby),var(--ruby-accent));color:#fff;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:4px}
 .sponsored-badge svg{width:11px;height:11px}
 
 /* Tiendas patrocinadas en el selector */
-.ts-card.sponsored{box-shadow:0 0 0 2.5px var(--yellow),0 14px 34px rgba(0,0,0,.22)}
+.ts-card.sponsored{box-shadow:0 0 0 2.5px var(--ruby),0 14px 34px rgba(0,0,0,.22)}
 .ts-sponsored-tag{position:absolute;top:10px;left:10px;z-index:3}
 .ts-plan-select{padding:6px 10px;border:1px solid var(--line);border-radius:9px;font-size:12px;font-weight:600;outline:none;background:#fff}
 
@@ -852,7 +856,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 .plan-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
 .plan-pill.emprendedor{background:#E7F5EC;color:#0F5A30}
 .plan-pill.profesional{background:#E3EDFF;color:#1D4ED8}
-.plan-pill.destacado{background:var(--yellow-soft);color:#92400E}
+.plan-pill.destacado{background:var(--ruby-soft);color:var(--ruby-dark)}
 .plan-pill.basico,.plan-pill.none{background:#F3F4F6;color:#6B7280}
 .plan-pill.pendiente-aprobacion{background:#FFF1DC;color:#B45309}
 .sa-plan-col{min-width:190px}
@@ -896,16 +900,16 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 .story-float-2.show{display:block}
 @media (max-width:480px){.story-float-2{left:160px;width:130px}}
 
-/* ============ PLAN DESTACADO — VISUALIZACIÓN PREMIUM ============ */
-.ts-card.sponsored{box-shadow:0 0 0 3px var(--yellow),0 0 30px rgba(255,209,0,.35),0 14px 34px rgba(0,0,0,.22);position:relative;overflow:visible}
-.ts-card.sponsored::before{content:'';position:absolute;inset:-3px;border-radius:25px;background:linear-gradient(135deg,#FFD100,#F59E0B,#FFD100);background-size:200% 200%;animation:shimmer 3s ease infinite;z-index:-1;opacity:.9}
+/* ============ PLAN DESTACADO — VISUALIZACIÓN PREMIUM (morado/rubí) ============ */
+.ts-card.sponsored{box-shadow:0 0 0 3px var(--ruby),0 0 30px rgba(124,58,237,.35),0 14px 34px rgba(0,0,0,.22);position:relative;overflow:visible}
+.ts-card.sponsored::before{content:'';position:absolute;inset:-3px;border-radius:25px;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent),var(--ruby));background-size:200% 200%;animation:shimmer 3s ease infinite;z-index:-1;opacity:.9}
 @keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .ts-card.sponsored .ts-media{border-radius:22px 22px 0 0}
-.ts-card.sponsored .ts-body{background:linear-gradient(180deg,#fff 0%,#FFFBEB 100%);border-radius:0 0 22px 22px}
-.ts-card.sponsored .ts-name{color:#92400E}
-.ts-card.sponsored .ts-arrow{background:var(--yellow);color:#7C2D12}
+.ts-card.sponsored .ts-body{background:linear-gradient(180deg,#fff 0%,var(--ruby-soft) 100%);border-radius:0 0 22px 22px}
+.ts-card.sponsored .ts-name{color:var(--ruby-dark)}
+.ts-card.sponsored .ts-arrow{background:var(--ruby);color:#fff}
 .ts-card.sponsored:hover{transform:translateY(-6px) scale(1.01)}
-.ts-premium-ribbon{position:absolute;top:-10px;right:-10px;width:44px;height:44px;background:linear-gradient(135deg,#FFD100,#F59E0B);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(245,158,11,.5);z-index:4;animation:pulseRibbon 2.5s ease-in-out infinite}
+.ts-premium-ribbon{position:absolute;top:-10px;right:-10px;width:44px;height:44px;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent));border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(124,58,237,.5);z-index:4;animation:pulseRibbon 2.5s ease-in-out infinite}
 .ts-premium-ribbon svg{width:22px;height:22px;color:#fff}
 @keyframes pulseRibbon{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 
@@ -1459,12 +1463,50 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 
       <div class="settings-card">
         <h4>✨ Asistente de compras con IA</h4>
-        <div class="desc">Un chat flotante que recomienda productos a tus clientes. Usa la API de Google Gemini — necesitás tu propia clave (gratuita) desde <b>aistudio.google.com</b>. Si dejás la clave vacía, el asistente permanece oculto para los clientes.</div>
-        <div class="f-row">
-          <div class="f-group"><label>Nombre del asistente</label><input class="f-input" id="sAiName" placeholder="Ej: Cana"></div>
+        <div class="desc">Un chat flotante que recomienda productos a tus clientes.</div>
+        <div class="desc" id="sAiLockNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El Asistente de IA (chat + generador de fotos con fondo blanco) es exclusivo del <b>Plan Destacado</b>. Podés dejar los datos guardados, pero no se activará para tus clientes hasta que subas de plan.</div>
+
+        <div class="f-group"><label>Proveedor del modelo de IA</label>
+          <select class="sort-select" id="sAiProvider" style="width:100%" onchange="onAiProviderChange()">
+            <option value="gemini">Google Gemini (clave propia de aistudio.google.com)</option>
+            <option value="openrouter">OpenRouter (modelos gratuitos, elegís cuál usar)</option>
+          </select>
+        </div>
+
+        <div id="sAiGeminiBlock">
+          <div class="desc">Usa la API de Google Gemini — necesitás tu propia clave (gratuita) desde <b>aistudio.google.com</b>.</div>
           <div class="f-group"><label>Clave de API de Gemini</label><input class="f-input" type="password" id="sAiKey" autocomplete="off" placeholder="Pegá tu API key aquí"></div>
         </div>
-        <div class="f-group"><label>Mensaje de bienvenida</label><input class="f-input" id="sAiWelcome" placeholder="¡Hola! ¿Buscás algo en especial?"></div>
+
+        <div id="sAiOpenrouterBlock" style="display:none">
+          <div class="desc">Usa <b>OpenRouter</b> (openrouter.ai) para conectar el asistente a modelos gratuitos de distintos proveedores (Llama, Gemini, DeepSeek, Qwen, etc.). Creá tu clave gratis en <b>openrouter.ai/keys</b>.</div>
+          <div class="f-group"><label>Clave de API de OpenRouter</label><input class="f-input" type="password" id="sAiOpenrouterKey" autocomplete="off" placeholder="sk-or-v1-..."></div>
+          <div class="f-group">
+            <label>Modelo para el chat (solo modelos gratis :free)</label>
+            <div style="display:flex;gap:8px">
+              <select class="sort-select" id="sAiModel" style="width:100%;flex:1"><option value="">— Cargá los modelos primero —</option></select>
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;white-space:nowrap" onclick="loadOpenRouterModels('chat')">🔄 Cargar modelos</button>
+            </div>
+          </div>
+          <div class="f-group">
+            <label>Modelo para generar fotos con fondo blanco <span class="hint" style="display:inline">(debe soportar salida de imagen)</span></label>
+            <div style="display:flex;gap:8px">
+              <select class="sort-select" id="sAiImageModel" style="width:100%;flex:1"><option value="">— Cargá los modelos primero —</option></select>
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;white-space:nowrap" onclick="loadOpenRouterModels('image')">🔄 Cargar modelos</button>
+            </div>
+            <div class="hint" style="margin-top:4px">No todos los modelos gratuitos de OpenRouter generan imágenes. Si la lista sale vacía, probá de nuevo más tarde o revisá openrouter.ai/models con el filtro de "image output".</div>
+          </div>
+          <div class="f-group">
+            <label>Entrenamiento / instrucciones del asistente <span class="hint" style="display:inline">(personalidad, tono, reglas propias de tu negocio)</span></label>
+            <textarea class="f-input" id="sAiSystemPrompt" rows="4" placeholder="Ej: Sos un asistente cálido y directo. Siempre ofrecé la opción más económica primero. Nunca prometas envíos gratis fuera del GAM..."></textarea>
+            <div class="hint" style="margin-top:4px">OpenRouter no permite re-entrenar (fine-tuning) los modelos gratuitos, pero estas instrucciones se envían siempre al modelo elegido para "enseñarle" cómo debe comportarse con tus clientes.</div>
+          </div>
+        </div>
+
+        <div class="f-row">
+          <div class="f-group"><label>Nombre del asistente</label><input class="f-input" id="sAiName" placeholder="Ej: Cana"></div>
+          <div class="f-group"><label>Mensaje de bienvenida</label><input class="f-input" id="sAiWelcome" placeholder="¡Hola! ¿Buscás algo en especial?"></div>
+        </div>
         <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;margin-top:4px">
           <input type="checkbox" id="sAiEnabled" style="width:16px;height:16px"> Activar asistente para los clientes de esta tienda
         </label>
@@ -1495,9 +1537,9 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </div>
 
       <!-- Plan patrocinado -->
-      <div class="settings-card" style="border:2px solid var(--yellow);background:var(--yellow-soft)">
-        <h4><svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;color:#92400E"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Plan Destacado</h4>
-        <div class="desc">Las tiendas con plan <b>Destacado</b> aparecen primero en el selector y muestran una insignia amarilla. Para activarlo contactá a PRO.DIGITAL. El campo <code>plan</code> en Firestore debe tener el valor <b>destacado</b> o <b>premium</b>.</div>
+      <div class="settings-card" style="border:2px solid var(--ruby);background:var(--ruby-soft)">
+        <h4><svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;color:var(--ruby-dark)"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Plan Destacado</h4>
+        <div class="desc">Las tiendas con plan <b>Destacado</b> aparecen primero en el selector con un borde morado tipo rubí, y desbloquean el <b>Asistente de IA con OpenRouter</b> (chat inteligente + generador de fotos de producto con fondo blanco). Para activarlo contactá a PRO.DIGITAL. El campo <code>plan</code> en Firestore debe tener el valor <b>destacado</b> o <b>premium</b>.</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px">
           <span class="sponsored-badge"><svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Destacada</span>
           <span style="font-size:13px;color:#78716C">Estado actual: <b id="sponsoredStatus">Cargando…</b></span>
@@ -1592,6 +1634,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
               <button type="button" class="btn-ghost" style="width:auto;padding:9px 16px;margin-top:8px" onclick="addImageField()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Agregar recuadro de foto
               </button>
+              <div class="hint" style="margin-top:6px">✨ El botón morado <b>"Fondo blanco"</b> sobre cada foto genera automáticamente una versión con fondo blanco usando IA (OpenRouter). Es exclusivo del <b>Plan Destacado</b> y requiere tener configurado un modelo de imagen en Configuraciones → Asistente de IA.</div>
             </div>
             <div class="f-group"><label>Nombre del producto <span class="req">*</span></label><input class="f-input" id="pName" placeholder="Ej: Monstera Deliciosa"></div>
             <div class="f-group"><label>Categoría</label><select class="f-input" id="pCat"></select></div>
@@ -2095,7 +2138,12 @@ const DEFAULT_SETTINGS = {
   aiEnabled:false,
   aiApiKey:'',
   aiAssistantName:'Cana',
-  aiWelcomeMsg:'¡Hola! ¿Buscás algo en especial o querés que te recomiende algo?'
+  aiWelcomeMsg:'¡Hola! ¿Buscás algo en especial o querés que te recomiende algo?',
+  aiProvider:'gemini',        // 'gemini' | 'openrouter'
+  aiOpenrouterKey:'',         // clave de API de OpenRouter (openrouter.ai/keys)
+  aiModel:'',                 // id del modelo elegido en OpenRouter, ej: 'meta-llama/llama-3.3-70b-instruct:free'
+  aiImageModel:'',            // id del modelo de OpenRouter usado para generar fotos con fondo blanco
+  aiSystemPrompt:''           // instrucciones/"entrenamiento" propio del negocio para el modelo elegido
 };
 
 const GRADS = [
@@ -2377,7 +2425,11 @@ let aiHistory = [];
 let aiWelcomeShown = false;
 function renderAIAssistant(){
   const btn = document.getElementById('aiFloatBtn');
-  const canUse = !!(settings.aiEnabled && settings.aiApiKey);
+  const provider = settings.aiProvider || 'gemini';
+  const hasCreds = provider === 'openrouter'
+    ? !!(settings.aiOpenrouterKey && settings.aiModel)
+    : !!settings.aiApiKey;
+  const canUse = !!(settings.aiEnabled && hasCreds && planAllows('ai-assistant'));
   btn.style.display = canUse ? 'flex' : 'none';
   document.getElementById('aiAssistantName').textContent = settings.aiAssistantName || 'Asistente';
   if(!canUse){
@@ -2422,6 +2474,22 @@ function appendProductSuggestion(productId){
   body.appendChild(card);
   body.scrollTop = body.scrollHeight;
 }
+/* Instrucción base común a cualquier proveedor: quién es el asistente,
+   el inventario de ESTA tienda, y las instrucciones de "entrenamiento"
+   propias del negocio (settings.aiSystemPrompt) escritas desde Configuraciones. */
+function buildAiSystemInstruction(){
+  const invJson = JSON.stringify(products.map(p => ({ id:p.id, nombre:p.name, desc:p.desc, precio: displayPrice(p), stock: p.unlimited ? 'ilimitado' : (p.stock||0) })));
+  const custom = (settings.aiSystemPrompt || '').trim();
+  return 'Eres "' + (settings.aiAssistantName||'Cana') + '", experta en ventas de "' + (settings.storeName||'la tienda') + '".\n' +
+    'Inventario disponible: ' + invJson + '\n' +
+    (custom ? ('Instrucciones propias del negocio (seguilas siempre):\n' + custom + '\n') : '') +
+    'Reglas:\n' +
+    '1. Si te piden una recomendación o buscan algo, sugerí 1 o 2 IDs de productos exactos que encajen.\n' +
+    '2. Respondé con amabilidad y resaltando el valor, en español costarricense.\n' +
+    '3. Respondé SOLO en JSON válido sin formato markdown, sin texto antes ni después.\n' +
+    'Schema: {"reply": "Texto de respuesta", "productIdsToRecommend": ["id1","id2"]}';
+}
+
 async function handleAISubmit(e){
   e.preventDefault();
   const inputEl = document.getElementById('aiInput');
@@ -2430,7 +2498,6 @@ async function handleAISubmit(e){
 
   appendMessage(userText, 'user');
   inputEl.value = '';
-  aiHistory.push({ role:'user', parts:[{ text: userText }] });
 
   const body = document.getElementById('aiChatBody');
   const loadingMsg = document.createElement('div');
@@ -2439,52 +2506,147 @@ async function handleAISubmit(e){
   body.appendChild(loadingMsg);
   body.scrollTop = body.scrollHeight;
 
-  const apiKey = settings.aiApiKey || '';
-  const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
-  const invJson = JSON.stringify(products.map(p => ({ id:p.id, nombre:p.name, desc:p.desc, precio: displayPrice(p), stock: p.unlimited ? 'ilimitado' : (p.stock||0) })));
-  const systemInstruction =
-    'Eres "' + (settings.aiAssistantName||'Cana') + '", experta en ventas de "' + (settings.storeName||'la tienda') + '".\n' +
-    'Inventario disponible: ' + invJson + '\n' +
-    'Reglas:\n' +
-    '1. Si te piden una recomendación o buscan algo, sugerí 1 o 2 IDs de productos exactos que encajen.\n' +
-    '2. Respondé con amabilidad y resaltando el valor, en español costarricense.\n' +
-    '3. Respondé SOLO en JSON válido sin formato markdown.\n' +
-    'Schema: {"reply": "Texto de respuesta", "productIdsToRecommend": ["id1","id2"]}';
-
   try{
-    const response = await fetch(apiUrl, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({
-        contents: aiHistory,
-        systemInstruction: { parts:[{ text: systemInstruction }] },
-        generationConfig: { responseMimeType:'application/json' }
-      })
-    });
-    const result = await response.json();
+    const data = (settings.aiProvider === 'openrouter')
+      ? await callOpenRouterAI(userText)
+      : await callGeminiAI(userText);
     loadingMsg.remove();
-    if(result.candidates && result.candidates[0] && result.candidates[0].content){
-      const jsonText = result.candidates[0].content.parts[0].text;
-      try{
-        const data = JSON.parse(jsonText);
-        appendMessage(data.reply, 'bot');
-        aiHistory.push({ role:'model', parts:[{ text: jsonText }] });
-        if(Array.isArray(data.productIdsToRecommend)){
-          data.productIdsToRecommend.forEach(id => appendProductSuggestion(id));
-        }
-      }catch(err){
-        appendMessage('Perdón, no entendí bien eso. ¿Podés repetirlo?', 'bot');
+    if(data){
+      appendMessage(data.reply, 'bot');
+      if(Array.isArray(data.productIdsToRecommend)){
+        data.productIdsToRecommend.forEach(id => appendProductSuggestion(id));
       }
-    }else if(result.error){
-      appendMessage('No se pudo conectar con el asistente (revisá la clave de API en Configuraciones).', 'bot');
-      console.error(result.error);
     }else{
-      appendMessage('La señal está fallando, intentá de nuevo.', 'bot');
+      appendMessage('Perdón, no entendí bien eso. ¿Podés repetirlo?', 'bot');
     }
   }catch(error){
     loadingMsg.remove();
     console.error(error);
     appendMessage('Tuve un problemita técnico. 🌿', 'bot');
+  }
+}
+
+/* ---------- Proveedor: Google Gemini ---------- */
+async function callGeminiAI(userText){
+  aiHistory.push({ role:'user', parts:[{ text: userText }] });
+  const apiKey = settings.aiApiKey || '';
+  const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+  const response = await fetch(apiUrl, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({
+      contents: aiHistory,
+      systemInstruction: { parts:[{ text: buildAiSystemInstruction() }] },
+      generationConfig: { responseMimeType:'application/json' }
+    })
+  });
+  const result = await response.json();
+  if(result.candidates && result.candidates[0] && result.candidates[0].content){
+    const jsonText = result.candidates[0].content.parts[0].text;
+    aiHistory.push({ role:'model', parts:[{ text: jsonText }] });
+    try{ return JSON.parse(jsonText); }catch(err){ return null; }
+  }
+  if(result.error){
+    appendMessage('No se pudo conectar con el asistente (revisá la clave de API en Configuraciones).', 'bot');
+    console.error(result.error);
+  }
+  return undefined; // ya se mostró un mensaje específico, no repetir el genérico
+}
+
+/* ---------- Proveedor: OpenRouter (modelos gratuitos, elegidos por el negocio) ----------
+   OpenRouter usa el formato de mensajes estilo OpenAI (role/content). Guardamos el
+   historial en ese mismo formato para poder mandarlo tal cual en cada turno. */
+let aiHistoryOR = [];
+async function callOpenRouterAI(userText){
+  aiHistoryOR.push({ role:'user', content: userText });
+  const key = settings.aiOpenrouterKey || '';
+  const model = settings.aiModel || '';
+  if(!key || !model){
+    appendMessage('El asistente de OpenRouter no está configurado del todo (falta la clave o el modelo) — revisá Configuraciones.', 'bot');
+    return undefined;
+  }
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer ' + key,
+      'HTTP-Referer': location.href,
+      'X-Title': (settings.storeName||'MarketCR') + ' — Asistente IA'
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [ { role:'system', content: buildAiSystemInstruction() }, ...aiHistoryOR ],
+      response_format: { type:'json_object' }
+    })
+  });
+  const result = await response.json();
+  if(result.error){
+    appendMessage('No se pudo conectar con OpenRouter (revisá la clave o el modelo elegido en Configuraciones).', 'bot');
+    console.error(result.error);
+    return undefined;
+  }
+  const msg = result.choices && result.choices[0] && result.choices[0].message;
+  const text = msg && (msg.content || '');
+  if(!text) return null;
+  aiHistoryOR.push({ role:'assistant', content: text });
+  try{
+    // algunos modelos gratuitos igual envuelven el JSON en ```json ... ```
+    const clean = text.replace(/```json|```/g,'').trim();
+    return JSON.parse(clean);
+  }catch(err){
+    // el modelo no respetó el formato JSON: mostramos su texto tal cual, sin sugerencias
+    return { reply: text, productIdsToRecommend: [] };
+  }
+}
+
+/* ---------- Configuraciones: proveedor de IA y catálogo de modelos de OpenRouter ---------- */
+function onAiProviderChange(){
+  const provider = document.getElementById('sAiProvider').value;
+  const geminiBlock = document.getElementById('sAiGeminiBlock');
+  const orBlock = document.getElementById('sAiOpenrouterBlock');
+  if(geminiBlock) geminiBlock.style.display = provider === 'openrouter' ? 'none' : '';
+  if(orBlock) orBlock.style.display = provider === 'openrouter' ? '' : 'none';
+}
+
+/* Trae el catálogo público de modelos de OpenRouter y llena el <select> correspondiente
+   con los modelos gratuitos (":free"). kind='chat' llena el modelo del chat;
+   kind='image' llena el modelo del generador de fotos con fondo blanco (solo modelos
+   cuya salida incluya imagen, según metadata de OpenRouter). */
+async function loadOpenRouterModels(kind){
+  const selId = kind === 'image' ? 'sAiImageModel' : 'sAiModel';
+  const sel = document.getElementById(selId);
+  if(!sel) return;
+  const previous = sel.value;
+  sel.innerHTML = '<option value="">Cargando modelos…</option>';
+  try{
+    const key = document.getElementById('sAiOpenrouterKey').value.trim();
+    const res = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: key ? { 'Authorization':'Bearer ' + key } : {}
+    });
+    const json = await res.json();
+    const all = (json && json.data) || [];
+    const isFree = m => (typeof m.id === 'string' && m.id.endsWith(':free')) ||
+      (m.pricing && parseFloat(m.pricing.prompt||'0') === 0 && parseFloat(m.pricing.completion||'0') === 0);
+    const supportsImageOut = m => {
+      const out = m.architecture && (m.architecture.output_modalities || m.architecture.modality);
+      if(Array.isArray(out)) return out.includes('image');
+      if(typeof out === 'string') return out.includes('image');
+      return false;
+    };
+    let filtered = all.filter(isFree);
+    if(kind === 'image') filtered = filtered.filter(supportsImageOut);
+    if(!filtered.length){
+      sel.innerHTML = '<option value="">' + (kind==='image' ? 'No hay modelos gratis con salida de imagen ahora mismo' : 'No se encontraron modelos gratis') + '</option>';
+      toast(kind==='image' ? 'OpenRouter no tiene modelos gratuitos de imagen disponibles en este momento' : 'No se encontraron modelos gratuitos en OpenRouter', 'err');
+      return;
+    }
+    sel.innerHTML = filtered.map(m => '<option value="'+esc(m.id)+'">'+esc(m.name||m.id)+'</option>').join('');
+    if(previous && filtered.some(m=>m.id===previous)) sel.value = previous;
+    toast('Modelos cargados: ' + filtered.length, 'ok');
+  }catch(err){
+    console.error(err);
+    sel.innerHTML = '<option value="">Error al cargar — probá de nuevo</option>';
+    toast('No se pudo consultar OpenRouter (revisá tu conexión o la clave)', 'err');
   }
 }
 
@@ -3961,6 +4123,7 @@ function renderImageGrid(){
       (i===0 ? '<span class="cover-tag">Portada</span>' : '') +
       preview +
       (url ? '<button type="button" class="rm-btn" onclick="event.stopPropagation();removeImageField(' + i + ')" title="Quitar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' : '') +
+      (url ? '<button type="button" class="ai-bg-btn" id="aiBgBtn' + i + '" onclick="event.stopPropagation();generateWhiteBackgroundImage(' + i + ')" title="Generar fondo blanco con IA"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 1.8 4.4L18 8l-4.2 1.6L12 14l-1.8-4.4L6 8l4.2-1.6z"/></svg>Fondo blanco</button>' : '') +
     '</div>';
   }).join('');
 }
@@ -3981,6 +4144,91 @@ function addImageField(){
   renderImageGrid();
 }
 function removeImageField(i){ pmImages.splice(i,1); if(!pmImages.length) pmImages.push(''); renderImageGrid(); }
+
+/* ---------- generador de fotos con fondo blanco (IA, exclusivo Plan Destacado) ----------
+   Toma la foto ya subida en el recuadro "slot", se la manda a un modelo de OpenRouter
+   con salida de imagen (elegido en Configuraciones > sAiImageModel) pidiéndole que
+   recorte/recompone el producto sobre un fondo blanco puro, y reemplaza esa foto por
+   el resultado. Requiere Plan Destacado + clave de OpenRouter + modelo de imagen configurados. */
+async function generateWhiteBackgroundImage(slot){
+  if(!planAllows('ai-image')){ showPlanWall('ai-image'); return; }
+  const sourceUrl = pmImages[slot];
+  if(!sourceUrl){ toast('Subí primero una foto en ese recuadro', 'err'); return; }
+  const key = settings.aiOpenrouterKey || '';
+  const model = settings.aiImageModel || '';
+  if(!key || !model){
+    toast('Configurá tu clave de OpenRouter y el modelo de imagen en Configuraciones → Asistente de IA', 'err');
+    return;
+  }
+  const btn = document.getElementById('aiBgBtn' + slot);
+  if(btn){ btn.disabled = true; btn.textContent = 'Generando…'; }
+  try{
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer ' + key,
+        'HTTP-Referer': location.href,
+        'X-Title': (settings.storeName||'MarketCR') + ' — Fondo blanco IA'
+      },
+      body: JSON.stringify({
+        model: model,
+        modalities: ['image','text'],
+        messages: [{
+          role:'user',
+          content: [
+            { type:'text', text: 'Editá esta foto de producto: colocá el producto sobre un fondo blanco puro (#FFFFFF), totalmente liso, con iluminación uniforme de estudio y sin sombras duras. No cambies el producto, su forma, color ni proporciones — solo reemplazá el fondo. Devolveme la imagen editada.' },
+            { type:'image_url', image_url:{ url: sourceUrl } }
+          ]
+        }]
+      })
+    });
+    const result = await response.json();
+    if(result.error){
+      toast('OpenRouter: ' + (result.error.message || 'no se pudo generar la imagen') , 'err');
+      console.error(result.error);
+      return;
+    }
+    const newImg = extractOpenRouterImage(result);
+    if(!newImg){
+      toast('El modelo elegido no devolvió una imagen. Probá con otro modelo de imagen en Configuraciones.', 'err');
+      return;
+    }
+    pmImages[slot] = newImg;
+    renderImageGrid();
+    toast('Foto con fondo blanco generada ✨', 'ok');
+  }catch(err){
+    console.error(err);
+    toast('No se pudo conectar con OpenRouter para generar la imagen', 'err');
+  }finally{
+    // renderImageGrid() ya reconstruye el botón; esto solo cubre el caso de error donde no se re-renderiza
+    const btn2 = document.getElementById('aiBgBtn' + slot);
+    if(btn2){ btn2.disabled = false; btn2.textContent = 'Fondo blanco'; }
+  }
+}
+
+/* La forma exacta de la respuesta de imagen varía según el modelo de OpenRouter.
+   Probamos las variantes más comunes documentadas por OpenRouter antes de rendirnos. */
+function extractOpenRouterImage(result){
+  const msg = result.choices && result.choices[0] && result.choices[0].message;
+  if(!msg) return null;
+  // Variante 1: message.images = [{ type:'image_url', image_url:{ url:'data:image/...;base64,...' } }]
+  if(Array.isArray(msg.images) && msg.images.length){
+    const first = msg.images[0];
+    const url = first.image_url && first.image_url.url;
+    if(url) return url;
+  }
+  // Variante 2: message.content = [{type:'image_url', image_url:{url:'data:...'}}, ...]
+  if(Array.isArray(msg.content)){
+    const imgPart = msg.content.find(p => p.type === 'image_url' && p.image_url && p.image_url.url);
+    if(imgPart) return imgPart.image_url.url;
+  }
+  // Variante 3: message.content es directamente una data URL en texto plano
+  if(typeof msg.content === 'string' && msg.content.trim().startsWith('data:image')){
+    return msg.content.trim();
+  }
+  return null;
+}
 
 /* ---------- fotos del negocio para el carrusel del landing (subidas como archivo, comprimidas a base64) ---------- */
 let bizImages = ['','',''];
@@ -4445,6 +4693,17 @@ function loadSettingsForm(){
   document.getElementById('sAiKey').value = settings.aiApiKey||'';
   document.getElementById('sAiWelcome').value = settings.aiWelcomeMsg||'';
   document.getElementById('sAiEnabled').checked = !!settings.aiEnabled;
+  document.getElementById('sAiProvider').value = settings.aiProvider || 'gemini';
+  document.getElementById('sAiOpenrouterKey').value = settings.aiOpenrouterKey || '';
+  document.getElementById('sAiSystemPrompt').value = settings.aiSystemPrompt || '';
+  // Deja el modelo guardado como única opción hasta que el negocio cargue la lista de OpenRouter
+  const aiModelSel = document.getElementById('sAiModel');
+  if(aiModelSel) aiModelSel.innerHTML = settings.aiModel ? '<option value="'+esc(settings.aiModel)+'">'+esc(settings.aiModel)+'</option>' : '<option value="">— Cargá los modelos primero —</option>';
+  const aiImgModelSel = document.getElementById('sAiImageModel');
+  if(aiImgModelSel) aiImgModelSel.innerHTML = settings.aiImageModel ? '<option value="'+esc(settings.aiImageModel)+'">'+esc(settings.aiImageModel)+'</option>' : '<option value="">— Cargá los modelos primero —</option>';
+  onAiProviderChange();
+  const aiLockEl = document.getElementById('sAiLockNotice');
+  if(aiLockEl) aiLockEl.style.display = planAllows('ai-assistant') ? 'none' : '';
   document.getElementById('sinpePreview').textContent = settings.sinpe;
   pendingLogoDataUrl = null;
   document.getElementById('logoPreview').innerHTML = settings.logoUrl ? '<img src="' + esc(settings.logoUrl) + '" alt="Logo">' : logoSVG;
@@ -4609,6 +4868,12 @@ async function saveSettings(){
   if(!name){ toast('El nombre de la tienda es obligatorio', 'err'); return; }
   if(waDigits(sinpe).length < 8){ toast('Ingresá un número SINPE válido (8 dígitos)', 'err'); return; }
   if(wa.length < 11){ toast('Ingresá el WhatsApp con código de país (506…)', 'err'); return; }
+  if(document.getElementById('sAiEnabled').checked && !planAllows('ai-assistant')){
+    toast('El Asistente de IA es exclusivo del Plan Destacado. Subí de plan para activarlo.', 'err');
+    document.getElementById('sAiEnabled').checked = false;
+    showPlanWall('ai-assistant');
+    return;
+  }
   const cats = document.getElementById('sCats').value.split(',').map(s=>s.trim()).filter(Boolean);
   const data = {
     storeName:name,
@@ -4629,6 +4894,11 @@ async function saveSettings(){
     aiApiKey: document.getElementById('sAiKey').value.trim(),
     aiAssistantName: document.getElementById('sAiName').value.trim() || 'Cana',
     aiWelcomeMsg: document.getElementById('sAiWelcome').value.trim() || DEFAULT_SETTINGS.aiWelcomeMsg,
+    aiProvider: document.getElementById('sAiProvider').value === 'openrouter' ? 'openrouter' : 'gemini',
+    aiOpenrouterKey: document.getElementById('sAiOpenrouterKey').value.trim(),
+    aiModel: document.getElementById('sAiModel').value.trim(),
+    aiImageModel: document.getElementById('sAiImageModel').value.trim(),
+    aiSystemPrompt: document.getElementById('sAiSystemPrompt').value.trim(),
     logoUrl: pendingLogoDataUrl !== null ? pendingLogoDataUrl : (settings.logoUrl||''),
     landingImages: bizImages.map(u=>u.trim()).filter(Boolean),
     tipo: document.getElementById('sTipoProf').checked ? 'profesional' : '',
@@ -5746,7 +6016,8 @@ const PLAN_FEATURE_MAP = {
   'inventory':      'profesional',  // control de inventario
   'video':          'profesional',  // video historia flotante
   'reviews':        'profesional',  // reseñas de productos
-  'ai-assistant':   'profesional',  // asistente IA
+  'ai-assistant':   'destacado',    // asistente IA (chat OpenRouter/Gemini) — exclusivo plan Destacado
+  'ai-image':       'destacado',    // generador de fotos de producto con fondo blanco (IA) — exclusivo plan Destacado
   'destacado-badge':'destacado',    // insignia y posición destacada
   'games-link':     'profesional',  // botón de juegos/bingo
 };
@@ -5759,6 +6030,7 @@ const PLAN_FEATURE_LABELS = {
   'video':          'Video Historia',
   'reviews':        'Reseñas de Productos',
   'ai-assistant':   'Asistente IA',
+  'ai-image':       'Generador de Fotos con IA',
   'destacado-badge':'Posición Destacada',
   'games-link':     'Enlace de Juegos',
 };
