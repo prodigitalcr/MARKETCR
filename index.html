@@ -880,6 +880,35 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 .plan-request-card.pendiente{border-color:#F59E0B;background:#FFFBEB}
 .plan-request-card.aprobado{border-color:var(--green);background:var(--green-soft)}
 .plan-request-card.rechazado{border-color:var(--danger);background:var(--danger-soft)}
+
+/* ============ MODAL COMPARTIR CON QR ============ */
+.share-modal-card{max-width:420px;text-align:center;padding-bottom:10px}
+.share-qr-wrap{background:#fff;border:2px solid var(--line);border-radius:16px;padding:18px;margin:10px 0 16px;display:inline-block}
+.share-qr-wrap img{width:220px;height:220px;display:block;border-radius:10px}
+.share-logo{width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 10px;display:block;background:var(--green-soft);padding:4px}
+.share-msg{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.share-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+.share-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.share-actions .btn-primary,.share-actions .btn-ghost{padding:11px 18px;font-size:13.5px;width:auto}
+
+/* ============ SEGUNDO VIDEO FLOTANTE ============ */
+.story-float-2{position:fixed;bottom:22px;left:230px;width:190px;aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:#111;box-shadow:0 10px 28px rgba(0,0,0,.35);z-index:59;display:none}
+.story-float-2.show{display:block}
+@media (max-width:480px){.story-float-2{left:160px;width:130px}}
+
+/* ============ PLAN DESTACADO — VISUALIZACIÓN PREMIUM ============ */
+.ts-card.sponsored{box-shadow:0 0 0 3px var(--yellow),0 0 30px rgba(255,209,0,.35),0 14px 34px rgba(0,0,0,.22);position:relative;overflow:visible}
+.ts-card.sponsored::before{content:'';position:absolute;inset:-3px;border-radius:25px;background:linear-gradient(135deg,#FFD100,#F59E0B,#FFD100);background-size:200% 200%;animation:shimmer 3s ease infinite;z-index:-1;opacity:.9}
+@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.ts-card.sponsored .ts-media{border-radius:22px 22px 0 0}
+.ts-card.sponsored .ts-body{background:linear-gradient(180deg,#fff 0%,#FFFBEB 100%);border-radius:0 0 22px 22px}
+.ts-card.sponsored .ts-name{color:#92400E}
+.ts-card.sponsored .ts-arrow{background:var(--yellow);color:#7C2D12}
+.ts-card.sponsored:hover{transform:translateY(-6px) scale(1.01)}
+.ts-premium-ribbon{position:absolute;top:-10px;right:-10px;width:44px;height:44px;background:linear-gradient(135deg,#FFD100,#F59E0B);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(245,158,11,.5);z-index:4;animation:pulseRibbon 2.5s ease-in-out infinite}
+.ts-premium-ribbon svg{width:22px;height:22px;color:#fff}
+@keyframes pulseRibbon{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
 </style>
 </head>
 <body>
@@ -1017,13 +1046,22 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 </div>
 
 <div class="story-float" id="storyFloat">
-  <button class="story-close" onclick="closeStoryVideo()" title="Cerrar">
+  <button class="story-close" onclick="closeStoryVideo(1)" title="Cerrar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
   </button>
-  <button class="story-mute" id="storyMuteBtn" onclick="toggleStoryMute()" title="Silenciar / activar sonido">
+  <button class="story-mute" id="storyMuteBtn" onclick="toggleStoryMute(1)" title="Silenciar / activar sonido">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M18.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
   </button>
   <div class="story-media" id="storyMedia"></div>
+</div>
+<div class="story-float-2" id="storyFloat2">
+  <button class="story-close" onclick="closeStoryVideo(2)" title="Cerrar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <button class="story-mute" id="storyMuteBtn2" onclick="toggleStoryMute(2)" title="Silenciar / activar sonido">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M18.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+  </button>
+  <div class="story-media" id="storyMedia2"></div>
 </div>
 
 <div class="overlay" id="cartOverlay" onclick="toggleCart(false)"></div>
@@ -1415,7 +1453,8 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 18h.01"/></svg>Video flotante (formato historia)</h4>
         <div class="desc">Un video vertical, tipo historia, que flota sobre la tienda para los clientes. Aceptá un enlace de YouTube o un enlace directo a un archivo de video. Dejalo vacío para ocultarlo.</div>
         <div class="desc" id="sStoryVideoLockNotice" style="display:none;color:#92400E;font-weight:700">🔒 Esta función requiere plan Profesional o superior. Podés guardar el enlace, pero no se mostrará a tus clientes hasta que subas de plan.</div>
-        <div class="f-group"><label>Enlace del video</label><input class="f-input" id="sStoryVideoUrl" placeholder="https://youtube.com/watch?v=... o enlace directo a un .mp4"></div>
+        <div class="f-group"><label>Enlace del video 1</label><input class="f-input" id="sStoryVideoUrl" placeholder="https://youtube.com/watch?v=... o enlace directo a un .mp4"></div>
+        <div class="f-group"><label>Enlace del video 2 (solo plan Profesional / Destacado)</label><input class="f-input" id="sStoryVideoUrl2" placeholder="Segundo video flotante"></div>
       </div>
 
       <div class="settings-card">
@@ -1737,6 +1776,35 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
   </div>
 </div>
 
+<!-- ================= MODAL COMPARTIR CON QR ================= -->
+<div class="modal" id="shareModal">
+  <div class="modal-bg" onclick="closeShareModal()"></div>
+  <div class="modal-card share-modal-card">
+    <div class="modal-head"><h3>Compartir tienda</h3>
+      <button class="close-x" onclick="closeShareModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <img class="share-logo" id="shareLogo" src="" alt="Logo" style="display:none">
+      <div class="share-msg" id="shareTitle">Escaneá y visitanos</div>
+      <div class="share-sub">Escaneá el código QR con tu cámara para abrir esta tienda</div>
+      <div class="share-qr-wrap">
+        <img id="shareQR" src="" alt="QR Code" style="width:220px;height:220px;">
+      </div>
+      <div class="share-actions">
+        <button class="btn-primary" onclick="nativeShareStore()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:4px"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-3.8M8.6 13.5l6.8 3.8"/></svg>
+          Compartir enlace
+        </button>
+        <button class="btn-ghost" onclick="copyStoreLink()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:4px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copiar enlace
+        </button>
+        <button class="btn-ghost" onclick="closeShareModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ================= RASTREAR PEDIDO (CLIENTE) ================= -->
 <div class="modal" id="trackModal">
   <div class="modal-bg" onclick="closeTracking()"></div>
@@ -2016,6 +2084,7 @@ const DEFAULT_SETTINGS = {
   bingoUrl:'',
   bingoLabel:'Bingo de Plantas',
   storyVideoUrl:'',
+  storyVideoUrl2:'',
   otherBusinesses:[],
   logoUrl:'',
   landingImages:[],
@@ -2240,37 +2309,62 @@ function tiktokEmbedUrl(url){
 
 /* ---------- video flotante tipo historia ---------- */
 let storyClosed = false, storyMuted = true, storyLastUrl = null;
+let storyClosed2 = false, storyLastUrl2 = null;
 function storyYoutubeId(url){
   if(!url) return null;
   const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
   return m ? m[1] : null;
 }
 function renderStoryVideo(){
-  const wrap = document.getElementById('storyFloat');
-  const url = (settings.storyVideoUrl||'').trim();
+  // Video 1
+  const wrap1 = document.getElementById('storyFloat');
+  const url1 = (settings.storyVideoUrl||'').trim();
   const planOk = (typeof getActivePlanId !== 'function') || getActivePlanId() !== 'emprendedor';
-  if(!url || storyClosed || !planOk){ wrap.classList.remove('show'); return; }
-  if(url !== storyLastUrl){
-    storyLastUrl = url;
-    const media = document.getElementById('storyMedia');
-    const ytId = storyYoutubeId(url);
-    if(ytId){
-      media.innerHTML = '<iframe src="https://www.youtube.com/embed/' + ytId + '?autoplay=1&mute=' + (storyMuted?1:0) + '&loop=1&playlist=' + ytId + '&controls=0&modestbranding=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
-      document.getElementById('storyMuteBtn').style.display = 'none';
-    }else{
-      media.innerHTML = '<video src="' + esc(url) + '" autoplay loop playsinline' + (storyMuted?' muted':'') + '></video>';
-      document.getElementById('storyMuteBtn').style.display = 'flex';
+  if(!url1 || storyClosed || !planOk){ wrap1.classList.remove('show'); }
+  else {
+    if(url1 !== storyLastUrl){
+      storyLastUrl = url1;
+      const media = document.getElementById('storyMedia');
+      const ytId = storyYoutubeId(url1);
+      if(ytId){
+        media.innerHTML = '<iframe src="https://www.youtube.com/embed/' + ytId + '?autoplay=1&mute=' + (storyMuted?1:0) + '&loop=1&playlist=' + ytId + '&controls=0&modestbranding=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+        document.getElementById('storyMuteBtn').style.display = 'none';
+      }else{
+        media.innerHTML = '<video src="' + esc(url1) + '" autoplay loop playsinline' + (storyMuted?' muted':'') + '></video>';
+        document.getElementById('storyMuteBtn').style.display = 'flex';
+      }
     }
+    wrap1.classList.add('show');
   }
-  wrap.classList.add('show');
+  // Video 2 (solo Profesional o superior)
+  const wrap2 = document.getElementById('storyFloat2');
+  const url2 = (settings.storyVideoUrl2||'').trim();
+  const planAllowsTwo = (typeof getActivePlanId !== 'function') || ['profesional','destacado','premium'].includes(getActivePlanId());
+  if(!url2 || storyClosed2 || !planAllowsTwo){ wrap2.classList.remove('show'); }
+  else {
+    if(url2 !== storyLastUrl2){
+      storyLastUrl2 = url2;
+      const media2 = document.getElementById('storyMedia2');
+      const ytId2 = storyYoutubeId(url2);
+      if(ytId2){
+        media2.innerHTML = '<iframe src="https://www.youtube.com/embed/' + ytId2 + '?autoplay=1&mute=' + (storyMuted?1:0) + '&loop=1&playlist=' + ytId2 + '&controls=0&modestbranding=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+        document.getElementById('storyMuteBtn2').style.display = 'none';
+      }else{
+        media2.innerHTML = '<video src="' + esc(url2) + '" autoplay loop playsinline' + (storyMuted?' muted':'') + '></video>';
+        document.getElementById('storyMuteBtn2').style.display = 'flex';
+      }
+    }
+    wrap2.classList.add('show');
+  }
 }
-function closeStoryVideo(){
-  storyClosed = true;
-  document.getElementById('storyFloat').classList.remove('show');
+function closeStoryVideo(n){
+  if(!n || n===1){ storyClosed = true; document.getElementById('storyFloat').classList.remove('show'); }
+  if(n===2){ storyClosed2 = true; document.getElementById('storyFloat2').classList.remove('show'); }
 }
-function toggleStoryMute(){
+function toggleStoryMute(n){
   storyMuted = !storyMuted;
-  const v = document.querySelector('#storyMedia video');
+  const sel = (n===2) ? '#storyMedia2 video' : '#storyMedia video';
+  const v = document.querySelector(sel);
   if(v) v.muted = storyMuted;
 }
 
@@ -4342,6 +4436,7 @@ function loadSettingsForm(){
   document.getElementById('sBingoLabel').value = settings.bingoLabel||'Bingo de Plantas';
   document.getElementById('sBingoUrl').value = settings.bingoUrl||'';
   document.getElementById('sStoryVideoUrl').value = settings.storyVideoUrl||'';
+  document.getElementById('sStoryVideoUrl2').value = settings.storyVideoUrl2||'';
   const svLockEl = document.getElementById('sStoryVideoLockNotice');
   if(svLockEl) svLockEl.style.display = (getActivePlanId() === 'emprendedor') ? '' : 'none';
   document.getElementById('sIva').value = settings.iva || 13;
@@ -4529,6 +4624,7 @@ async function saveSettings(){
     iva: parseFloat(document.getElementById('sIva').value) || 13,
     globalDiscountPercent: parseFloat(document.getElementById('sDiscount').value) || 0,
     storyVideoUrl:document.getElementById('sStoryVideoUrl').value.trim(),
+    storyVideoUrl2:document.getElementById('sStoryVideoUrl2').value.trim(),
     aiEnabled: document.getElementById('sAiEnabled').checked,
     aiApiKey: document.getElementById('sAiKey').value.trim(),
     aiAssistantName: document.getElementById('sAiName').value.trim() || 'Cana',
@@ -4805,7 +4901,18 @@ async function trackShare(){
    tenant (la URL actual con ?tienda=slug) y registra el conteo en
    analytics para que el administrador/profesional lo vea en su panel. */
 function shareStoreLink(){
-  const url = location.href;
+  const url = location.href.split('#')[0];
+  const logo = settings.logoUrl || '';
+  document.getElementById('shareQR').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(url);
+  const logoEl = document.getElementById('shareLogo');
+  if(logo){ logoEl.src = logo; logoEl.style.display = 'block'; }
+  else { logoEl.style.display = 'none'; }
+  document.getElementById('shareTitle').textContent = 'Escaneá y visitá ' + (settings.storeName || 'nuestra tienda');
+  document.getElementById('shareModal').classList.add('show');
+}
+function closeShareModal(){ document.getElementById('shareModal').classList.remove('show'); }
+function nativeShareStore(){
+  const url = location.href.split('#')[0];
   const title = (settings.storeName || 'Tienda') + (isProfessionalStore ? ' — Perfil profesional' : ' — Tienda en línea');
   const text = isProfessionalStore
     ? 'Mirá el perfil de ' + (settings.storeName || 'este profesional') + ':'
@@ -4813,14 +4920,18 @@ function shareStoreLink(){
   if(navigator.share){
     navigator.share({ title, text, url }).then(()=>trackShare()).catch(()=>{});
   } else {
-    navigator.clipboard.writeText(url).then(()=>{
-      toast('Enlace copiado al portapapeles', 'ok');
-      trackShare();
-    }).catch(()=>{
-      window.prompt('Copiá el enlace de tu tienda:', url);
-      trackShare();
-    });
+    copyStoreLink();
   }
+}
+function copyStoreLink(){
+  const url = location.href.split('#')[0];
+  navigator.clipboard.writeText(url).then(()=>{
+    toast('Enlace copiado al portapapeles', 'ok');
+    trackShare();
+  }).catch(()=>{
+    window.prompt('Copiá el enlace de tu tienda:', url);
+    trackShare();
+  });
 }
 
 async function trackSearch(query){
