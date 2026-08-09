@@ -2624,29 +2624,39 @@ async function callGeminiAI(userText){
   return undefined; // ya se mostró un mensaje específico, no repetir el genérico
 }
 
-/* ---------- Helper: fetch a OpenRouter con reintentos CORS automáticos ----------
-   Cuando el archivo se abre desde file:// el navegador bloquea fetch por CORS.
-   Intentamos primero directo; si falla, reintentamos via proxy publico gratuito. */
+/* ---------- Helper: fetch a OpenRouter ----------
+   OpenRouter soporta llamadas CORS directas desde el navegador (es su forma
+   oficial de uso client-side), así que NO usamos ningún proxy público:
+   los proxys gratuitos (corsproxy.io, etc.) bloquean o eliminan el header
+   Authorization por seguridad, lo que hacía fallar el asistente aunque la
+   clave fuera correcta. Si esta página se sirve por https (Firebase Hosting,
+   por ejemplo) el fetch directo funciona sin nada más. */
 const OR_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 const OR_MODELS_URL = 'https://openrouter.ai/api/v1/models';
-const CORS_PROXY = 'https://corsproxy.io/?url=';
 
 async function orFetch(url, options){
-  const referer = location.protocol === 'file:'
-    ? 'https://prodigital.com'
-    : (location.origin || 'https://prodigital.com');
-  const headers = Object.assign({}, options.headers || {}, { 'HTTP-Referer': referer });
-  // Intento 1: directo (funciona en servidores normales)
+  const referer = (location.origin && location.protocol !== 'file:')
+    ? location.origin
+    : 'https://prodigital.com';
+  // Headers de atribución de OpenRouter: son opcionales y el nombre correcto
+  // hoy es 'X-OpenRouter-Title' (el viejo 'X-Title' ya no está permitido por
+  // su CORS y hacía que el navegador bloqueara el preflight con "Failed to fetch").
+  const headers = Object.assign({}, options.headers || {}, {
+    'HTTP-Referer': referer,
+    'X-OpenRouter-Title': (typeof settings !== 'undefined' && settings.storeName) ? settings.storeName : 'PRO.DIGITAL'
+  });
   try{
-    const res = await fetch(url, Object.assign({}, options, { headers }));
-    return res;
+    return await fetch(url, Object.assign({}, options, { headers }));
   }catch(e1){
-    if(!(e1 instanceof TypeError)) throw e1;
-    console.warn('orFetch directo fallo (probable CORS desde file://), reintentando via proxy...');
+    // Da contexto real en consola en vez de un mensaje genérico: si esto es
+    // "TypeError: Failed to fetch" desde una página https, casi siempre es
+    // adblocker/extensión, red caída, o (si se abrió con file://) que no hay
+    // forma de saltar CORS sin un backend propio.
+    console.error('orFetch: fallo de red hacia OpenRouter.', {
+      url, protocol: location.protocol, origin: location.origin, error: e1
+    });
+    throw e1;
   }
-  // Intento 2: proxy CORS publico — solo se llega aca desde file:// o redes con CORS bloqueado
-  const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-  return await fetch(proxyUrl, Object.assign({}, options, { headers }));
 }
 
 /* ---------- Proveedor: OpenRouter (modelos gratuitos, elegidos por el negocio) ----------
@@ -2682,7 +2692,10 @@ async function callOpenRouterAI(userText){
     });
   }catch(networkErr){
     console.error('OpenRouter network error:', networkErr);
-    appendMessage('No se pudo conectar con OpenRouter ni via proxy. Revisa tu conexion y que la clave empiece con "sk-or-v1-".', 'bot');
+    const msg = location.protocol === 'file:'
+      ? 'No se pudo conectar con OpenRouter: esta página se abrió como archivo local (file://), y OpenRouter no permite eso por seguridad del navegador. Abrí la tienda desde su URL https (Firebase Hosting) en vez del archivo.'
+      : 'No se pudo conectar con OpenRouter. Revisa tu conexión a internet, que no haya un adblocker/extensión bloqueando openrouter.ai, y que la clave empiece con "sk-or-v1-". Detalle técnico en la consola del navegador (F12).';
+    appendMessage(msg, 'bot');
     return undefined;
   }
 
@@ -2957,6 +2970,12 @@ async function loadOpenRouterModels(kind){
       headers: key ? { 'Authorization':'Bearer ' + key } : {}
     });
     const json = await res.json();
+    if(!res.ok || json.error){
+      const errMsg = (json.error && json.error.message) || ('HTTP ' + res.status);
+      sel.innerHTML = '<option value="">Error: ' + esc(errMsg) + '</option>';
+      toast('OpenRouter: ' + errMsg, 'err');
+      return;
+    }
     const all = (json && json.data) || [];
     const isFree = m => (typeof m.id === 'string' && m.id.endsWith(':free')) ||
       (m.pricing && parseFloat(m.pricing.prompt||'0') === 0 && parseFloat(m.pricing.completion||'0') === 0);
