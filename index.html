@@ -2624,39 +2624,56 @@ async function callGeminiAI(userText){
   return undefined; // ya se mostró un mensaje específico, no repetir el genérico
 }
 
+/* ---------- Helper: fetch a OpenRouter con reintentos CORS automáticos ----------
+   Cuando el archivo se abre desde file:// el navegador bloquea fetch por CORS.
+   Intentamos primero directo; si falla, reintentamos via proxy publico gratuito. */
+const OR_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
+const OR_MODELS_URL = 'https://openrouter.ai/api/v1/models';
+const CORS_PROXY = 'https://corsproxy.io/?url=';
+
+async function orFetch(url, options){
+  const referer = location.protocol === 'file:'
+    ? 'https://prodigital.com'
+    : (location.origin || 'https://prodigital.com');
+  const headers = Object.assign({}, options.headers || {}, { 'HTTP-Referer': referer });
+  // Intento 1: directo (funciona en servidores normales)
+  try{
+    const res = await fetch(url, Object.assign({}, options, { headers }));
+    return res;
+  }catch(e1){
+    if(!(e1 instanceof TypeError)) throw e1;
+    console.warn('orFetch directo fallo (probable CORS desde file://), reintentando via proxy...');
+  }
+  // Intento 2: proxy CORS publico — solo se llega aca desde file:// o redes con CORS bloqueado
+  const proxyUrl = CORS_PROXY + encodeURIComponent(url);
+  return await fetch(proxyUrl, Object.assign({}, options, { headers }));
+}
+
 /* ---------- Proveedor: OpenRouter (modelos gratuitos, elegidos por el negocio) ----------
    OpenRouter usa el formato de mensajes estilo OpenAI (role/content). Guardamos el
    historial en ese mismo formato para poder mandarlo tal cual en cada turno. */
 let aiHistoryOR = [];
 async function callOpenRouterAI(userText){
   aiHistoryOR.push({ role:'user', content: userText });
-  // Limitamos el historial que se reenvía: muchos modelos gratis tienen poca
-  // ventana de contexto, y un historial largo + el catálogo puede desbordarla
-  // en TODOS los modelos por igual (eso suele verse como "problemita técnico").
   const MAX_TURNS = 8;
   if(aiHistoryOR.length > MAX_TURNS) aiHistoryOR = aiHistoryOR.slice(-MAX_TURNS);
 
   const key = settings.aiOpenrouterKey || '';
   const model = settings.aiModel || '';
   if(!key || !model){
-    appendMessage('El asistente de OpenRouter no está configurado del todo (falta la clave o el modelo) — revisá Configuraciones.', 'bot');
+    appendMessage('El asistente de OpenRouter no esta configurado (falta la clave o el modelo) — revisa Configuraciones.', 'bot');
     return undefined;
   }
 
   let response;
   try{
-    response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    response = await orFetch(OR_ENDPOINT, {
       method:'POST',
       headers:{
         'Content-Type':'application/json',
         'Authorization':'Bearer ' + key,
-        'HTTP-Referer': location.origin || 'https://prodigital.com',
         'X-Title': (settings.storeName||'MarketCR') + ' — Asistente IA'
       },
-      // OJO: no forzamos response_format:"json_object" acá — varios modelos gratuitos
-      // de OpenRouter no lo soportan y eso hace fallar la llamada para TODOS los
-      // modelos por igual. En su lugar le pedimos el JSON por instrucciones (arriba)
-      // y parseamos con tolerancia más abajo.
       body: JSON.stringify({
         model: model,
         max_tokens: 800,
@@ -2664,26 +2681,17 @@ async function callOpenRouterAI(userText){
       })
     });
   }catch(networkErr){
-    // Fetch nunca llegó a completarse: casi siempre es CORS, sin conexión, o la
-    // clave/URL mal copiada. Esto produce el error genérico para cualquier modelo.
     console.error('OpenRouter network error:', networkErr);
-    const isCorsProbable = networkErr instanceof TypeError && networkErr.message.includes('fetch');
-    appendMessage(
-      isCorsProbable
-        ? 'No se pudo conectar con OpenRouter. Si estás abriendo el archivo desde tu PC (file://), movelo a un servidor web o usá una extensión CORS. Si ya estás en un servidor, revisá que la clave comience con "sk-or-v1-".'
-        : 'No se pudo conectar con OpenRouter. Revisá tu conexión a internet y que la clave esté bien pegada.',
-      'bot'
-    );
+    appendMessage('No se pudo conectar con OpenRouter ni via proxy. Revisa tu conexion y que la clave empiece con "sk-or-v1-".', 'bot');
     return undefined;
   }
 
   const rawText = await response.text();
   let result;
-  try{
-    result = JSON.parse(rawText);
-  }catch(parseErr){
-    console.error('OpenRouter devolvió una respuesta no-JSON:', response.status, rawText.slice(0,500));
-    appendMessage('OpenRouter respondió algo inesperado (código ' + response.status + '). Probá con otro modelo gratuito desde Configuraciones — algunos están temporalmente saturados.', 'bot');
+  try{ result = JSON.parse(rawText); }
+  catch(parseErr){
+    console.error('OpenRouter resp no-JSON:', response.status, rawText.slice(0,400));
+    appendMessage('OpenRouter respondio algo inesperado (codigo ' + response.status + '). Proba con otro modelo desde Configuraciones.', 'bot');
     return undefined;
   }
 
@@ -2696,17 +2704,12 @@ async function callOpenRouterAI(userText){
 
   const msg = result.choices && result.choices[0] && result.choices[0].message;
   const text = msg && (msg.content || '');
-  if(!text){
-    console.error('OpenRouter respondió sin contenido:', result);
-    return null;
-  }
+  if(!text){ console.error('OpenRouter sin contenido:', result); return null; }
   aiHistoryOR.push({ role:'assistant', content: text });
   try{
-    // algunos modelos gratuitos igual envuelven el JSON en ```json ... ```
     const clean = text.replace(/```json|```/g,'').trim();
     return JSON.parse(clean);
   }catch(err){
-    // el modelo no respetó el formato JSON: mostramos su texto tal cual, sin sugerencias
     return { reply: text, productIdsToRecommend: [] };
   }
 }
@@ -2950,7 +2953,7 @@ async function loadOpenRouterModels(kind){
   sel.innerHTML = '<option value="">Cargando modelos…</option>';
   try{
     const key = document.getElementById('sAiOpenrouterKey').value.trim();
-    const res = await fetch('https://openrouter.ai/api/v1/models', {
+    const res = await orFetch(OR_MODELS_URL, {
       headers: key ? { 'Authorization':'Bearer ' + key } : {}
     });
     const json = await res.json();
@@ -4493,12 +4496,11 @@ async function generateWhiteBackgroundImage(slot){
   const btn = document.getElementById('aiBgBtn' + slot);
   if(btn){ btn.disabled = true; btn.textContent = 'Generando…'; }
   try{
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await orFetch(OR_ENDPOINT, {
       method:'POST',
       headers:{
         'Content-Type':'application/json',
         'Authorization':'Bearer ' + key,
-        'HTTP-Referer': location.href,
         'X-Title': (settings.storeName||'MarketCR') + ' — Fondo blanco IA'
       },
       body: JSON.stringify({
