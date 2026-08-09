@@ -855,7 +855,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 /* ============ PLAN PILLS — superadmin table ============ */
 .plan-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
 .plan-pill.emprendedor{background:#E7F5EC;color:#0F5A30}
-.plan-pill.profesional{background:#E3EDFF;color:#1D4ED8}
+.plan-pill.profesional{background:var(--yellow-soft);color:#92400E}
 .plan-pill.destacado{background:var(--ruby-soft);color:var(--ruby-dark)}
 .plan-pill.basico,.plan-pill.none{background:#F3F4F6;color:#6B7280}
 .plan-pill.pendiente-aprobacion{background:#FFF1DC;color:#B45309}
@@ -901,15 +901,29 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 @media (max-width:480px){.story-float-2{left:160px;width:130px}}
 
 /* ============ PLAN DESTACADO — VISUALIZACIÓN PREMIUM (morado/rubí) ============ */
-.ts-card.sponsored{box-shadow:0 0 0 3px var(--ruby),0 0 30px rgba(124,58,237,.35),0 14px 34px rgba(0,0,0,.22);position:relative;overflow:visible}
-.ts-card.sponsored::before{content:'';position:absolute;inset:-3px;border-radius:25px;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent),var(--ruby));background-size:200% 200%;animation:shimmer 3s ease infinite;z-index:-1;opacity:.9}
+.ts-card.sponsored,.ts-card.tier-destacado{box-shadow:0 0 0 3px var(--ruby),0 0 30px rgba(124,58,237,.35),0 14px 34px rgba(0,0,0,.22);position:relative;overflow:visible}
+.ts-card.sponsored::before,.ts-card.tier-destacado::before{content:'';position:absolute;inset:-3px;border-radius:25px;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent),var(--ruby));background-size:200% 200%;animation:shimmer 3s ease infinite;z-index:-1;opacity:.9}
 @keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-.ts-card.sponsored .ts-media{border-radius:22px 22px 0 0}
-.ts-card.sponsored .ts-body{background:linear-gradient(180deg,#fff 0%,var(--ruby-soft) 100%);border-radius:0 0 22px 22px}
-.ts-card.sponsored .ts-name{color:var(--ruby-dark)}
-.ts-card.sponsored .ts-arrow{background:var(--ruby);color:#fff}
-.ts-card.sponsored:hover{transform:translateY(-6px) scale(1.01)}
+.ts-card.sponsored .ts-media,.ts-card.tier-destacado .ts-media{border-radius:22px 22px 0 0}
+.ts-card.sponsored .ts-body,.ts-card.tier-destacado .ts-body{background:linear-gradient(180deg,#fff 0%,var(--ruby-soft) 100%);border-radius:0 0 22px 22px}
+.ts-card.sponsored .ts-name,.ts-card.tier-destacado .ts-name{color:var(--ruby-dark)}
+.ts-card.sponsored .ts-arrow,.ts-card.tier-destacado .ts-arrow{background:var(--ruby);color:#fff}
+.ts-card.sponsored:hover,.ts-card.tier-destacado:hover{transform:translateY(-6px) scale(1.01)}
 .ts-premium-ribbon{position:absolute;top:-10px;right:-10px;width:44px;height:44px;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent));border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(124,58,237,.5);z-index:4;animation:pulseRibbon 2.5s ease-in-out infinite}
+
+/* ============ PLAN PROFESIONAL — borde dorado ============ */
+.ts-card.tier-profesional{box-shadow:0 0 0 2.5px var(--yellow),0 0 22px rgba(255,209,0,.3),0 14px 34px rgba(0,0,0,.22);position:relative;overflow:visible}
+.ts-card.tier-profesional .ts-media{border-radius:22px 22px 0 0}
+.ts-card.tier-profesional .ts-body{background:linear-gradient(180deg,#fff 0%,var(--yellow-soft) 100%);border-radius:0 0 22px 22px}
+.ts-card.tier-profesional .ts-name{color:#92400E}
+.ts-card.tier-profesional .ts-arrow{background:var(--yellow);color:#7C2D12}
+.ts-card.tier-profesional:hover{transform:translateY(-6px) scale(1.01)}
+.profesional-badge{background:linear-gradient(135deg,var(--yellow),#F59E0B);color:#7C2D12;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:4px}
+.profesional-badge svg{width:11px;height:11px}
+
+/* ============ PLAN EMPRENDEDOR — borde verde (plan base) ============ */
+.ts-card.tier-emprendedor{box-shadow:0 0 0 2px var(--green),0 14px 34px rgba(0,0,0,.22)}
+.ts-card.tier-emprendedor .ts-name{color:var(--green-dark)}
 .ts-premium-ribbon svg{width:22px;height:22px;color:#fff}
 @keyframes pulseRibbon{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 
@@ -2478,10 +2492,23 @@ function appendProductSuggestion(productId){
    el inventario de ESTA tienda, y las instrucciones de "entrenamiento"
    propias del negocio (settings.aiSystemPrompt) escritas desde Configuraciones. */
 function buildAiSystemInstruction(){
-  const invJson = JSON.stringify(products.map(p => ({ id:p.id, nombre:p.name, desc:p.desc, precio: displayPrice(p), stock: p.unlimited ? 'ilimitado' : (p.stock||0) })));
-  const custom = (settings.aiSystemPrompt || '').trim();
+  // Los modelos gratuitos de OpenRouter suelen tener ventanas de contexto chicas.
+  // Si el catálogo es grande, mandarlo completo en cada mensaje puede superar ese
+  // límite y provocar errores en TODOS los modelos por igual — por eso lo acotamos.
+  const MAX_PRODUCTS_IN_PROMPT = 40;
+  const MAX_DESC_CHARS = 90;
+  const invJson = JSON.stringify(
+    products.slice(0, MAX_PRODUCTS_IN_PROMPT).map(p => ({
+      id:p.id,
+      nombre:p.name,
+      desc: (p.desc||'').slice(0, MAX_DESC_CHARS),
+      precio: displayPrice(p),
+      stock: p.unlimited ? 'ilimitado' : (p.stock||0)
+    }))
+  );
+  const custom = (settings.aiSystemPrompt || '').trim().slice(0, 800);
   return 'Eres "' + (settings.aiAssistantName||'Cana') + '", experta en ventas de "' + (settings.storeName||'la tienda') + '".\n' +
-    'Inventario disponible: ' + invJson + '\n' +
+    'Inventario disponible' + (products.length > MAX_PRODUCTS_IN_PROMPT ? ' (primeros ' + MAX_PRODUCTS_IN_PROMPT + ' de ' + products.length + ')' : '') + ': ' + invJson + '\n' +
     (custom ? ('Instrucciones propias del negocio (seguilas siempre):\n' + custom + '\n') : '') +
     'Reglas:\n' +
     '1. Si te piden una recomendación o buscan algo, sugerí 1 o 2 IDs de productos exactos que encajen.\n' +
@@ -2559,35 +2586,70 @@ async function callGeminiAI(userText){
 let aiHistoryOR = [];
 async function callOpenRouterAI(userText){
   aiHistoryOR.push({ role:'user', content: userText });
+  // Limitamos el historial que se reenvía: muchos modelos gratis tienen poca
+  // ventana de contexto, y un historial largo + el catálogo puede desbordarla
+  // en TODOS los modelos por igual (eso suele verse como "problemita técnico").
+  const MAX_TURNS = 8;
+  if(aiHistoryOR.length > MAX_TURNS) aiHistoryOR = aiHistoryOR.slice(-MAX_TURNS);
+
   const key = settings.aiOpenrouterKey || '';
   const model = settings.aiModel || '';
   if(!key || !model){
     appendMessage('El asistente de OpenRouter no está configurado del todo (falta la clave o el modelo) — revisá Configuraciones.', 'bot');
     return undefined;
   }
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer ' + key,
-      'HTTP-Referer': location.href,
-      'X-Title': (settings.storeName||'MarketCR') + ' — Asistente IA'
-    },
-    body: JSON.stringify({
-      model: model,
-      messages: [ { role:'system', content: buildAiSystemInstruction() }, ...aiHistoryOR ],
-      response_format: { type:'json_object' }
-    })
-  });
-  const result = await response.json();
-  if(result.error){
-    appendMessage('No se pudo conectar con OpenRouter (revisá la clave o el modelo elegido en Configuraciones).', 'bot');
-    console.error(result.error);
+
+  let response;
+  try{
+    response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer ' + key,
+        'HTTP-Referer': location.href,
+        'X-Title': (settings.storeName||'MarketCR') + ' — Asistente IA'
+      },
+      // OJO: no forzamos response_format:"json_object" acá — varios modelos gratuitos
+      // de OpenRouter no lo soportan y eso hace fallar la llamada para TODOS los
+      // modelos por igual. En su lugar le pedimos el JSON por instrucciones (arriba)
+      // y parseamos con tolerancia más abajo.
+      body: JSON.stringify({
+        model: model,
+        messages: [ { role:'system', content: buildAiSystemInstruction() }, ...aiHistoryOR ]
+      })
+    });
+  }catch(networkErr){
+    // Fetch nunca llegó a completarse: casi siempre es CORS, sin conexión, o la
+    // clave/URL mal copiada. Esto es lo que produce el error genérico para
+    // cualquier modelo que elijas, porque falla antes de tocar el modelo.
+    console.error('OpenRouter network error:', networkErr);
+    appendMessage('No se pudo conectar con OpenRouter (revisá tu conexión a internet y que la clave esté bien pegada).', 'bot');
     return undefined;
   }
+
+  const rawText = await response.text();
+  let result;
+  try{
+    result = JSON.parse(rawText);
+  }catch(parseErr){
+    console.error('OpenRouter devolvió una respuesta no-JSON:', response.status, rawText.slice(0,500));
+    appendMessage('OpenRouter respondió algo inesperado (código ' + response.status + '). Probá con otro modelo gratuito desde Configuraciones — algunos están temporalmente saturados.', 'bot');
+    return undefined;
+  }
+
+  if(!response.ok || result.error){
+    const errMsg = (result.error && result.error.message) || ('HTTP ' + response.status);
+    console.error('OpenRouter error:', errMsg, result);
+    appendMessage('OpenRouter: ' + errMsg, 'bot');
+    return undefined;
+  }
+
   const msg = result.choices && result.choices[0] && result.choices[0].message;
   const text = msg && (msg.content || '');
-  if(!text) return null;
+  if(!text){
+    console.error('OpenRouter respondió sin contenido:', result);
+    return null;
+  }
   aiHistoryOR.push({ role:'assistant', content: text });
   try{
     // algunos modelos gratuitos igual envuelven el JSON en ```json ... ```
@@ -4713,13 +4775,20 @@ function loadSettingsForm(){
   checkLegacyMigration();
   refreshStorePasswordStatus();
   showPermDebugHint();
-  // Plan destacado
+  // Plan destacado / profesional / emprendedor
   const sponsEl = document.getElementById('sponsoredStatus');
   if(sponsEl){
-    const plan = (TENANT_DATA && TENANT_DATA.plan) || 'básico';
-    const isSponsored = (plan==='premium' || plan==='destacado');
-    sponsEl.textContent = isSponsored ? '⭐ Plan ' + plan.charAt(0).toUpperCase()+plan.slice(1) + ' activo' : 'Plan Básico — sin destacar';
-    sponsEl.style.color = isSponsored ? 'var(--green-dark)' : 'var(--muted)';
+    const plan = (TENANT_DATA && TENANT_DATA.plan) || 'basico';
+    if(plan==='destacado'){
+      sponsEl.textContent = '⭐ Plan Destacado activo — borde morado';
+      sponsEl.style.color = 'var(--ruby-dark)';
+    } else if(plan==='premium'){
+      sponsEl.textContent = '🥇 Plan Profesional activo — borde dorado';
+      sponsEl.style.color = '#92400E';
+    } else {
+      sponsEl.textContent = 'Plan Emprendedor — borde verde';
+      sponsEl.style.color = 'var(--green-dark)';
+    }
   }
 }
 
@@ -4996,12 +5065,15 @@ function renderTenantCards(docs){
       : '<span class="ts-fallback">' + nombre.charAt(0).toUpperCase() + '</span>';
     const tag = t.tagline ? '<span class="ts-tag">' + esc(t.tagline) + '</span>' : '';
     const media = tenantCardMedia(t.landingImages, nombre);
-    const isSponsored = (t.plan==='premium' || t.plan==='destacado');
-    const sponsoredTag = isSponsored
+    // 3 niveles de plan: destacado = morado, profesional (guardado como "premium") = dorado, básico/emprendedor = verde
+    const tier = t.plan==='destacado' ? 'destacado' : (t.plan==='premium' ? 'profesional' : 'emprendedor');
+    const tierTag = tier==='destacado'
       ? '<span class="ts-sponsored-tag"><span class="sponsored-badge"><svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Destacada</span></span>'
-      : '';
-    return '<button class="ts-card' + (isSponsored?' sponsored':'') + '" onclick="goToTenant(\'' + t.id.replace(/'/g,'') + '\')">' +
-      '<span class="ts-media" style="position:relative">' + media + sponsoredTag + '</span>' +
+      : tier==='profesional'
+        ? '<span class="ts-sponsored-tag"><span class="profesional-badge"><svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Profesional</span></span>'
+        : '';
+    return '<button class="ts-card tier-' + tier + '" onclick="goToTenant(\'' + t.id.replace(/'/g,'') + '\')">' +
+      '<span class="ts-media" style="position:relative">' + media + tierTag + '</span>' +
       '<span class="ts-body">' +
         '<span class="ts-name-row"><span class="ts-logo">' + logo + '</span><span class="ts-name">' + nombre + '</span></span>' +
         tag +
