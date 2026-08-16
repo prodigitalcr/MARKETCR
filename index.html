@@ -271,6 +271,8 @@ textarea.f-input{resize:vertical;min-height:70px}
 .inv-body{padding:16px 20px}
 .inv-client{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5}
 .inv-client b{color:var(--ink)}
+.inv-fiscal{font-size:12.5px;color:#475569;background:#F8FAFC;border-left:3px solid var(--green);border-radius:8px;padding:9px 12px;margin-bottom:12px;line-height:1.55}
+.inv-fiscal b{color:var(--ink)}
 .inv-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px}
 .inv-table th{text-align:left;padding:8px 6px;border-bottom:2px solid var(--line);color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
 .inv-table td{padding:8px 6px;border-bottom:1px solid #F1F5F9}
@@ -1625,6 +1627,45 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </div>
 
       <div class="settings-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v12H3zM3 7l9-4 9 4"/><path d="M8 13h3M15 13h1"/></svg>Facturación (Hacienda)</h4>
+        <div class="desc">Datos del comercio para emitir facturas en el Punto de Venta (impresas y/o factura electrónica para Hacienda). Dejá la cédula vacía para facturar como tarjeta simple.</div>
+        <div class="f-row">
+          <div class="f-group"><label>Cédula jurídica / física</label><input class="f-input" id="sFacturaCedula" placeholder="Ej: 3-101-123456 o 1-1234-5678"></div>
+          <div class="f-group"><label>Razón social</label><input class="f-input" id="sFacturaRazon" placeholder="Ej: Vivero La Cana S.A."></div>
+        </div>
+        <div class="f-row">
+          <div class="f-group"><label>Teléfono del comercio</label><input class="f-input" id="sFacturaTelefono" placeholder="Ej: 2531-0000"></div>
+          <div class="f-group"><label>Correo electrónico</label><input class="f-input" id="sFacturaCorreo" placeholder="Ej: hacienda@mitienda.com"></div>
+        </div>
+        <div class="f-row">
+          <div class="f-group"><label>Provincia</label><input class="f-input" id="sFacturaProvincia" placeholder="Ej: San José"></div>
+          <div class="f-group"><label>Cantón</label><input class="f-input" id="sFacturaCanton" placeholder="Ej: Escazú"></div>
+          <div class="f-group"><label>Distrito</label><input class="f-input" id="sFacturaDistrito" placeholder="Ej: San Rafael"></div>
+        </div>
+        <div class="f-row">
+          <div class="f-group"><label>Condición de venta</label>
+            <select class="sort-select" id="sFacturaCondicion" style="width:100%">
+              <option value="01">Contado (01)</option>
+              <option value="02">Crédito (02)</option>
+            </select>
+          </div>
+          <div class="f-group"><label>Tipo de documento</label>
+            <select class="sort-select" id="sFacturaDocumento" style="width:100%">
+              <option value="01">Factura electrónica (01)</option>
+              <option value="04">Tiquete electrónico (04)</option>
+            </select>
+          </div>
+        </div>
+        <div class="f-group" style="display:flex;align-items:center;gap:10px;margin-top:6px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600">
+            <input type="checkbox" id="sFacturaDigital" style="width:18px;height:18px">
+            Emitir factura electrónica para Hacienda al cobrar en el POS
+          </label>
+          <span class="hint" style="display:inline">Se genera el XML con los datos del comercio y se ofrece imprimir la copia para el cliente.</span>
+        </div>
+      </div>
+
+      <div class="settings-card">
         <h4><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>WhatsApp del negocio</h4>
         <div class="desc">A este número llegarán los comprobantes de pago y consultas de clientes. Incluí el código de país (506 para Costa Rica).</div>
         <div class="f-group"><label>Número de WhatsApp (con código de país)</label><input class="f-input" id="sWa" placeholder="Ej: 50688888888" inputmode="tel"></div>
@@ -2115,6 +2156,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-3.8M8.6 13.5l6.8 3.8"/></svg>
               Compartir
             </button>
+            <button class="social-btn" onclick="shareProductQR(pvCurrentId)" title="Generar QR de este producto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM21 14v7M14 21h1"/></svg>
+              QR
+            </button>
           </div>
           <div id="pvDealBarWrap"></div>
           <div id="pvStockUrgencyWrap"></div>
@@ -2577,7 +2622,19 @@ const DEFAULT_SETTINGS = {
   aiExternalProvider:'openai', // 'openai' | 'claude' | 'groq' | 'kimi' | 'custom'
   aiExternalKey:'',           // API key del proveedor externo
   aiExternalModel:'',         // modelo del proveedor externo (ej: gpt-4o-mini, claude-sonnet-4-6, etc.)
-  aiExternalBaseUrl:''        // URL base custom (solo para 'custom')
+  aiExternalBaseUrl:'',       // URL base custom (solo para 'custom')
+  facturaEmisor:'',           // = settings para emitir factura en el POS:
+  facturaCedula:'',           //   cédula jurídica/física del comercio (irá en la factura emitida)
+  facturaRazon:'',            //   razón social (si difiere del nombre comercial)
+  facturaTelefono:'',         //   teléfono del comercio en la factura
+  facturaCorreo:'',           //   correo de Hacienda / del comercio
+  facturaProvincia:'',        //   provincia del domicilio fiscal
+  facturaCanton:'',           //   cantón del domicilio fiscal
+  facturaDistrito:'',         //   distrito del domicilio fiscal
+  facturaCondicion:'01',      //   condición de venta: 01 contado, 02 crédito
+  facturaDocumento:'01',      //   tipo de documento: 01 factura (tradicional), 04 tiquete
+  facturaDigital:false,       //   si true, al cobrar se genera factura electrónica (XML)
+  facturaConsecutivo:1000     //   último consecutivo utilizado (se autoincrementa por venta)
 };
 
 const GRADS = [
@@ -2688,7 +2745,19 @@ function listenProducts(){
       renderInventory();
       if(document.getElementById('panel-pos').classList.contains('active')) renderPOSCatalog();
     }
+    maybeOpenProductDeepLink();
   }, err=>{ console.error(err); });
+}
+
+/* Deep link directo a un producto (?p=ID), usado por los QR que se comparten.
+   Espera a que el catálogo esté listo y abre la ficha del producto. */
+let _deepLinkPid = '';
+function scheduleProductDeepLink(pid){ _deepLinkPid = pid; }
+function maybeOpenProductDeepLink(){
+  if(!_deepLinkPid) return;
+  const pid = _deepLinkPid; _deepLinkPid = '';
+  const p = products.find(x=>x.id===pid && x.active !== false);
+  if(p) openProductView(p.id);
 }
 
 /* los pedidos completos (listado) solo los puede leer el admin, según las
@@ -4315,6 +4384,18 @@ function shareProduct(id){
     toast('Enlace: ' + url, 'ok');
   }
 }
+function shareProductQR(id){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  const url = location.href.split('#')[0].split('?')[0] + '?p=' + id;
+  document.getElementById('shareQR').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(url);
+  const logoEl = document.getElementById('shareLogo');
+  if(settings.logoUrl){ logoEl.src = settings.logoUrl; logoEl.style.display = 'block'; }
+  else { logoEl.style.display = 'none'; }
+  document.getElementById('shareTitle').textContent = 'Escaneá y mirá: ' + p.name;
+  document.getElementById('shareModal').classList.add('show');
+  trackShare();
+}
 function pvSelectThumb(i){
   pvShowMedia(pvCurrentMedia, i);
   document.querySelectorAll('#pvThumbs .th').forEach(el=>el.classList.toggle('active', +el.dataset.i===i));
@@ -5170,6 +5251,7 @@ function renderInventory(){
       '<td>' + (p.unlimited ? '<span class="pill blue">Servicio</span>' : totalStock) + '</td>' +
       '<td>' + statusSel + (st.cls==='low' ? '<div class="tbl-cat" style="margin-top:4px;color:#B45309">Pocas unidades</div>' : '') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
+        '<button class="icon-btn" title="Compartir QR" onclick="shareProductQR(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM21 14v7M14 21h1"/></svg></button>' +
         '<button class="icon-btn" title="Editar" onclick="openProductModal(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>' +
         '<button class="icon-btn danger" title="Eliminar" onclick="deleteProduct(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
       '</td></tr>';
@@ -5883,6 +5965,9 @@ async function confirmPOSSale(){
   posCart = {};
   renderPOSCart(); renderPOSCatalog();
   toast('Venta ' + number + ' registrada', 'ok');
+  if(settings.facturaDigital && canEmitInvoice()){
+    setTimeout(()=> printPOSSale(sale), 600);
+  }
 }
 function renderPOSDashboard(){
   const todaySales = posSales.filter(s => s.day === posDayKey());
@@ -5900,7 +5985,11 @@ function renderPOSDashboard(){
       '<td><div class="order-items-list" title="'+esc(itemsTxt)+'">'+esc(itemsTxt.length>70?itemsTxt.slice(0,70)+'…':itemsTxt)+'</div></td>' +
       '<td>' + (s.method||'efectivo') + '</td>' +
       '<td><b>' + fmt(s.total) + '</b></td>' +
-      '<td style="text-align:right"><button class="icon-btn danger" title="Eliminar" onclick="deletePOSSale(\'' + s.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button></td>' +
+      '<td style="text-align:right">' +
+        (canEmitInvoice() ? '<button class="icon-btn" title="Factura electrónica (XML Hacienda)" onclick="downloadPOSInvoiceXML(\'' + s.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v4M6 2v20a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9M6 14h3m3 0h3"/></svg></button>' : '') +
+        '<button class="icon-btn" title="Imprimir factura" onclick="printPOSSale(\'' + s.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>' +
+        '<button class="icon-btn danger" title="Eliminar" onclick="deletePOSSale(\'' + s.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
+      '</td>' +
       '</tr>';
   }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Aún no hay ventas hoy.</td></tr>';
 }
@@ -5954,6 +6043,114 @@ async function exportPOSPDF(){
   pdfFooter(doc);
   doc.save((TENANT_ID||'tienda') + '-pos-cierre-' + todayFileStamp() + '.pdf');
   toast('Cierre de caja descargado', 'ok');
+}
+
+/* ---------- FACTURACIÓN POS (impresa y/o digital Hacienda) ---------- */
+function canEmitInvoice(){
+  return !!(settings.facturaCedula && settings.facturaRazon);
+}
+function posInvoiceHTML(sale){
+  const d = new Date(sale.date);
+  const fecha = d.toLocaleDateString('es-CR',{day:'2-digit',month:'long',year:'numeric'}) + ' ' + d.toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'});
+  const rows = sale.items.map(it => {
+    const prodImg = it.image ? '<img src="' + esc(it.image) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;vertical-align:middle;margin-right:8px">' : '';
+    return '<tr><td>' + prodImg + esc(it.name) + '</td><td class="c">' + it.qty + '</td><td class="r">' + fmt(it.price) + '</td><td class="r">' + fmt(it.price*it.qty) + '</td></tr>';
+  }).join('');
+  const MET = {efectivo:'Efectivo', sinpe:'SINPE Móvil', tarjeta:'Tarjeta'};
+  const emisor = [];
+  if(settings.facturaCedula) emisor.push(esc(settings.facturaCedula));
+  if(settings.facturaRazon) emisor.push(esc(settings.facturaRazon));
+  if(settings.facturaTelefono) emisor.push('Tel: ' + esc(settings.facturaTelefono));
+  if(settings.facturaCorreo) emisor.push(esc(settings.facturaCorreo));
+  const dir = [settings.facturaDistrito, settings.facturaCanton, settings.facturaProvincia].filter(Boolean).join(', ');
+  if(dir) emisor.push('Domicilio fiscal: ' + esc(dir));
+  const fiscalBlock = settings.facturaCedula ? '<div class="inv-fiscal"><b>Emisor:</b> ' + emisor.join(' · ') + '</div>' : '';
+  return '<div class="inv-head">' +
+      '<div><div class="store">' + esc(settings.storeName) + '</div><div class="meta">' + esc(settings.facturaRazon || settings.tagline) + '</div></div>' +
+      '<div class="inv-num"><b>FACTURA ' + sale.number + '</b><span>' + fecha + '</span></div>' +
+    '</div>' +
+    '<div class="inv-body">' +
+      fiscalBlock +
+      '<div class="inv-client"><b>Venta en tienda</b> — Método: ' + esc(MET[sale.method] || sale.method) + '<br>' +
+      '<b>Operador:</b> ' + esc((auth.currentUser && auth.currentUser.email) || '—') + '</div>' +
+      '<table class="inv-table"><thead><tr><th>Producto</th><th class="c">Cant.</th><th class="r">Precio</th><th class="r">Importe</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<div class="inv-totals">' +
+        '<div class="row"><span>Subtotal</span><span>' + fmt(sale.subtotal) + '</span></div>' +
+        (sale.discountAmt ? '<div class="row" style="color:#B45309"><span>Descuento</span><span>−' + fmt(sale.discountAmt) + '</span></div>' : '') +
+        '<div class="row"><span>IVA (' + settings.iva + '%)</span><span>' + fmt(sale.iva) + '</span></div>' +
+        '<div class="row tt"><span>TOTAL</span><span>' + fmt(sale.total) + '</span></div>' +
+      '</div>' +
+    '</div>';
+}
+function printPOSSale(number){
+  const sale = typeof number === 'object' ? number : posSales.find(s=>s.number===number);
+  if(!sale){ toast('No se encontró la venta', 'err'); return; }
+  document.getElementById('printArea').innerHTML = '<div class="invoice">' + posInvoiceHTML(sale) + '</div>';
+  toast('Imprimiendo factura ' + sale.number + '…', 'ok');
+  window.print();
+}
+function downloadPOSInvoiceXML(number){
+  const sale = posSales.find(s=>s.number===number);
+  if(!sale){ toast('No se encontró la venta', 'err'); return; }
+  if(!canEmitInvoice()){
+    toast('Configurá la cédula y razón social en Configuraciones → Facturación (Hacienda)', 'err');
+    return;
+  }
+  const consecutivo = (settings.facturaConsecutivo || 1000) + 1;
+  const d = new Date(sale.date);
+  const f = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0') + '-06:00';
+  const toG = v => { return v && v.toFixed ? v.toFixed(5) : (0).toFixed(5); };
+  const toGT = v => { return v && v.toFixed ? v.toFixed(5) : (0).toFixed(5); };
+  const lines = (sale.items||[]).map(it =>
+    '        <LineaDetalle numeroLinea="1">' +
+    '          <CodigoTipo>01</CodigoTipo><Codigo>P' + esc(it.id) + '</Codigo>' +
+    '          <Cantidad>' + it.qty + '</Cantidad><UnidadMedida>Unid</UnidadMedida>' +
+    '          <Detalle>' + esc(it.name) + '</Detalle>' +
+    '          <PrecioUnitario>' + toG(it.price) + '</PrecioUnitario>' +
+    '          <MontoTotal>' + toGT(it.price * it.qty) + '</MontoTotal>' +
+    '        </LineaDetalle>'
+  ).join('\n');
+  const xml = '<?xml version="1.0" encoding="utf-8"?>' +
+    '<FacturaElectronica>' +
+    '  <Clave>' + consecutivoKey(sale.number, consecutivo) + '</Clave>' +
+    '  <NumeroConsecutivo>' + consecutivo + '</NumeroConsecutivo>' +
+    '  <FechaEmision>' + f + '</FechaEmision>' +
+    '  <Emisor>' +
+    '    <NombreComercial>' + esc(settings.storeName) + '</NombreComercial>' +
+    '    <RazonSocial>' + esc(settings.facturaRazon) + '</RazonSocial>' +
+    '    <Identificacion>' + esc(settings.facturaCedula) + '</Identificacion>' +
+    '    <Telefono>' + esc(settings.facturaTelefono) + '</Telefono>' +
+    '    <CorreoElectronico>' + esc(settings.facturaCorreo) + '</CorreoElectronico>' +
+    '    <Provincia>' + esc(settings.facturaProvincia) + '</Provincia>' +
+    '    <Canton>' + esc(settings.facturaCanton) + '</Canton>' +
+    '    <Distrito>' + esc(settings.facturaDistrito) + '</Distrito>' +
+    '  </Emisor>' +
+    '  <Receptor><Nombre>Consumidor Final</Nombre><IdentificacionDesconocida>Sin identificación</IdentificacionDesconocida></Receptor>' +
+    '  <CondicionVenta>' + esc(settings.facturaCondicion || '01') + '</CondicionVenta>' +
+    '  <MedioPago>' + (sale.method === 'sinpe' ? '04' : (sale.method === 'tarjeta' ? '06' : '01')) + '</MedioPago>' +
+    '  <DetalleServicio>' + (settings.facturaDocumento === '04' ? 'No aplica (tiquete)' : 'Venta de bienes / servicios') + '</DetalleServicio>' +
+    '  <ResumenFactura>' +
+    '    <Descuento>' + toG(sale.discountAmt || 0) + '</Descuento>' +
+    '    <SubTotal>' + toG(sale.subtotal) + '</SubTotal>' +
+    '    <Iva>' + toG(sale.iva) + '</Iva>' +
+    '    <Total>' + toGT(sale.total) + '</Total>' +
+    '  </ResumenFactura>' +
+    '</FacturaElectronica>';
+  const blob = new Blob([xml], {type:'application/xml'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'factura-' + (TENANT_ID||'tienda') + '-' + consecutivo + '.xml';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  // guardar el consecutivo usado para que la próxima factura siga la numeración
+  saveSettingsToDB({ facturaConsecutivo: consecutivo }).catch(()=>{});
+  toast('XML de factura descargado (' + a.download + ')', 'ok');
+}
+function consecutivoKey(number, consecutivo){
+  const mask = number.replace(/[^0-9]/g, '').slice(-8);
+  const d = new Date();
+  const dateDigits = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  return '506' + dateDigits + '000101' + String(consecutivo).padStart(10,'0') + '1' + mask + String(Date.now() % 100000);
 }
 
 /* ---------- FINANZAS DIARIAS ---------- */
@@ -6144,6 +6341,16 @@ function loadSettingsForm(){
   if(svLockEl34) svLockEl34.style.display = ['destacado','premium'].includes(getActivePlanId()) ? 'none' : '';
   document.getElementById('sIva').value = settings.iva || 13;
   document.getElementById('sDiscount').value = settings.globalDiscountPercent || 0;
+  document.getElementById('sFacturaCedula').value = settings.facturaCedula || '';
+  document.getElementById('sFacturaRazon').value = settings.facturaRazon || '';
+  document.getElementById('sFacturaTelefono').value = settings.facturaTelefono || '';
+  document.getElementById('sFacturaCorreo').value = settings.facturaCorreo || '';
+  document.getElementById('sFacturaProvincia').value = settings.facturaProvincia || '';
+  document.getElementById('sFacturaCanton').value = settings.facturaCanton || '';
+  document.getElementById('sFacturaDistrito').value = settings.facturaDistrito || '';
+  document.getElementById('sFacturaCondicion').value = settings.facturaCondicion || '01';
+  document.getElementById('sFacturaDocumento').value = settings.facturaDocumento || '01';
+  document.getElementById('sFacturaDigital').checked = !!settings.facturaDigital;
   document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
   document.getElementById('sAiKey').value = settings.aiApiKey||'';
   const geminiModelEl = document.getElementById('sAiGeminiModel');
@@ -6394,6 +6601,17 @@ async function saveSettings(){
     bingoIcon: pendingBingoIcon !== null ? pendingBingoIcon : (settings.bingoIcon||''),
     iva: parseFloat(document.getElementById('sIva').value) || 13,
     globalDiscountPercent: parseFloat(document.getElementById('sDiscount').value) || 0,
+    facturaEmisor: document.getElementById('sFacturaRazon').value.trim() || settings.storeName,
+    facturaCedula: document.getElementById('sFacturaCedula').value.trim(),
+    facturaRazon: document.getElementById('sFacturaRazon').value.trim(),
+    facturaTelefono: document.getElementById('sFacturaTelefono').value.trim(),
+    facturaCorreo: document.getElementById('sFacturaCorreo').value.trim(),
+    facturaProvincia: document.getElementById('sFacturaProvincia').value.trim(),
+    facturaCanton: document.getElementById('sFacturaCanton').value.trim(),
+    facturaDistrito: document.getElementById('sFacturaDistrito').value.trim(),
+    facturaCondicion: document.getElementById('sFacturaCondicion').value || '01',
+    facturaDocumento: document.getElementById('sFacturaDocumento').value || '01',
+    facturaDigital: document.getElementById('sFacturaDigital').checked,
     storyVideoUrl:document.getElementById('sStoryVideoUrl').value.trim(),
     storyVideoUrl2:document.getElementById('sStoryVideoUrl2').value.trim(),
     storyVideoUrl3:document.getElementById('sStoryVideoUrl3').value.trim(),
@@ -8294,6 +8512,9 @@ async function bootPlatform(){
     }
     listenSettings();
     listenProducts();
+    /* Abrir directo un producto si llegamos por QR/enlace compartido (?p=ID) */
+    const dlPid = new URLSearchParams(location.search).get('p');
+    if(dlPid) scheduleProductDeepLink(dlPid);
     /* Registrar visita a esta tienda (con fuente de tráfico) */
     setTimeout(trackPageVisit, 1200);
   }catch(e){
