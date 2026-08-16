@@ -41,6 +41,9 @@
      (todas las tiendas y todos los profesionales, sin importar el
      negocio). Se accede agregando ?superadmin=1 a la URL. Cambiá esta
      lista por los correos reales que deban tener este acceso maestro. */
+  /* ⚠️  IMPORTANTE ANTES DE DEPLOY: cambiá "admin@prodigital.com" por el
+     correo REAL de tu cuenta de Firebase. Si alguien registra ese correo
+     antes que vos, obtiene acceso total a toda la plataforma. */
   const SUPERADMIN_EMAILS = ["admin@prodigital.com"];
   /* Clave maestra para poder CREAR negocios nuevos desde la página de
      inicio (el selector de negocios). Solo protege quién puede crear un
@@ -49,7 +52,9 @@
      regla en Firestore Security Rules que limite quién puede escribir
      documentos nuevos en la colección "tenants". Cambiá este valor por
      el tuyo. */
-  const PLATFORM_MASTER_KEY = "PRODIGITAL-2026";
+  /* PLATFORM_MASTER_KEY eliminada: estaba declarada pero nunca se usaba en
+     el código. Si en el futuro querés proteger la creación de tenants desde
+     la landing, reintroducila y validala en saCreateTenant(). */
 </script>
 <style>
 :root{
@@ -1491,6 +1496,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div id="sAiGeminiBlock">
           <div class="desc">Usa la API de Google Gemini — necesitás tu propia clave (gratuita) desde <b>aistudio.google.com</b>.</div>
           <div class="f-group"><label>Clave de API de Gemini</label><input class="f-input" type="password" id="sAiKey" autocomplete="off" placeholder="Pegá tu API key aquí"></div>
+          <div class="f-group"><label>Modelo de Gemini <span class="hint" style="display:inline">(dejalo vacío para usar gemini-2.0-flash)</span></label><input class="f-input" id="sAiGeminiModel" placeholder="gemini-2.0-flash"></div>
         </div>
 
         <div id="sAiOpenrouterBlock" style="display:none">
@@ -1515,6 +1521,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
             <label>Entrenamiento / instrucciones del asistente <span class="hint" style="display:inline">(personalidad, tono, reglas propias de tu negocio)</span></label>
             <textarea class="f-input" id="sAiSystemPrompt" rows="4" placeholder="Ej: Sos un asistente cálido y directo. Siempre ofrecé la opción más económica primero. Nunca prometas envíos gratis fuera del GAM..."></textarea>
             <div class="hint" style="margin-top:4px">OpenRouter no permite re-entrenar (fine-tuning) los modelos gratuitos, pero estas instrucciones se envían siempre al modelo elegido para "enseñarle" cómo debe comportarse con tus clientes.</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
+            <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="testOpenRouterConnection()">🧪 Probar conexión</button>
+            <div id="sAiORStatus" style="font-size:12.5px"></div>
           </div>
         </div><!-- /sAiOpenrouterBlock -->
 
@@ -2184,6 +2194,7 @@ const DEFAULT_SETTINGS = {
   servicios:[], // lista corta de servicios mostrada en el landing (independiente de "categories")
   aiEnabled:false,
   aiApiKey:'',
+  aiGeminiModel:'gemini-2.0-flash',
   aiAssistantName:'Cana',
   aiWelcomeMsg:'¡Hola! ¿Buscás algo en especial o querés que te recomiende algo?',
   aiProvider:'gemini',        // 'gemini' | 'openrouter' | 'external'
@@ -2210,6 +2221,8 @@ let orders = [];
 let cart = {}; // {productId: qty}
 let isAdminSession = false;
 let unsubOrders = null;
+let unsubSettings = null;
+let unsubProducts = null;
 
 /* ---------- multi-tenant: qué negocio se está mostrando ---------- */
 /* La plataforma es UN solo archivo/código para todos los negocios.
@@ -2277,7 +2290,8 @@ function tryStoreFirstPaint(){
 }
 
 function listenSettings(){
-  settingsRef.onSnapshot(snap=>{
+  if(unsubSettings) unsubSettings();
+  unsubSettings = settingsRef.onSnapshot(snap=>{
     settings = Object.assign({}, DEFAULT_SETTINGS, snap.exists ? snap.data() : {});
     isProfessionalStore = settings.tipo === 'profesional';
     document.body.classList.toggle('professional-mode', isProfessionalStore);
@@ -2290,7 +2304,8 @@ function listenSettings(){
 }
 
 function listenProducts(){
-  productsCol.onSnapshot(snap=>{
+  if(unsubProducts) unsubProducts();
+  unsubProducts = productsCol.onSnapshot(snap=>{
     products = snap.docs.map(d=>Object.assign({id:d.id}, d.data()));
     productsReady = true;
     if(storeFirstPaintDone) renderGrid();
@@ -2353,7 +2368,7 @@ function toast(msg, type){
 function waDigits(num){ return String(num||'').replace(/\D/g,''); }
 function todayStr(){ return new Date().toLocaleDateString('es-CR',{year:'numeric',month:'2-digit',day:'2-digit'}); }
 function gradFor(id){ let h=0; for(const c of id) h=(h*31+c.charCodeAt(0))>>>0; return GRADS[h%GRADS.length]; }
-function rid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function rid(){ return (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().replace(/-/g,'') : Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
 /* Comprime una foto subida por el admin y la convierte a base64 (se guarda directo
    en Firestore, ya que esta tienda no usa Firebase Storage). maxDim limita el lado
@@ -2582,14 +2597,16 @@ async function handleAISubmit(e){
       data = await callGeminiAI(userText);
     }
     loadingMsg.remove();
-    if(data){
+    if(data && data.reply !== undefined){
       appendMessage(data.reply, 'bot');
       if(Array.isArray(data.productIdsToRecommend)){
         data.productIdsToRecommend.forEach(id => appendProductSuggestion(id));
       }
-    }else{
+    } else if(data === null){
+      // JSON malformado del modelo — pedir que repita
       appendMessage('Perdón, no entendí bien eso. ¿Podés repetirlo?', 'bot');
     }
+    // data === undefined: el proveedor ya mostró su propio mensaje de error, no repetir
   }catch(error){
     loadingMsg.remove();
     console.error(error);
@@ -2600,8 +2617,11 @@ async function handleAISubmit(e){
 /* ---------- Proveedor: Google Gemini ---------- */
 async function callGeminiAI(userText){
   aiHistory.push({ role:'user', parts:[{ text: userText }] });
+  const MAX_TURNS = 8;
+  if(aiHistory.length > MAX_TURNS) aiHistory = aiHistory.slice(-MAX_TURNS);
+  const GEMINI_MODEL = settings.aiGeminiModel || 'gemini-2.0-flash';
   const apiKey = settings.aiApiKey || '';
-  const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+  const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(GEMINI_MODEL) + ':generateContent?key=' + encodeURIComponent(apiKey);
   const response = await fetch(apiUrl, {
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
@@ -2682,7 +2702,7 @@ async function callOpenRouterAI(userText){
       headers:{
         'Content-Type':'application/json',
         'Authorization':'Bearer ' + key,
-        'X-Title': (settings.storeName||'MarketCR') + ' — Asistente IA'
+        'X-OpenRouter-Title': (settings.storeName||'MarketCR') + ' — Asistente IA'
       },
       body: JSON.stringify({
         model: model,
@@ -2870,6 +2890,11 @@ function onAiProviderChange(){
   if(geminiBlock) geminiBlock.style.display = (provider === 'gemini') ? '' : 'none';
   if(orBlock) orBlock.style.display = (provider === 'openrouter') ? '' : 'none';
   if(extBlock) extBlock.style.display = (provider === 'external') ? '' : 'none';
+  // Limpiar todos los historiales al cambiar proveedor para evitar contexto cruzado
+  aiHistory = []; aiHistoryOR = []; aiHistoryEXT = [];
+  aiWelcomeShown = false;
+  const chatBody = document.getElementById('aiChatBody');
+  if(chatBody) chatBody.innerHTML = '';
 }
 
 /* Configuración de modelos sugeridos y URL base según proveedor externo elegido */
@@ -2935,6 +2960,41 @@ async function loadExternalModels(){
       const el = document.getElementById('sAiExternalModelSuggestions');
       if(el) el.textContent = cfg2.models.join(', ');
     }
+  }
+}
+
+/* Prueba rápida de conexión OpenRouter */
+async function testOpenRouterConnection(){
+  const statusEl = document.getElementById('sAiORStatus');
+  const key = document.getElementById('sAiOpenrouterKey').value.trim();
+  const model = document.getElementById('sAiModel').value.trim();
+  if(!key){ statusEl.innerHTML = '<span style="color:var(--danger)">✗ Ingresá tu clave de OpenRouter primero.</span>'; return; }
+  if(!model){ statusEl.innerHTML = '<span style="color:var(--danger)">✗ Cargá y seleccioná un modelo primero.</span>'; return; }
+  statusEl.innerHTML = '<span style="color:var(--muted)">Probando conexión…</span>';
+  try{
+    const response = await orFetch(OR_ENDPOINT, {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer ' + key,
+        'X-OpenRouter-Title': 'PRO.DIGITAL — Test'
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 30,
+        messages:[{ role:'user', content:'Respondé solo con la palabra "ok".' }]
+      })
+    });
+    const json = await response.json();
+    if(!response.ok || json.error){
+      const msg = (json.error && json.error.message) || ('HTTP ' + response.status);
+      statusEl.innerHTML = '<span style="color:var(--danger)">✗ ' + esc(msg) + '</span>';
+      return;
+    }
+    const reply = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
+    statusEl.innerHTML = '<span style="color:var(--green)">✓ Conexión exitosa. Respuesta: "' + esc((reply||'').slice(0,60)) + '"</span>';
+  }catch(e){
+    statusEl.innerHTML = '<span style="color:var(--danger)">✗ ' + esc(e.message||'Error de red') + '</span>';
   }
 }
 
@@ -3051,7 +3111,7 @@ function renderPlatformBizList(list){
   box.innerHTML = list.map(t => {
     const nombre = esc(t.nombre || t.id);
     const avatar = t.logoUrl
-      ? '<img src="' + t.logoUrl + '" alt="' + nombre + '">'
+      ? '<img src="' + esc(t.logoUrl) + '" alt="' + nombre + '">'
       : nombre.charAt(0).toUpperCase();
     return '<button type="button" class="biz-item" onclick="goToTenant(\'' + t.id.replace(/'/g,"") + '\')">' +
       '<span class="biz-avatar" style="background:' + bizColor(nombre) + '">' + avatar + '</span>' +
@@ -4103,8 +4163,10 @@ function enterAdmin(){
   document.body.classList.add('in-admin');
   renderHeader(); listenOrdersIfAdmin(); renderInventory(); loadSettingsForm();
   loadAnalytics();
-  // Verificar plan y mostrar banner
-  checkAndRevertExpiredPlan().then(()=>{ updatePlanLockBanner(); });
+  // Verificar expiración completa: recordatorio 24h, suspensión y revertir plan
+  checkMembershipExpiry().then(()=>{
+    checkAndRevertExpiredPlan().then(()=>{ updatePlanLockBanner(); });
+  });
   // Aplicar restricciones visuales basadas en el plan
   applyPlanRestrictions();
 }
@@ -4520,7 +4582,7 @@ async function generateWhiteBackgroundImage(slot){
       headers:{
         'Content-Type':'application/json',
         'Authorization':'Bearer ' + key,
-        'X-Title': (settings.storeName||'MarketCR') + ' — Fondo blanco IA'
+        'X-OpenRouter-Title': (settings.storeName||'MarketCR') + ' — Fondo blanco IA'
       },
       body: JSON.stringify({
         model: model,
@@ -5042,6 +5104,8 @@ function loadSettingsForm(){
   document.getElementById('sDiscount').value = settings.globalDiscountPercent || 0;
   document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
   document.getElementById('sAiKey').value = settings.aiApiKey||'';
+  const geminiModelEl = document.getElementById('sAiGeminiModel');
+  if(geminiModelEl) geminiModelEl.value = settings.aiGeminiModel || 'gemini-2.0-flash';
   document.getElementById('sAiWelcome').value = settings.aiWelcomeMsg||'';
   document.getElementById('sAiEnabled').checked = !!settings.aiEnabled;
   document.getElementById('sAiProvider').value = settings.aiProvider || 'gemini';
@@ -5260,6 +5324,7 @@ async function saveSettings(){
     storyVideoUrl2:document.getElementById('sStoryVideoUrl2').value.trim(),
     aiEnabled: document.getElementById('sAiEnabled').checked,
     aiApiKey: document.getElementById('sAiKey').value.trim(),
+    aiGeminiModel: (document.getElementById('sAiGeminiModel').value.trim() || 'gemini-2.0-flash'),
     aiAssistantName: document.getElementById('sAiName').value.trim() || 'Cana',
     aiWelcomeMsg: document.getElementById('sAiWelcome').value.trim() || DEFAULT_SETTINGS.aiWelcomeMsg,
     aiProvider: (['openrouter','external','gemini'].includes(document.getElementById('sAiProvider').value) ? document.getElementById('sAiProvider').value : 'gemini'),
@@ -5364,7 +5429,7 @@ function renderTenantCards(docs){
   list.innerHTML = sorted.map(t=>{
     const nombre = esc(t.nombre || t.id);
     const logo = t.logoUrl
-      ? '<img src="' + t.logoUrl + '" alt="' + nombre + '">'
+      ? '<img src="' + esc(t.logoUrl) + '" alt="' + nombre + '">'
       : '<span class="ts-fallback">' + nombre.charAt(0).toUpperCase() + '</span>';
     const tag = t.tagline ? '<span class="ts-tag">' + esc(t.tagline) + '</span>' : '';
     const media = tenantCardMedia(t.landingImages, nombre);
