@@ -31,24 +31,6 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
-  /* Cache local (IndexedDB): la info de la tienda (settings) y el catálogo
-     (products) quedan guardados en el navegador del cliente. La próxima vez
-     que entre a la misma tienda (o navegue entre tiendas ya visitadas), la
-     grilla y el banner pintan CASI instantáneo desde este cache mientras
-     Firestore confirma en segundo plano si hay cambios — en vez de esperar
-     siempre a la red. synchronizeTabs permite tener la tienda abierta en
-     varias pestañas sin que compitan por el mismo cache. Si el navegador no
-     lo soporta (modo privado, Safari viejo, etc.) simplemente se ignora y
-     la tienda sigue funcionando igual que antes, solo sin este acelerador. */
-  try{
-    db.enablePersistence({ synchronizeTabs:true }).catch(err=>{
-      if(err && (err.code==='failed-precondition' || err.code==='unimplemented')){
-        console.warn('Cache local de Firestore no disponible en este navegador/pestaña:', err.code);
-      } else {
-        console.warn('No se pudo activar el cache local de Firestore:', err);
-      }
-    });
-  }catch(e){ console.warn('enablePersistence no soportado:', e); }
   /* Los correos admin YA NO se escriben aquí en el código: cada negocio
      tiene su propia lista de correos autorizados dentro de su documento
      en la colección "tenants" de Firestore (campo adminEmails). Esta
@@ -1387,7 +1369,6 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <input class="search-input" id="invSearch" placeholder="Buscar por nombre" oninput="renderInventory()">
         </div>
         <button class="btn-export" onclick="exportInventoryPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9.5 14.5 12 17l2.5-2.5"/></svg>Exportar PDF</button>
-        <button class="btn-export" id="btnOptimizeThumbs" onclick="optimizeCatalogThumbs()" title="Genera miniaturas livianas para que el catálogo cargue más rápido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-1.8 4.4L7 8l4.2 1.6L13 14l1.8-4.4L19 8l-4.2-1.6z"/></svg>Optimizar fotos</button>
         <button class="btn-dark" onclick="openProductModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
           Crear producto
@@ -1572,8 +1553,8 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           </div>
           <div class="f-group">
             <label>Entrenamiento / instrucciones del asistente <span class="hint" style="display:inline">(personalidad, tono, reglas propias de tu negocio)</span></label>
-            <textarea class="f-input" id="sAiSystemPrompt" rows="5" placeholder="Ej: Sos un asistente cálido y directo, con humor costarricense sutil. Siempre ofrecé primero la opción más económica. Si preguntan por algo que no vendemos, recomendá lo más parecido del catálogo en vez de decir que no. Si el cliente quiere hablar con una persona, pedile que escriba por WhatsApp. Nunca prometas descuentos que no estén activos."></textarea>
-            <div class="hint" style="margin-top:4px">El horario, el envío, el SINPE y el IVA que ya configuraste arriba en Datos del negocio se le mandan solos al asistente — no hace falta repetirlos acá. Usá este espacio para personalidad, tono de venta y reglas propias. El asistente solo recomienda productos que existen en tu catálogo (con sus variantes reales) y prioriza los más relevantes a lo que pregunta cada cliente.</div>
+            <textarea class="f-input" id="sAiSystemPrompt" rows="4" placeholder="Ej: Sos un asistente cálido y directo. Siempre ofrecé la opción más económica primero. Nunca prometas envíos gratis fuera del GAM..."></textarea>
+            <div class="hint" style="margin-top:4px">OpenRouter no permite re-entrenar (fine-tuning) los modelos gratuitos, pero estas instrucciones se envían siempre al modelo elegido para "enseñarle" cómo debe comportarse con tus clientes.</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
             <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="testOpenRouterConnection()">🧪 Probar conexión</button>
@@ -1586,13 +1567,12 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <div class="desc">Conectá el asistente directamente a <b>ChatGPT (OpenAI)</b>, <b>Claude (Anthropic)</b>, <b>Groq</b>, <b>Kimi (Moonshot)</b> u otra API compatible. Necesitás tu propia clave del proveedor elegido.</div>
           <div class="f-group"><label>Proveedor externo</label>
             <select class="sort-select" id="sAiExternalProvider" style="width:100%" onchange="onExternalProviderChange()">
-              <option value="openai">ChatGPT — OpenAI ⚠️ no compatible con este chat</option>
+              <option value="openai">ChatGPT — OpenAI (platform.openai.com)</option>
               <option value="claude">Claude — Anthropic (console.anthropic.com)</option>
               <option value="groq">Groq — ultra rápido, modelos Llama gratis (console.groq.com)</option>
               <option value="kimi">Kimi — Moonshot AI (platform.moonshot.cn)</option>
               <option value="custom">URL base propia (cualquier API compatible con OpenAI)</option>
             </select>
-            <div class="desc" id="sAiExternalWarning" style="display:none;color:var(--danger);font-weight:600;margin-top:4px">⚠️ La API de OpenAI (ChatGPT) bloquea las llamadas directas desde el navegador (CORS) — este chat no puede conectarse a ella sin un servidor propio, así que nunca va a responder. Usá <b>OpenRouter</b> (tiene modelos gratuitos) o <b>Claude</b> en su lugar.</div>
           </div>
           <div class="f-group"><label>Clave de API</label>
             <input class="f-input" type="password" id="sAiExternalKey" autocomplete="off" placeholder="sk-... o la clave del proveedor elegido">
@@ -2457,71 +2437,6 @@ function compressImageFile(file, maxDim, quality){
   });
 }
 
-/* Igual que compressImageFile, pero parte de una foto que YA está en memoria
-   como base64 (no un archivo nuevo) y la reduce más todavía. Se usa para
-   generar la miniatura liviana ("thumb") de cada foto de producto en el
-   momento de guardar, sin pedirle al admin que suba nada dos veces. */
-function downscaleDataUrl(dataUrl, maxDim, quality){
-  return new Promise((resolve, reject) => {
-    if(!dataUrl){ reject(new Error('Sin imagen')); return; }
-    const img = new Image();
-    img.onerror = () => reject(new Error('No se pudo procesar la miniatura'));
-    img.onload = () => {
-      let w = img.width, h = img.height;
-      const max = maxDim || 260;
-      if(w > max || h > max){
-        if(w >= h){ h = Math.round(h * max / w); w = max; }
-        else { w = Math.round(w * max / h); h = max; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#fff'; ctx.fillRect(0,0,w,h);
-      ctx.drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', quality || 0.55));
-    };
-    img.src = dataUrl;
-  });
-}
-/* Genera el arreglo "thumbs" (una miniatura liviana por cada foto en
-   "images"). Si por lo que sea alguna falla, se reutiliza la foto completa
-   para esa posición en vez de dejar el catálogo sin imagen. */
-async function buildThumbsFor(images){
-  const out = [];
-  for(const url of images){
-    try{ out.push(await downscaleDataUrl(url, 260, 0.55)); }
-    catch(e){ out.push(url); }
-  }
-  return out;
-}
-/* Botón "Optimizar fotos" del Inventario: genera miniaturas livianas para
-   los productos que se crearon ANTES de este acelerador (o que se subieron
-   con fotos pero nunca se volvieron a guardar), sin que el admin tenga que
-   editar producto por producto. Es opcional: la tienda ya funciona sin
-   esto, pero el catálogo pintará más rápido después de correrlo. */
-let optimizingThumbs = false;
-async function optimizeCatalogThumbs(){
-  if(optimizingThumbs) return;
-  const pending = products.filter(p => p.images && p.images.length && (!p.thumbs || p.thumbs.length < p.images.length));
-  if(!pending.length){ toast('Todas las fotos del catálogo ya están optimizadas ✨', 'ok'); return; }
-  optimizingThumbs = true;
-  const btn = document.getElementById('btnOptimizeThumbs');
-  const originalHTML = btn ? btn.innerHTML : '';
-  let done = 0;
-  if(btn){ btn.disabled = true; btn.innerHTML = 'Optimizando 0/' + pending.length + '…'; }
-  for(const p of pending){
-    try{
-      const thumbs = await buildThumbsFor(p.images);
-      await productsCol.doc(p.id).set({ thumbs }, { merge:true });
-    }catch(e){ console.error('No se pudo optimizar', p.id, e); }
-    done++;
-    if(btn) btn.innerHTML = 'Optimizando ' + done + '/' + pending.length + '…';
-  }
-  optimizingThumbs = false;
-  if(btn){ btn.disabled = false; btn.innerHTML = originalHTML; }
-  toast('Fotos optimizadas: ' + done + ' producto(s). El catálogo cargará más rápido de ahora en más.', 'ok');
-}
-
 /* Convierte enlaces de YouTube (watch, youtu.be, shorts) a una URL de embed. Devuelve null si no aplica. */
 function youtubeEmbedUrl(url){
   if(!url) return null;
@@ -2604,15 +2519,6 @@ function toggleStoryMute(n){
    productos de ESTA tienda (nunca datos de otros negocios). */
 let aiHistory = [];
 let aiWelcomeShown = false;
-/* Proveedores que NO pueden funcionar desde este chat (arquitectura 100%
-   navegador, sin backend propio): hoy solo OpenAI, cuya API bloquea las
-   llamadas directas del navegador (CORS) sin importar la clave que se use.
-   Se centraliza acá para que tanto el panel de Configuraciones como lo que
-   ven los clientes reales usen el mismo criterio. */
-function aiProviderWorksHere(provider, externalProvider){
-  if(provider === 'external' && externalProvider === 'openai') return false;
-  return true;
-}
 function renderAIAssistant(){
   const btn = document.getElementById('aiFloatBtn');
   const provider = settings.aiProvider || 'gemini';
@@ -2621,11 +2527,7 @@ function renderAIAssistant(){
     : provider === 'external'
       ? !!(settings.aiExternalKey && settings.aiExternalModel)
       : !!settings.aiApiKey;
-  // A los clientes reales solo les mostramos el asistente si de verdad puede
-  // responder en este chat — si el negocio dejó configurado un proveedor que
-  // no funciona desde el navegador (ver aiProviderWorksHere), es mejor no
-  // mostrar un botón que va a fallar en cada mensaje.
-  const canUse = !!(settings.aiEnabled && hasCreds && planAllows('ai-assistant') && aiProviderWorksHere(provider, settings.aiExternalProvider));
+  const canUse = !!(settings.aiEnabled && hasCreds && planAllows('ai-assistant'));
   btn.style.display = canUse ? 'flex' : 'none';
   document.getElementById('aiAssistantName').textContent = settings.aiAssistantName || 'Asistente';
   const logoUrl = (settings.logoUrl||'').trim();
@@ -2667,114 +2569,46 @@ function appendProductSuggestion(productId){
   const body = document.getElementById('aiChatBody');
   const card = document.createElement('div');
   card.className = 'ai-suggest-card';
-  const img = firstThumb(product) || '';
-  // Si el producto tiene variantes (tallas, tamaños, etc.) no podemos
-  // agregarlo al carrito directo desde acá — el cliente primero necesita
-  // elegir CUÁL opción quiere. Igual que en la grilla principal, el botón
-  // lo manda a elegir la opción en vez de agregar algo incorrecto.
-  const addAction = product.hasVariants
-    ? 'openProductView(\'' + product.id + '\')'
-    : 'addToCart(\'' + product.id + '\')';
-  const addLabel = product.hasVariants ? 'Elegir opción' : 'Añadir';
+  const img = (product.images && product.images[0]) ? product.images[0] : '';
   card.innerHTML =
     '<div class="asc-img">' + (img ? '<img src="' + esc(img) + '">' : '') + '</div>' +
     '<div class="asc-body">' +
       '<div class="asc-name">' + esc(product.name) + '</div>' +
-      '<div class="asc-price"><span class="now">' + displayPrice(product) + '</span></div>' +
+      '<div class="asc-price"><span class="now">' + fmt(displayPrice(product)) + '</span></div>' +
       '<div class="asc-actions">' +
         '<button class="ai-btn-view" onclick="openProductView(\'' + product.id + '\')">Ver detalle</button>' +
-        '<button class="ai-btn-add" onclick="' + addAction + '">' + addLabel + '</button>' +
+        '<button class="ai-btn-add" onclick="addToCart(\'' + product.id + '\')">Añadir</button>' +
       '</div>' +
     '</div>';
   body.appendChild(card);
   body.scrollTop = body.scrollHeight;
 }
-/* Elige qué productos incluir en el prompt del asistente: si el catálogo es
-   chico, van todos; si es grande, se prioriza por relevancia con el último
-   mensaje del cliente (nombre/descripción/categoría) en vez de mandar
-   siempre los primeros N sin importar el tema. Si no hay suficientes
-   coincidencias, se completa con los más vendidos para no dejar el catálogo
-   corto. */
-function pickRelevantProducts(userText, limit){
-  const active = products.filter(p => p.active !== false);
-  if(active.length <= limit) return active;
-  const words = (userText||'').toLowerCase().split(/[^a-zá-úñ0-9]+/i).filter(w => w.length >= 3);
-  if(!words.length){
-    return active.slice().sort((a,b)=>(b.soldCount||0)-(a.soldCount||0)).slice(0, limit);
-  }
-  const scored = active.map(p => {
-    const hay = ((p.name||'') + ' ' + (p.desc||'') + ' ' + (p.cat||'')).toLowerCase();
-    let score = 0;
-    for(const w of words) if(hay.includes(w)) score++;
-    return { p, score };
-  });
-  const relevant = scored.filter(s => s.score > 0).sort((a,b)=>b.score-a.score).slice(0, limit);
-  if(relevant.length >= Math.min(limit, 6)) return relevant.map(s=>s.p);
-  const chosenIds = new Set(relevant.map(s=>s.p.id));
-  const fillers = active.filter(p => !chosenIds.has(p.id))
-    .sort((a,b)=>(b.soldCount||0)-(a.soldCount||0))
-    .slice(0, limit - relevant.length);
-  return relevant.map(s=>s.p).concat(fillers);
-}
-
 /* Instrucción base común a cualquier proveedor: quién es el asistente,
-   el inventario de ESTA tienda (con variantes y solo los productos más
-   relevantes a lo que preguntó el cliente), los datos reales del negocio
-   (horario, envío, pago), y las instrucciones de "entrenamiento" propias
-   del negocio (settings.aiSystemPrompt) escritas desde Configuraciones. */
-function buildAiSystemInstruction(userText){
-  // Ventanas de contexto chicas (sobre todo en modelos gratuitos): mandar
-  // menos productos, pero los que sí importan, hace el chat más rápido
-  // (menos texto por turno) y más coherente (recomienda lo que encaja).
-  const MAX_PRODUCTS_IN_PROMPT = 18;
+   el inventario de ESTA tienda, y las instrucciones de "entrenamiento"
+   propias del negocio (settings.aiSystemPrompt) escritas desde Configuraciones. */
+function buildAiSystemInstruction(){
+  // Los modelos gratuitos de OpenRouter suelen tener ventanas de contexto chicas.
+  // Si el catálogo es grande, mandarlo completo en cada mensaje puede superar ese
+  // límite y provocar errores en TODOS los modelos por igual — por eso lo acotamos.
+  const MAX_PRODUCTS_IN_PROMPT = 40;
   const MAX_DESC_CHARS = 90;
-  const MAX_VARIANTS_SHOWN = 6;
-
-  const relevant = pickRelevantProducts(userText, MAX_PRODUCTS_IN_PROMPT);
-  const activeCount = products.filter(p=>p.active!==false).length;
-
   const invJson = JSON.stringify(
-    relevant.map(p => {
-      const item = {
-        id:p.id,
-        nombre:p.name,
-        desc: (p.desc||'').slice(0, MAX_DESC_CHARS)
-      };
-      if(p.hasVariants){
-        const av = activeVariants(p);
-        item.opciones = p.variantGroupName || 'Opciones';
-        item.variantes = av.slice(0, MAX_VARIANTS_SHOWN).map(v => ({ nombre:v.name, precio:v.price, stock:v.stock||0 }));
-        if(av.length > MAX_VARIANTS_SHOWN) item.variantesExtra = av.length - MAX_VARIANTS_SHOWN;
-      } else {
-        item.precio = displayPrice(p);
-        item.stock = p.unlimited ? 'ilimitado' : (p.stock||0);
-      }
-      return item;
-    })
+    products.slice(0, MAX_PRODUCTS_IN_PROMPT).map(p => ({
+      id:p.id,
+      nombre:p.name,
+      desc: (p.desc||'').slice(0, MAX_DESC_CHARS),
+      precio: displayPrice(p),
+      stock: p.unlimited ? 'ilimitado' : (p.stock||0)
+    }))
   );
-
-  // Datos que ya están configurados en otras partes de Configuraciones: se
-  // agregan solos para que el asistente nunca invente ni contradiga el
-  // horario, el envío o el método de pago real del negocio.
-  const facts = [];
-  if(settings.hours) facts.push('Horario: ' + settings.hours);
-  if(settings.shipping) facts.push('Envíos: ' + settings.shipping);
-  if(settings.sinpe) facts.push('SINPE Móvil: ' + settings.sinpe);
-  if(settings.whatsapp) facts.push('WhatsApp: ' + settings.whatsapp);
-  if(settings.iva) facts.push('IVA aplicado: ' + settings.iva + '%');
-
-  const custom = (settings.aiSystemPrompt || '').trim().slice(0, 1500);
-
-  return 'Eres "' + (settings.aiAssistantName||'Cana') + '", asistente de ventas de "' + (settings.storeName||'la tienda') + '".\n' +
-    (facts.length ? ('Datos reales del negocio (no los cambies ni inventes otros):\n- ' + facts.join('\n- ') + '\n') : '') +
-    'Catálogo' + (activeCount > relevant.length ? (' (' + relevant.length + ' productos más relevantes a lo que preguntó el cliente, de ' + activeCount + ' en total)') : '') + ': ' + invJson + '\n' +
+  const custom = (settings.aiSystemPrompt || '').trim().slice(0, 800);
+  return 'Eres "' + (settings.aiAssistantName||'Cana') + '", experta en ventas de "' + (settings.storeName||'la tienda') + '".\n' +
+    'Inventario disponible' + (products.length > MAX_PRODUCTS_IN_PROMPT ? ' (primeros ' + MAX_PRODUCTS_IN_PROMPT + ' de ' + products.length + ')' : '') + ': ' + invJson + '\n' +
     (custom ? ('Instrucciones propias del negocio (seguilas siempre):\n' + custom + '\n') : '') +
     'Reglas:\n' +
-    '1. Recomendá SOLO productos de este catálogo, usando su "id" exacto. Nunca inventes productos, precios ni stock que no estén acá.\n' +
-    '2. Si un producto tiene "variantes", mencioná en tu respuesta de texto las opciones disponibles (nombre y precio) para que el cliente elija, antes de sugerirlo.\n' +
-    '3. Si nada del catálogo encaja con lo que pide el cliente, decilo con honestidad en vez de sugerir algo que no corresponde.\n' +
-    '4. Respondé con amabilidad y resaltando el valor, en español costarricense.\n' +
-    '5. Respondé SOLO en JSON válido sin formato markdown, sin texto antes ni después.\n' +
+    '1. Si te piden una recomendación o buscan algo, sugerí 1 o 2 IDs de productos exactos que encajen.\n' +
+    '2. Respondé con amabilidad y resaltando el valor, en español costarricense.\n' +
+    '3. Respondé SOLO en JSON válido sin formato markdown, sin texto antes ni después.\n' +
     'Schema: {"reply": "Texto de respuesta", "productIdsToRecommend": ["id1","id2"]}';
 }
 
@@ -2834,7 +2668,7 @@ async function callGeminiAI(userText){
     headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({
       contents: aiHistory,
-      systemInstruction: { parts:[{ text: buildAiSystemInstruction(userText) }] },
+      systemInstruction: { parts:[{ text: buildAiSystemInstruction() }] },
       generationConfig: { responseMimeType:'application/json' }
     })
   });
@@ -2914,7 +2748,7 @@ async function callOpenRouterAI(userText){
       body: JSON.stringify({
         model: model,
         max_tokens: 800,
-        messages: [ { role:'system', content: buildAiSystemInstruction(userText) }, ...aiHistoryOR ]
+        messages: [ { role:'system', content: buildAiSystemInstruction() }, ...aiHistoryOR ]
       })
     });
   }catch(networkErr){
@@ -2977,15 +2811,6 @@ async function callExternalAI(userText){
     return undefined;
   }
 
-  // OpenAI bloquea las llamadas directas desde el navegador (no manda el
-  // header CORS necesario), así que cualquier intento acá siempre fallaría
-  // con un error de red confuso. Lo cortamos antes de perder tiempo con un
-  // fetch condenado a fallar y explicamos exactamente por qué.
-  if(prov === 'openai'){
-    appendMessage('El asistente no puede usar OpenAI directamente desde este chat (su API bloquea llamadas del navegador). Elegí OpenRouter, Claude o Groq en Configuraciones.', 'bot');
-    return undefined;
-  }
-
   aiHistoryEXT.push({ role:'user', content: userText });
   const MAX_TURNS = 8;
   if(aiHistoryEXT.length > MAX_TURNS) aiHistoryEXT = aiHistoryEXT.slice(-MAX_TURNS);
@@ -3006,7 +2831,7 @@ async function callExternalAI(userText){
       },
       body: JSON.stringify({
         model: model,
-        messages: [ { role:'system', content: buildAiSystemInstruction(userText) }, ...aiHistoryEXT ],
+        messages: [ { role:'system', content: buildAiSystemInstruction() }, ...aiHistoryEXT ],
         max_tokens: 800
       })
     });
@@ -3061,7 +2886,7 @@ async function callClaudeDirectAPI(userText, key, model){
       body: JSON.stringify({
         model: model,
         max_tokens: 800,
-        system: buildAiSystemInstruction(userText),
+        system: buildAiSystemInstruction(),
         messages: msgs
       })
     });
@@ -3129,8 +2954,6 @@ function onExternalProviderChange(){
   const customGroup = document.getElementById('sAiExternalCustomUrlGroup');
   if(sugEl) sugEl.textContent = cfg.models.join(', ') || '—';
   if(customGroup) customGroup.style.display = (prov === 'custom') ? '' : 'none';
-  const warnEl = document.getElementById('sAiExternalWarning');
-  if(warnEl) warnEl.style.display = (prov === 'openai') ? '' : 'none';
   // sugerir el primer modelo si el campo está vacío
   const modelInput = document.getElementById('sAiExternalModel');
   if(modelInput && !modelInput.value && cfg.models.length) modelInput.value = cfg.models[0];
@@ -3505,16 +3328,6 @@ function displayPrice(p){
 function firstImage(p){
   return (p.images && p.images.length) ? p.images[0] : null;
 }
-/* Miniatura liviana para listados (grilla, tabla admin, chat IA, "completá tu
-   pedido"): si el producto ya tiene "thumbs" (generadas automáticamente al
-   guardar, ver saveProduct) se usa esa versión chica, que pesa mucho menos
-   que la foto completa y hace que el catálogo cargue más rápido. Productos
-   viejos que aún no se han vuelto a guardar no tienen "thumbs" todavía, así
-   que caen de vuelta a la foto completa (nada se rompe). */
-function firstThumb(p){
-  if(p.thumbs && p.thumbs.length && p.thumbs[0]) return p.thumbs[0];
-  return firstImage(p);
-}
 
 /* ---------- oferta / urgencia / reseñas (estilo Temu) ---------- */
 function dealInfo(p){
@@ -3600,7 +3413,7 @@ function renderGrid(){
     grid.innerHTML = list.map(p => {
       const st = stockInfo(p);
       const g = gradFor(p.id);
-      const img = firstThumb(p);
+      const img = firstImage(p);
       const media = img ?
         '<img src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy" draggable="false" style="width:100%;height:100%;object-fit:cover">' :
         svgIcon(p.icon);
@@ -3994,7 +3807,7 @@ function renderPvRelated(p){
   if(!list.length){ box.innerHTML = ''; return; }
   box.innerHTML = '<div class="related-wrap"><h4>También te podría interesar</h4><div class="related-strip">' +
     list.map(r => {
-      const img = firstThumb(r);
+      const img = firstImage(r);
       const g = gradFor(r.id);
       const media = img ? '<img src="' + esc(img) + '" alt="">' : svgIcon(r.icon, 40);
       return '<div class="rel-card" onclick="openProductView(\'' + r.id + '\')"><div class="ri" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + media + '</div>' +
@@ -4107,7 +3920,7 @@ function renderCartRelated(){
   if(!list.length){ box.innerHTML = ''; return; }
   box.innerHTML = '<div class="cart-related"><h5>Completá tu pedido</h5><div class="related-strip">' +
     list.map(p => {
-      const img = firstThumb(p);
+      const img = firstImage(p);
       const g = gradFor(p.id);
       const media = img ? '<img src="' + esc(img) + '" alt="">' : svgIcon(p.icon, 34);
       return '<div class="rel-card" onclick="toggleCart(false);openProductView(\'' + p.id + '\')"><div class="ri" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + media + '</div>' +
@@ -4755,7 +4568,7 @@ function renderInventory(){
   document.getElementById('invBody').innerHTML = list.map(p => {
     const st = stockInfo(p);
     const g = gradFor(p.id);
-    const cover = firstThumb(p);
+    const cover = firstImage(p);
     const thumb = cover ?
       '<span class="tbl-thumb"><img src="' + esc(cover) + '" alt="' + esc(p.name) + '" loading="lazy"></span>' :
       '<span class="tbl-thumb" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + svgIcon(p.icon,22) + '</span>';
@@ -5159,17 +4972,11 @@ async function saveProduct(){
     .map(r => ({ id:r.id, name:(r.name||'').trim(), rating:Math.min(5,Math.max(1,parseInt(r.rating)||5)), text:(r.text||'').trim(), photo:r.photo||'', date:r.date||todayStr() }))
     .filter(r => r.name || r.text);
 
-  // Miniaturas livianas para que la grilla del catálogo cargue más rápido
-  // (ver firstThumb). Se generan siempre al guardar, así que con solo volver
-  // a guardar un producto viejo (aunque no le cambies nada) ya gana el
-  // acelerador de carga.
-  const thumbs = images.length ? await buildThumbsFor(images) : [];
-
   const data = {
     name, desc:document.getElementById('pDesc').value.trim(), price,
     stock, unlimited, cat:document.getElementById('pCat').value,
     icon:document.getElementById('pIcon').value, active:document.getElementById('pActive').checked,
-    images, thumbs,
+    images,
     videoUrl:document.getElementById('pVideoUrl').value.trim(),
     videoLink:document.getElementById('pVideoLink').value.trim(),
     tiktokUrl:document.getElementById('pTiktokUrl').value.trim(),
