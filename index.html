@@ -6,74 +6,21 @@
 <title id="pageTitle">PRO.DIGITAL — Plataforma de Tiendas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<!-- Firebase (compat SDK) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<!-- jsPDF: ya NO se carga aquí. Antes bloqueaba la carga inicial de la tienda para
-     TODOS los clientes, aunque solo lo usa el admin al exportar un reporte.
-     Ahora se carga bajo demanda con ensurePdfLibs(), ver más abajo. -->
-<script>
-  /* Este es el ÚNICO proyecto Firebase de TODA la plataforma. Las 5 (o más)
-     tiendas viven en el mismo proyecto, separadas por documento dentro de
-     la colección "tenants" (ver más abajo). No hay que crear un proyecto
-     Firebase nuevo por cada negocio. */
-  const firebaseConfig = {
-    apiKey: "AIzaSyBOb3nCj4YS7Dmi6zic_yB3KCS-UHVVgpc",
-    authDomain: "canaan-24688.firebaseapp.com",
-    projectId: "canaan-24688",
-    storageBucket: "canaan-24688.firebasestorage.app",
-    messagingSenderId: "952571784784",
-    appId: "1:952571784784:web:258ce5e88c17e7a353ab55",
-    measurementId: "G-C2PKV0EFNW"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  /* Cache local (IndexedDB): la info de la tienda (settings) y el catálogo
-     (products) quedan guardados en el navegador del cliente. La próxima vez
-     que entre a la misma tienda (o navegue entre tiendas ya visitadas), la
-     grilla y el banner pintan CASI instantáneo desde este cache mientras
-     Firestore confirma en segundo plano si hay cambios — en vez de esperar
-     siempre a la red. synchronizeTabs permite tener la tienda abierta en
-     varias pestañas sin que compitan por el mismo cache. Si el navegador no
-     lo soporta (modo privado, Safari viejo, etc.) simplemente se ignora y
-     la tienda sigue funcionando igual que antes, solo sin este acelerador. */
-  try{
-    db.enablePersistence({ synchronizeTabs:true }).catch(err=>{
-      if(err && (err.code==='failed-precondition' || err.code==='unimplemented')){
-        console.warn('Cache local de Firestore no disponible en este navegador/pestaña:', err.code);
-      } else {
-        console.warn('No se pudo activar el cache local de Firestore:', err);
-      }
-    });
-  }catch(e){ console.warn('enablePersistence no soportado:', e); }
-  /* Los correos admin YA NO se escriben aquí en el código: cada negocio
-     tiene su propia lista de correos autorizados dentro de su documento
-     en la colección "tenants" de Firestore (campo adminEmails). Esta
-     variable se llena en tiempo real cuando la app detecta qué tienda
-     (?tienda=slug) se está mostrando. */
-  let ADMIN_EMAILS = [];
-  /* Correos autorizados como SUPERADMINISTRADOR de TODA la plataforma
-     (todas las tiendas y todos los profesionales, sin importar el
-     negocio). Se accede agregando ?superadmin=1 a la URL. Cambiá esta
-     lista por los correos reales que deban tener este acceso maestro. */
-  /* ⚠️  IMPORTANTE ANTES DE DEPLOY: cambiá "admin@prodigital.com" por el
-     correo REAL de tu cuenta de Firebase. Si alguien registra ese correo
-     antes que vos, obtiene acceso total a toda la plataforma. */
-  const SUPERADMIN_EMAILS = ["admin@prodigital.com"];
-  /* Clave maestra para poder CREAR negocios nuevos desde la página de
-     inicio (el selector de negocios). Solo protege quién puede crear un
-     negocio nuevo desde la interfaz; es una capa de conveniencia, no
-     seguridad de servidor. Para una protección real, agregá también una
-     regla en Firestore Security Rules que limite quién puede escribir
-     documentos nuevos en la colección "tenants". Cambiá este valor por
-     el tuyo. */
-  /* PLATFORM_MASTER_KEY eliminada: estaba declarada pero nunca se usaba en
-     el código. Si en el futuro querés proteger la creación de tenants desde
-     la landing, reintroducila y validala en saCreateTenant(). */
-</script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<!-- Los SDKs de Firebase y su configuración ya NO se cargan aquí arriba:
+     bloqueaban el primer pintado del landing/tienda para TODOS los clientes
+     (casi 1 MB en 3 archivos). Ahora se cargan al final del body, justo antes
+     del primer <script> de la app, manteniendo el MISMO orden de ejecución
+     (SDK → config → lógica de la tienda). Aquí solo dejamos preconnects /
+     dns-prefetch para que el navegador abra antes las conexiones a Firebase
+     y a Firestore y la descarga sea más rápida. -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="dns-prefetch" href="https://www.gstatic.com">
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://identitytoolkit.googleapis.com">
+<link rel="preconnect" href="https://firebaseinstallations.googleapis.com" crossorigin>
 <style>
 :root{
   --green:#1B7A43; --green-dark:#0F5A30; --green-soft:#E7F5EC;
@@ -126,6 +73,36 @@ body.professional-mode .add-btn{display:none !important}
 .admin-link:hover{background:#F3F4F6;color:var(--ink)}
 .admin-link svg{width:16px;height:16px}
 
+/* ============ MENÚ HAMBURGUESA MÓVIL ============ */
+.mobile-menu-btn{
+  display:none;width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line);
+  background:#fff;align-items:center;justify-content:center;flex-shrink:0;z-index:55
+}
+.mobile-menu-btn svg{width:22px;height:22px;color:var(--ink)}
+.mobile-menu-btn:hover{background:var(--green-soft);border-color:var(--green)}
+.mobile-drawer{
+  position:fixed;top:0;right:-320px;width:300px;max-width:85vw;height:100vh;
+  background:#fff;z-index:95;transition:right .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.12)
+}
+.mobile-drawer.open{right:0}
+.mobile-drawer-head{
+  padding:18px 20px;border-bottom:1px solid var(--line);display:flex;
+  align-items:center;justify-content:space-between
+}
+.mobile-drawer-head b{font-size:16px}
+.mobile-drawer-body{padding:10px 0;flex:1;overflow-y:auto}
+.mobile-drawer-body .m-item{
+  display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14.5px;
+  font-weight:600;color:var(--ink);border:none;background:none;width:100%;text-align:left;cursor:pointer
+}
+.mobile-drawer-body .m-item:hover{background:#F9FAFB}
+.mobile-drawer-body .m-item svg{width:20px;height:20px;color:var(--muted);flex-shrink:0}
+.mobile-drawer-body .m-divider{height:1px;background:var(--line);margin:8px 16px}
+.mobile-drawer-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:94;opacity:0;pointer-events:none;transition:.25s}
+.mobile-drawer-backdrop.open{opacity:1;pointer-events:auto}
+body.no-scroll{overflow:hidden}
+
 .info-bar{max-width:1280px;margin:0 auto;padding:10px 20px 0;display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--muted)}
 .info-bar .item{display:flex;align-items:center;gap:6px}
 .info-bar svg{width:15px;height:15px}
@@ -133,6 +110,8 @@ body.professional-mode .add-btn{display:none !important}
 .dot-closed{color:var(--danger);font-weight:600}
 
 .ext-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:800;color:#fff;background:var(--green);box-shadow:0 4px 12px rgba(27,122,67,.3);transition:.2s}
+.ext-btn img.ext-icon{width:22px;height:22px;border-radius:6px;object-fit:cover;margin-right:2px}
+.ext-btn svg.ext-icon-fallback{width:20px;height:20px}
 .ext-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(27,122,67,.38)}
 .ext-btn svg{width:18px;height:18px}
 .ext-btn.games{background:linear-gradient(135deg,#F59E0B,#D9770D)}
@@ -645,6 +624,66 @@ body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float{disp
 .sinpe-preview svg{width:20px;height:20px;flex-shrink:0}
 .sinpe-preview b{font-size:16px;color:var(--ink);letter-spacing:1px}
 
+/* ---------- punto de venta (POS) ---------- */
+.pos-finanzas{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.pos-day-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.pos-day-card .lbl{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.pos-day-card .val{font-size:20px;font-weight:800;margin-top:4px}
+.pos-mesa-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pos-mesa-btn{padding:9px 16px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:13px;font-weight:700;color:#374151;transition:.15s;cursor:pointer}
+.pos-mesa-btn:hover{border-color:var(--green);color:var(--green-dark)}
+.pos-mesa-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.pos-layout{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start}
+@media(max-width:980px){.pos-layout{grid-template-columns:1fr}}
+.pos-catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-height:62vh;overflow-y:auto;padding-right:4px}
+.pos-item{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:.15s}
+.pos-item:hover{border-color:var(--green);box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.pos-item .pi-img{height:96px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,#F3F4F6,#E5E7EB)}
+.pos-item .pi-img img{width:100%;height:100%;object-fit:cover}
+.pos-item .pi-img svg{width:34px;height:34px}
+.pos-item .pi-body{padding:9px 11px}
+.pos-item .pi-name{font-size:12.5px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pos-item .pi-price{font-size:13.5px;font-weight:800;margin-top:3px;color:var(--green-dark)}
+.pos-cart{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;position:sticky;top:0}
+.pos-cart h4{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.pos-cart h4 svg{width:17px;height:17px;color:var(--green)}
+.pos-cart-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed #F1F5F9}
+.pos-cart-row .nm{flex:1;min-width:0;font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pos-cart-row .pv{font-size:12px;color:var(--muted);flex-shrink:0}
+.pos-qty{display:inline-flex;align-items:center;gap:2px}
+.pos-qty button{width:22px;height:22px;border-radius:6px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:12px;cursor:pointer;line-height:1;color:var(--ink)}
+.pos-qty button:hover{background:#F3F4F6;border-color:#D1D5DB}
+.pos-qty span{min-width:24px;text-align:center;font-size:12.5px;font-weight:700}
+.pos-rm{width:24px;height:24px;border-radius:7px;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:none;background:none;cursor:pointer}
+.pos-rm:hover{background:var(--danger-soft);color:var(--danger)}
+.pos-rm svg{width:15px;height:15px}
+.pos-total-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;color:var(--muted)}
+.pos-total-row.grand{font-size:16px;font-weight:800;color:var(--ink);border-top:1.5px solid var(--line);margin-top:6px;padding-top:10px}
+.pos-total-row.grand span:last-child{color:var(--green-dark)}
+.pos-cobro-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pos-cobro-actions .btn-pos-cobro{flex:1;min-width:105px;justify-content:center}
+.pos-var-item{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid #F1F5F9}
+.pos-var-item:last-child{border-bottom:none}
+.pos-var-item .nm{flex:1;font-size:13.5px}
+.pos-var-item .nm b{display:block}
+.pos-var-item .st{font-size:11.5px;color:var(--muted)}
+.pos-var-item button{padding:7px 14px;border-radius:10px;background:var(--green);color:#fff;font-weight:700;font-size:12.5px;border:none;cursor:pointer;transition:.15s;flex-shrink:0}
+.pos-var-item button:hover{background:var(--green-dark)}
+.pos-var-item button:disabled{background:#D1D5DB;cursor:not-allowed}
+.pos-empty{grid-column:1/-1;color:var(--muted);padding:40px 0;text-align:center}
+
+/* ---------- finanzas diarias ---------- */
+.fin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.fin-actions .btn-ghost{width:auto;padding:10px 16px}
+.finance-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px;max-width:780px}
+.finance-card h4{font-size:15px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.finance-card h4 svg{width:18px;height:18px;color:var(--green)}
+.finance-card .desc{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+.fin-expense-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fin-expense-row .f-group{margin:0;flex:1;min-width:140px}
+.fin-expense-row .f-group.monto{flex:0 0 130px}
+@media(max-width:640px){.fin-expense-row .f-group.monto{flex:1}}
+
 /* login */
 .login-card{max-width:380px;text-align:center}
 .login-card .lock{width:64px;height:64px;border-radius:50%;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
@@ -679,6 +718,25 @@ body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float{disp
   .store-header-inner{flex-wrap:wrap}
   .f-row{grid-template-columns:1fr}
   .radio-cards{grid-template-columns:1fr}
+}
+
+/* En móvil el header de la tienda queda compacto: se ocultan los botones
+   de texto y quedan el buscador, el carrito y la hamburguesa (los botones
+   ocultos viven dentro del drawer). En desktop se muestran todos como antes. */
+@media(max-width:860px){
+  .mobile-menu-btn{display:flex}
+  .store-header-inner{flex-wrap:nowrap;gap:8px;padding:10px 14px}
+  .store-header-inner .admin-link{display:none}
+  .store-header-inner .back-to-selector{display:none}
+  .search-wrap{order:0;max-width:none;flex:1;margin-left:0}
+  .brand{font-size:18px}
+  .brand .logo{width:36px;height:36px}
+  .cart-btn{width:42px;height:42px}
+}
+@media(max-width:480px){
+  .brand span#brandName{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
+  .search-wrap svg{left:10px}
+  .search-input{padding:10px 12px 10px 36px;font-size:13px}
 }
 
 /* ============ ASISTENTE DE COMPRAS IA ============ */
@@ -724,6 +782,27 @@ body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float{disp
 .ai-typing span:nth-child(2){animation-delay:.15s}
 .ai-typing span:nth-child(3){animation-delay:.3s}
 @keyframes aiTyping{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+/* Carrusel de productos dentro del chat: cuando el asistente recomienda
+   varios productos a la vez, en vez de apilar tarjetas gigantes mostramos
+   una fila horizontal deslizable con fichas compactas. En desktop se usa
+   la rueda del mouse para deslizar; en móviles se desliza con el dedo. */
+.ai-carousel-wrap{align-self:flex-start;max-width:100%;width:100%}
+.ai-carousel-wrap .ai-c-label{font-size:11.5px;font-weight:800;color:var(--muted);margin:2px 2px 8px;display:flex;align-items:center;gap:6px}
+.ai-carousel-wrap .ai-c-label svg{width:13px;height:13px;color:var(--green)}
+.ai-carousel{
+  display:flex;gap:10px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x mandatory;
+  scrollbar-width:thin
+}
+.ai-carousel .ai-c-item{
+  flex:0 0 128px;width:128px;background:#fff;border:1px solid var(--line);border-radius:14px;
+  overflow:hidden;scroll-snap-align:start;transition:.18s;cursor:pointer
+}
+.ai-carousel .ai-c-item:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--green)}
+.ai-carousel .ai-c-img{aspect-ratio:1;background:#F7F8FA;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ai-carousel .ai-c-img img{width:100%;height:100%;object-fit:cover}
+.ai-carousel .ai-c-body{padding:8px 10px}
+.ai-carousel .ai-c-name{font-size:12px;font-weight:700;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
+.ai-carousel .ai-c-price{font-size:13px;font-weight:800;color:#E8351D}
 @media (max-width:480px){.ai-panel{width:100vw;height:82vh;border-radius:16px 16px 0 0}.ai-head{border-radius:16px 16px 0 0}}
 body.in-admin .ai-float,body.in-admin .ai-panel{display:none}
 
@@ -1046,8 +1125,42 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
         <span>Administrador</span>
       </button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Menú" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
   </header>
+
+  <!-- Drawer móvil: en pantallas chicas los botones del header ("Rastrear
+       pedido", "Compartir", "Otros negocios", "Administrador") se agrupan
+       aquí para que el header no se desborde. En desktop se oculta. -->
+  <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop" onclick="toggleMobileMenu()"></div>
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-head">
+      <b>Menú</b>
+      <button class="close-x" onclick="toggleMobileMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="mobile-drawer-body">
+      <button class="m-item" onclick="toggleMobileMenu();openTracking()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>
+        Rastrear pedido
+      </button>
+      <button class="m-item" onclick="toggleMobileMenu();shareStoreLink()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5 15.4 6.5M8.6 13.5 15.4 17.5"/></svg>
+        Compartir tienda
+      </button>
+      <div class="m-divider"></div>
+      <button class="m-item" onclick="toggleMobileMenu();location.href=location.pathname">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
+        Ver otros negocios
+      </button>
+      <div class="m-divider"></div>
+      <button class="m-item" onclick="toggleMobileMenu();openLogin()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        Administrador
+      </button>
+    </div>
+  </div>
 
 
   <div class="info-bar" id="infoBar"></div>
@@ -1290,6 +1403,13 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Membresía</span>
         <span class="nav-badge" id="membershipNavBadge" style="display:none">!</span>
       </button>
+      <div class="sec">Local y caja</div>
+      <button class="adm-link" data-panel="pos" onclick="showPanel('pos',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 20v-6h8v6M2 10h20"/></svg><span>Punto de venta</span>
+      </button>
+      <button class="adm-link" data-panel="finance" onclick="showPanel('finance',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Finanzas diarias</span>
+      </button>
       <button class="adm-link" onclick="viewStore()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5M3 9v11h18V9M3 9h18M9 20v-7h6v7"/></svg><span>Ver tienda</span>
       </button>
@@ -1388,6 +1508,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
         <button class="btn-export" onclick="exportInventoryPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9.5 14.5 12 17l2.5-2.5"/></svg>Exportar PDF</button>
         <button class="btn-export" id="btnOptimizeThumbs" onclick="optimizeCatalogThumbs()" title="Genera miniaturas livianas para que el catálogo cargue más rápido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-1.8 4.4L7 8l4.2 1.6L13 14l1.8-4.4L19 8l-4.2-1.6z"/></svg>Optimizar fotos</button>
+        <button class="btn-export" id="btnRestoreThumbs" onclick="restoreOriginalThumbs()" title="Vuelve las fotos de todos los productos a su versión original (quita las miniaturas livianas)" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" transform="rotate(45 12 12)"/><path d="M4 4l16 16"/></svg>Restaurar fotos originales</button>
         <button class="btn-dark" onclick="openProductModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
           Crear producto
@@ -1517,8 +1638,30 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <div class="f-group"><label>Enlace del sitio web</label><input class="f-input" id="sWebUrl" placeholder="https://www.tutienda.com"></div>
         </div>
         <div class="f-row">
+          <div class="f-group"><label>Icono del botón (sitio web) — opcional</label>
+            <div class="logo-upload-row">
+              <span class="logo-preview" id="sWebIconPreview" style="width:48px;height:48px;border-radius:10px"></span>
+              <input type="file" id="sWebIconFile" accept="image/*" style="display:none" onchange="onExternalIconFileChosen(this,'web')">
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="document.getElementById('sWebIconFile').click()">Subir icono</button>
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;color:var(--danger)" onclick="removeExternalIcon('web')">Quitar</button>
+            </div>
+          </div>
+          <div class="f-group"></div>
+        </div>
+        <div class="f-row">
           <div class="f-group"><label>Nombre del botón (juego / bingo)</label><input class="f-input" id="sBingoLabel" placeholder="Ej: Bingo de Plantas"></div>
           <div class="f-group"><label>Enlace de la plataforma de juegos</label><input class="f-input" id="sBingoUrl" placeholder="https://usuario.github.io/bingo-plantas"></div>
+        </div>
+        <div class="f-row">
+          <div class="f-group"><label>Icono del botón (juego / bingo) — opcional</label>
+            <div class="logo-upload-row">
+              <span class="logo-preview" id="sBingoIconPreview" style="width:48px;height:48px;border-radius:10px"></span>
+              <input type="file" id="sBingoIconFile" accept="image/*" style="display:none" onchange="onExternalIconFileChosen(this,'bingo')">
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="document.getElementById('sBingoIconFile').click()">Subir icono</button>
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;color:var(--danger)" onclick="removeExternalIcon('bingo')">Quitar</button>
+            </div>
+          </div>
+          <div class="f-group"></div>
         </div>
       </div>
 
@@ -1714,6 +1857,110 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <table class="mini-table" style="width:100%">
             <thead><tr><th>Fecha</th><th>Período</th><th>Plan</th><th>Monto</th><th>Estado</th><th>Referencia</th></tr></thead>
             <tbody id="memHistoryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Cargando historial…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PUNTO DE VENTA -->
+    <section class="panel" id="panel-pos">
+      <div class="adm-title">Punto de Venta</div>
+      <div class="adm-sub">Ventas rápidas en tienda física. Afecta el inventario y se registra en finanzas diarias automáticamente.</div>
+
+      <div class="pos-finanzas">
+        <div class="pos-day-card"><div class="lbl">Ventas hoy</div><div class="val" id="posSalesToday">₡0</div></div>
+        <div class="pos-day-card"><div class="lbl">Pedidos hoy</div><div class="val" id="posOrdersToday">0</div></div>
+        <div class="pos-day-card"><div class="lbl">Ticket promedio</div><div class="val" id="posAvgToday">₡0</div></div>
+        <div class="pos-day-card"><div class="lbl">Unidades vendidas</div><div class="val" id="posUnitsToday">0</div></div>
+      </div>
+
+      <div class="adm-toolbar" style="margin-bottom:14px">
+        <div class="search-wrap" style="max-width:340px;flex:1;margin:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input class="search-input" id="posSearch" placeholder="Buscar producto…" oninput="renderPOSCatalog()">
+        </div>
+        <select class="sort-select" id="posCatFilter" onchange="renderPOSCatalog()"><option value="">Todas las categorías</option></select>
+        <button class="btn-export" onclick="exportPOSPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9.5 14.5 12 17l2.5-2.5"/></svg>Exportar cierre</button>
+      </div>
+
+      <div class="pos-layout">
+        <div>
+          <h4 style="font-size:14px;margin-bottom:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:-3px;color:var(--green)"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/></svg> Catálogo — tocá un producto para agregarlo</h4>
+          <div class="pos-catalog" id="posCatalog"><div class="pos-empty">Cargando productos…</div></div>
+        </div>
+        <div class="pos-cart" id="posCartBox">
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/></svg> Venta actual</h4>
+          <div id="posCartItems" style="max-height:46vh;overflow-y:auto"></div>
+          <div class="pos-total-row"><span>Subtotal</span><span id="posSub">₡0</span></div>
+          <div class="pos-total-row" id="posDiscountRow" style="display:none"><span>Descuento</span><span id="posDiscount">−₡0</span></div>
+          <div class="pos-total-row"><span>IVA</span><span id="posIva">₡0</span></div>
+          <div class="pos-total-row grand"><span>TOTAL</span><span id="posTotal">₡0</span></div>
+          <div class="pos-cobro-actions">
+            <button class="btn-dark btn-pos-cobro" onclick="posChangeMethod('efectivo')">💵 Efectivo</button>
+            <button class="btn-dark btn-pos-cobro" onclick="posChangeMethod('sinpe')">📱 SINPE</button>
+            <button class="btn-dark btn-pos-cobro" onclick="posChangeMethod('tarjeta')">💳 Tarjeta</button>
+            <button class="btn-ghost btn-pos-cobro" onclick="posClearCart()">Limpiar</button>
+          </div>
+          <div class="pos-total-row" style="margin-top:10px;padding:8px 10px;background:var(--yellow-soft);border-radius:10px"><span>Método de pago</span><b id="posPaymentLabel">Efectivo</b></div>
+          <button class="btn-primary" id="posCobrarBtn" style="width:100%;margin-top:10px" onclick="confirmPOSSale()">Cobrar venta</button>
+        </div>
+      </div>
+
+      <div style="margin-top:26px">
+        <h4 style="font-size:15px;margin-bottom:12px">Ventas del día</h4>
+        <div style="overflow-x:auto">
+          <table class="inv-table-adm">
+            <thead><tr><th>Factura</th><th>Hora</th><th>Productos</th><th>Método</th><th>Total</th><th style="text-align:right">Acciones</th></tr></thead>
+            <tbody id="posHistoryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Aún no hay ventas hoy.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINANZAS DIARIAS -->
+    <section class="panel" id="panel-finance">
+      <div class="adm-title">Finanzas diarias</div>
+      <div class="adm-sub">Caja del día, ingresos, gastos y cierre. Todo queda guardado por fecha.</div>
+
+      <div class="stat-cards">
+        <div class="stat-card hl"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Ingresos del día</div><div class="val" id="finIncome">₡0</div><div class="sub" id="finIncomeSub">sin ventas aún</div></div>
+        <div class="stat-card"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg>Gastos del día</div><div class="val" id="finExpense">₡0</div><div class="sub"><span id="finExpenseCount">0</span> gastos registrados</div></div>
+        <div class="stat-card"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Neto del día</div><div class="val" id="finNet">₡0</div><div class="sub">ingresos − gastos</div></div>
+        <div class="stat-card"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Estado de caja</div><div class="val" id="finStatus" style="font-size:18px">—</div><div class="sub">apertura / cierre</div></div>
+      </div>
+
+      <div class="finance-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 11h18M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Apertura de caja</h4>
+        <div class="desc">Registrá el dinero con el que arrancás el día (fondo de caja). Se descuenta del neto como caja inicial.</div>
+        <div class="fin-expense-row" style="justify-content:flex-start">
+          <div class="f-group monto"><label>Monto inicial (₡)</label><input class="f-input" id="finOpenCash" type="number" min="0" step="100" placeholder="0"></div>
+          <button class="btn-dark" style="align-self:flex-end" onclick="setFinanceOpenCash()">Guardar apertura</button>
+          <button class="btn-ghost" style="align-self:flex-end" onclick="financeCloseDay()">Cerrar caja del día</button>
+        </div>
+      </div>
+
+      <div class="finance-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg>Registrar gasto del día</h4>
+        <div class="desc">Ej: compra de materiales, transporte, comisión, mantenimiento. Se resta de los ingresos del día.</div>
+        <div class="fin-expense-row">
+          <div class="f-group"><label>Descripción</label><input class="f-input" id="finExpDesc" placeholder="Ej: Gasolina del envío"></div>
+          <div class="f-group"><label>Categoría</label><select class="f-input" id="finExpCat"><option value="General">General</option><option value="Materiales">Materiales</option><option value="Transporte">Transporte</option><option value="Comisión">Comisión</option><option value="Servicios">Servicios</option></select></div>
+          <div class="f-group monto"><label>Monto (₡)</label><input class="f-input" id="finExpAmount" type="number" min="0" step="100" placeholder="0"></div>
+          <button class="btn-dark" style="align-self:flex-end" onclick="addFinanceExpense()">Agregar gasto</button>
+        </div>
+      </div>
+
+      <div class="finance-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15v3m5-8v8m5-12v12"/></svg>Gastos registrados hoy</h4>
+        <div id="finExpenseList" style="overflow-x:auto"><div style="color:var(--muted);padding:8px 0">Sin gastos hoy.</div></div>
+      </div>
+
+      <div class="finance-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Resumen del día</h4>
+        <div style="overflow-x:auto">
+          <table class="mini-table" style="width:100%">
+            <thead><tr><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead>
+            <tbody id="finDayDetail"></tbody>
           </table>
         </div>
       </div>
@@ -2219,6 +2466,73 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 
 <div id="printArea"></div>
 <div id="toast"></div>
+<!-- Firebase (compat SDK): se carga aquí, al final del body justo antes del
+     primer <script> de la app, para no bloquear el primer pintado del HTML.
+     Se mantiene el MISMO orden de ejecución que antes: primero los SDKs,
+     luego la configuración (initializeApp / auth / db), luego la lógica. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  /* Este es el ÚNICO proyecto Firebase de TODA la plataforma. Las 5 (o más)
+     tiendas viven en el mismo proyecto, separadas por documento dentro de
+     la colección "tenants" (ver más abajo). No hay que crear un proyecto
+     Firebase nuevo por cada negocio. */
+  const firebaseConfig = {
+    apiKey: "AIzaSyBOb3nCj4YS7Dmi6zic_yB3KCS-UHVVgpc",
+    authDomain: "canaan-24688.firebaseapp.com",
+    projectId: "canaan-24688",
+    storageBucket: "canaan-24688.firebasestorage.app",
+    messagingSenderId: "952571784784",
+    appId: "1:952571784784:web:258ce5e88c17e7a353ab55",
+    measurementId: "G-C2PKV0EFNW"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  /* Cache local (IndexedDB): la info de la tienda (settings) y el catálogo
+     (products) quedan guardados en el navegador del cliente. La próxima vez
+     que entre a la misma tienda (o navegue entre tiendas ya visitadas), la
+     grilla y el banner pintan CASI instantáneo desde este cache mientras
+     Firestore confirma en segundo plano si hay cambios — en vez de esperar
+     siempre a la red. synchronizeTabs permite tener la tienda abierta en
+     varias pestañas sin que compitan por el mismo cache. Si el navegador no
+     lo soporta (modo privado, Safari viejo, etc.) simplemente se ignora y
+     la tienda sigue funcionando igual que antes, solo sin este acelerador. */
+  try{
+    db.enablePersistence({ synchronizeTabs:true }).catch(err=>{
+      if(err && (err.code==='failed-precondition' || err.code==='unimplemented')){
+        console.warn('Cache local de Firestore no disponible en este navegador/pestaña:', err.code);
+      } else {
+        console.warn('No se pudo activar el cache local de Firestore:', err);
+      }
+    });
+  }catch(e){ console.warn('enablePersistence no soportado:', e); }
+  /* Los correos admin YA NO se escriben aquí en el código: cada negocio
+     tiene su propia lista de correos autorizados dentro de su documento
+     en la colección "tenants" de Firestore (campo adminEmails). Esta
+     variable se llena en tiempo real cuando la app detecta qué tienda
+     (?tienda=slug) se está mostrando. */
+  let ADMIN_EMAILS = [];
+  /* Correos autorizados como SUPERADMINISTRADOR de TODA la plataforma
+     (todas las tiendas y todos los profesionales, sin importar el
+     negocio). Se accede agregando ?superadmin=1 a la URL. Cambiá esta
+     lista por los correos reales que deban tener este acceso maestro. */
+  /* ⚠️  IMPORTANTE ANTES DE DEPLOY: cambiá "admin@prodigital.com" por el
+     correo REAL de tu cuenta de Firebase. Si alguien registra ese correo
+     antes que vos, obtiene acceso total a toda la plataforma. */
+  const SUPERADMIN_EMAILS = ["admin@prodigital.com"];
+  /* Clave maestra para poder CREAR negocios nuevos desde la página de
+     inicio (el selector de negocios). Solo protege quién puede crear un
+     negocio nuevo desde la interfaz; es una capa de conveniencia, no
+     seguridad de servidor. Para una protección real, agregá también una
+     regla en Firestore Security Rules que limite quién puede escribir
+     documentos nuevos en la colección "tenants". Cambiá este valor por
+     el tuyo. */
+  /* PLATFORM_MASTER_KEY eliminada: estaba declarada pero nunca se usaba en
+     el código. Si en el futuro querés proteger la creación de tenants desde
+     la landing, reintroducila y validala en saCreateTenant(). */
+</script>
 <script>
 /* =====================================================
    CANAAN STORE — tienda web con pago SINPE + WhatsApp
@@ -2235,8 +2549,10 @@ const DEFAULT_SETTINGS = {
   categories:['Plantas','Productos','Servicios'],
   websiteUrl:'',
   websiteLabel:'Sitio web',
+  websiteIcon:'',
   bingoUrl:'',
   bingoLabel:'Bingo de Plantas',
+  bingoIcon:'',
   storyVideoUrl:'',
   storyVideoUrl2:'',
   storyVideoUrl3:'',
@@ -2296,11 +2612,13 @@ let TENANT_DATA = null;
 function tenantRef(){ return db.collection('tenants').doc(TENANT_ID); }
 function tenantCol(name){ return tenantRef().collection(name); }
 
-let settingsRef, productsCol, ordersCol;
+let settingsRef, productsCol, ordersCol, posSalesCol, financeCol;
 function bindTenantRefs(){
   settingsRef = tenantCol('settings').doc('store');
   productsCol = tenantCol('products');
   ordersCol = tenantCol('orders');
+  posSalesCol = tenantCol('posSales');
+  financeCol = tenantCol('finance');
 }
 
 /* claves de localStorage separadas por negocio, para que "me gusta" y
@@ -2366,7 +2684,10 @@ function listenProducts(){
     productsReady = true;
     if(storeFirstPaintDone) renderGrid();
     else tryStoreFirstPaint();
-    if(document.body.classList.contains('in-admin')) renderInventory();
+    if(document.body.classList.contains('in-admin')){
+      renderInventory();
+      if(document.getElementById('panel-pos').classList.contains('active')) renderPOSCatalog();
+    }
   }, err=>{ console.error(err); });
 }
 
@@ -2519,7 +2840,45 @@ async function optimizeCatalogThumbs(){
   }
   optimizingThumbs = false;
   if(btn){ btn.disabled = false; btn.innerHTML = originalHTML; }
+  syncThumbButtons();
   toast('Fotos optimizadas: ' + done + ' producto(s). El catálogo cargará más rápido de ahora en más.', 'ok');
+}
+/* Muestra u oculta el botón "Restaurar fotos originales" según si hay
+   productos con miniaturas generadas (thumbs). Se llama tras optimizar,
+   tras restaurar y cada vez que se vuelve a pintar el inventario. */
+function syncThumbButtons(){
+  const hasThumbs = products.some(p => (p.thumbs && p.thumbs.length) || (p.optimizedPhotos));
+  const restoreBtn = document.getElementById('btnRestoreThumbs');
+  const optimizeBtn = document.getElementById('btnOptimizeThumbs');
+  if(restoreBtn) restoreBtn.style.display = hasThumbs ? '' : 'none';
+  if(optimizeBtn){
+    const pending = products.some(p => p.images && p.images.length && (!p.thumbs || p.thumbs.length < p.images.length));
+    optimizeBtn.style.display = pending ? '' : 'none';
+  }
+}
+/* Revierte el botón "Optimizar fotos": borra las miniaturas livianas (thumbs)
+   de todos los productos con fotos, de modo que las páginas vuelvan a usar
+   las fotos ORIGINALES que el admin subió. Es la operación inversa exacta:
+   los thumbs son datos derivados que se regeneran automáticamente al guardar
+   el producto de nuevo, así que renunciar a ellos no pierde información.
+   Pide confirmación por si fue un toque accidental. */
+async function restoreOriginalThumbs(){
+  const affected = products.filter(p => (p.thumbs && p.thumbs.length) || p.optimizedPhotos);
+  if(!affected.length){ toast('No hay fotos optimizadas para restaurar.', 'warn'); return; }
+  if(!window.confirm('Restaurar las fotos originales de ' + affected.length + ' producto(s)? Se quitarán las miniaturas livianas y el catálogo volverá a usar las fotos completas. Podés volver a optimizar en cualquier momento.')) return;
+  const btn = document.getElementById('btnRestoreThumbs');
+  const originalHTML = btn ? btn.innerHTML : '';
+  let done = 0;
+  if(btn){ btn.disabled = true; btn.innerHTML = 'Restaurando…'; }
+  for(const p of affected){
+    try{
+      await productsCol.doc(p.id).set({ thumbs:[] }, { merge:true });
+    }catch(e){ console.error('No se pudo restaurar', p.id, e); }
+    done++;
+  }
+  if(btn){ btn.disabled = false; btn.innerHTML = originalHTML; }
+  syncThumbButtons();
+  toast('Fotos restauradas: ' + done + ' producto(s). Se usan de nuevo las fotos originales.', 'ok');
 }
 
 /* Convierte enlaces de YouTube (watch, youtu.be, shorts) a una URL de embed. Devuelve null si no aplica. */
@@ -2689,6 +3048,34 @@ function appendProductSuggestion(productId){
   body.appendChild(card);
   body.scrollTop = body.scrollHeight;
 }
+/* Muestra una fila horizontal (carrusel) con los productos recomendados por
+   el asistente. Si es un solo producto, seguimos usando la tarjeta grande
+   (appendProductSuggestion); a partir de dos o más van en carrusel para que
+   el chat no se llene de tarjetas enormes. */
+function appendProductCarousel(productIds){
+  const list = (productIds||[]).filter(id => products.some(p => p.id === id && p.active !== false));
+  if(!list.length) return;
+  if(list.length === 1){ appendProductSuggestion(list[0]); return; }
+  const body = document.getElementById('aiChatBody');
+  const wrap = document.createElement('div');
+  wrap.className = 'ai-carousel-wrap';
+  wrap.innerHTML =
+    '<div class="ai-c-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Recomendados para vos</div>' +
+    '<div class="ai-carousel">' +
+      list.map(id => {
+        const p = products.find(x => x.id === id);
+        const img = firstThumb(p) || '';
+        const g = gradFor(p.id);
+        const media = img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : svgIcon(p.icon, 40);
+        return '<div class="ai-c-item" onclick="openProductView(\'' + p.id + '\')">' +
+          '<div class="ai-c-img" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + media + '</div>' +
+          '<div class="ai-c-body"><div class="ai-c-name">' + esc(p.name) + '</div><div class="ai-c-price">' + displayPrice(p) + '</div></div>' +
+          '</div>';
+      }).join('') +
+    '</div>';
+  body.appendChild(wrap);
+  body.scrollTop = body.scrollHeight;
+}
 /* Elige qué productos incluir en el prompt del asistente: si el catálogo es
    chico, van todos; si es grande, se prioriza por relevancia con el último
    mensaje del cliente (nombre/descripción/categoría) en vez de mandar
@@ -2806,8 +3193,8 @@ async function handleAISubmit(e){
     loadingMsg.remove();
     if(data && data.reply !== undefined){
       appendMessage(data.reply, 'bot');
-      if(Array.isArray(data.productIdsToRecommend)){
-        data.productIdsToRecommend.forEach(id => appendProductSuggestion(id));
+      if(Array.isArray(data.productIdsToRecommend) && data.productIdsToRecommend.length){
+        appendProductCarousel(data.productIdsToRecommend);
       }
     } else if(data === null){
       // JSON malformado del modelo — pedir que repita
@@ -3458,8 +3845,8 @@ function setCat(c){ activeCat = c; renderChips(); renderGrid(); }
 function renderExternalLinks(){
   const bar = document.getElementById('externalLinksBar');
   const btns = [];
-  if(settings.websiteUrl) btns.push('<a class="ext-btn web" href="' + esc(settings.websiteUrl) + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg>' + esc(settings.websiteLabel || 'Sitio web') + '</a>');
-  if(settings.bingoUrl) btns.push('<a class="ext-btn games blink" href="' + esc(settings.bingoUrl) + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>' + esc(settings.bingoLabel || 'Bingo de Plantas') + '</a>');
+  if(settings.websiteUrl) btns.push('<a class="ext-btn web" href="' + esc(settings.websiteUrl) + '" target="_blank" rel="noopener">' + (settings.websiteIcon ? '<img class="ext-icon" src="' + esc(settings.websiteIcon) + '" alt="">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg>') + esc(settings.websiteLabel || 'Sitio web') + '</a>');
+  if(settings.bingoUrl) btns.push('<a class="ext-btn games blink" href="' + esc(settings.bingoUrl) + '" target="_blank" rel="noopener">' + (settings.bingoIcon ? '<img class="ext-icon" src="' + esc(settings.bingoIcon) + '" alt="">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>') + esc(settings.bingoLabel || 'Bingo de Plantas') + '</a>');
   bar.innerHTML = btns.join('');
 }
 
@@ -4212,6 +4599,16 @@ function markProductsAsOrdered(ids){
   ids.forEach(id => cur.add(id));
   try{ localStorage.setItem(tenantLS('orderedProducts'), JSON.stringify(Array.from(cur))); }catch(e){}
 }
+function toggleMobileMenu(){
+  const drawer = document.getElementById('mobileDrawer');
+  const backdrop = document.getElementById('mobileDrawerBackdrop');
+  const btn = document.getElementById('mobileMenuBtn');
+  const open = drawer.classList.toggle('open');
+  if(backdrop) backdrop.classList.toggle('open', open);
+  if(btn) btn.setAttribute('aria-expanded', String(open));
+  document.body.classList.toggle('no-scroll', open);
+}
+
 let csrProductId = null, csrRating = 5, csrPhoto = '';
 function openReviewForm(id){
   csrProductId = id; csrRating = 5; csrPhoto = '';
@@ -4390,6 +4787,7 @@ async function doLogout(){
 function enterAdmin(){
   document.body.classList.add('in-admin');
   renderHeader(); listenOrdersIfAdmin(); renderInventory(); loadSettingsForm();
+  listenPOSIfAdmin(); listenFinanceIfAdmin();
   loadAnalytics();
   // Verificar expiración completa: recordatorio 24h, suspensión y revertir plan
   checkMembershipExpiry().then(()=>{
@@ -4473,6 +4871,8 @@ function showPanel(name, btn){
   if(name==='orders') renderOrders();
   if(name==='settings') loadSettingsForm();
   if(name==='membership') loadMembershipPanel();
+  if(name==='pos'){ renderPOSCatalog(); renderPOSCart(); renderPOSDashboard(); listenFinanceIfAdmin(); }
+  if(name==='finance'){ listenFinanceIfAdmin(); renderFinancePanel(); }
 }
 /* Helper para cambiar panel desde código (sin botón) */
 function switchPanel(panelId){
@@ -4774,6 +5174,7 @@ function renderInventory(){
         '<button class="icon-btn danger" title="Eliminar" onclick="deleteProduct(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
       '</td></tr>';
   }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Sin productos</td></tr>';
+  syncThumbButtons();
 }
 
 /* ---------- multimedia del producto (fotos subidas como archivo, comprimidas a base64) ---------- */
@@ -5273,6 +5674,380 @@ function viewOrder(num){
   document.getElementById('orderModal').classList.add('show');
 }
 
+/* ---------- PUNTO DE VENTA (POS) ----------
+   Ventas rápidas del local: usan el MISMO inventario de la tienda (descuentan
+   stock al cobrar) y se guarda la venta tanto en "posSales" como en el
+   documento diario de "finance" (tenants/{slug}/finance/YYYY-MM-DD). */
+let posCart = {};          // clave = cartKey(id, variantId); valor = {qty}
+let posPaymentMethod = 'efectivo';
+let posSales = [];
+let financeToday = null;   // doc diario de finanzas (caché)
+let unsubPosSales = null;
+let unsubFinance = null;
+
+function posDayKey(d){
+  d = d || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function posSalesRefs(){ return tenantCol('posSales'); }
+function financeRef(day){ return tenantCol('finance').doc(day || posDayKey()); }
+
+function listenPOSIfAdmin(){
+  if(unsubPosSales) unsubPosSales();
+  unsubPosSales = posSalesRefs().orderBy('createdAtMs','desc').limit(100).onSnapshot(snap=>{
+    posSales = snap.docs.map(d=>Object.assign({id:d.id}, d.data()));
+    if(document.body.classList.contains('in-admin') && document.getElementById('panel-pos').classList.contains('active')){
+      renderPOSDashboard();
+    }
+  }, err=>{ console.error(err); });
+}
+function listenFinanceIfAdmin(){
+  const day = posDayKey();
+  if(unsubFinance) unsubFinance();
+  unsubFinance = financeRef(day).onSnapshot(snap=>{
+    financeToday = Object.assign({ openCash:0, salesCount:0, salesAmount:0, expenses:[] }, snap.exists ? snap.data() : {});
+    if(document.body.classList.contains('in-admin')){
+      renderFinancePanel();
+      renderPOSDashboard();
+    }
+  }, err=>{ console.error(err); });
+}
+
+/* ---------- POS: catálogo y carrito ---------- */
+function posTotals(){
+  let sub = 0, count = 0;
+  for(const key in posCart){
+    const info = cartLineInfo(key);
+    if(!info) continue;
+    sub += info.unitPrice * posCart[key].qty; count += posCart[key].qty;
+  }
+  const discountPercent = Math.max(0, Math.min(100, settings.globalDiscountPercent || 0));
+  const discountAmt = Math.round(sub * discountPercent / 100);
+  const discountedSub = sub - discountAmt;
+  const iva = Math.round(discountedSub * (settings.iva||0) / 100);
+  return { sub, discountAmt, discountPercent, discountedSub, iva, total: discountedSub + iva, count };
+}
+function renderPOSCatalog(){
+  const q = (document.getElementById('posSearch').value||'').toLowerCase().trim();
+  const cat = document.getElementById('posCatFilter').value;
+  const catsEl = document.getElementById('posCatFilter');
+  const cats = ['Todos'].concat(settings.categories||[]);
+  if(catsEl.options.length !== cats.length){
+    catsEl.innerHTML = cats.map(c=>'<option value="'+esc(c)+'"'+(c===cat?' selected':'')+'>'+esc(c)+'</option>').join('');
+  }
+  const list = products.filter(p =>
+    p.active !== false &&
+    (!q || p.name.toLowerCase().includes(q)) &&
+    (!cat || cat==='Todos' || p.cat===cat));
+  document.getElementById('posCatalog').innerHTML = list.map(p => {
+    const st = stockInfo(p);
+    const g = gradFor(p.id);
+    const cover = firstThumb(p);
+    const thumb = cover ? '<img src="'+esc(cover)+'" alt="" loading="lazy">' : svgIcon(p.icon,34);
+    const out = !st.can;
+    return '<div class="pos-item' + (out?'" style="opacity:.45':'') + '" onclick="posPickProduct(\'' + p.id + '\')">' +
+      '<div class="pi-img">' + thumb + '</div>' +
+      '<div class="pi-body"><div class="pi-name">' + esc(p.name) + '</div>' +
+      '<div class="pi-price">' + (p.hasVariants ? 'Desde ' : '') + displayPrice(p) + '</div></div></div>';
+  }).join('') || '<div class="pos-empty">Sin productos que coincidan.</div>';
+}
+/* Al tocar un producto: si tiene variantes, elegís una primero; si no, suma directo. */
+function posPickProduct(id){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  const st = stockInfo(p);
+  if(!st.can){ toast('Junto a los productos sin stock, no se puede vender este ahora', 'err'); return; }
+  if(p.hasVariants){
+    const av = activeVariants(p);
+    if(!av.length){ toast('Este producto no tiene variantes disponibles', 'err'); return; }
+    const rows = av.map(v => {
+      const out = (v.stock||0) <= 0;
+      return '<div class="pos-var-item">' +
+        '<div class="nm"><b>' + esc(v.name) + '</b><span class="st">' + fmt(v.price) + (p.unlimited ? '' : ' · ' + (v.stock||0) + ' uds') + '</span></div>' +
+        '<button ' + (out?'disabled':'') + ' onclick="posAdd(\'' + p.id + '\',\'' + v.id + '\')">' + (out?'Sin stock':'Agregar') + '</button></div>';
+    }).join('');
+    showPOSVariantModal(esc(p.name), rows);
+  } else {
+    posAdd(id, null);
+  }
+}
+function posAdd(id, variantId){
+  const key = cartKey(id, variantId);
+  const info = cartLineInfo(key);
+  if(!info) return;
+  const cur = posCart[key] || { qty:0 };
+  const next = cur.qty + 1;
+  if(info.unitStock !== Infinity && next > info.unitStock){ toast('Stock máximo disponible', 'err'); return; }
+  posCart[key] = { qty: next };
+  renderPOSCart();
+  toast(info.label + ' agregado', 'ok');
+}
+function posQty(key, delta){
+  const info = cartLineInfo(key);
+  const cur = posCart[key] ? posCart[key].qty : 0;
+  const next = cur + delta;
+  if(next <= 0){ delete posCart[key]; }
+  else {
+    if(info && info.unitStock !== Infinity && next > info.unitStock){ toast('Stock máximo disponible', 'err'); return; }
+    posCart[key] = { qty: next };
+  }
+  renderPOSCart();
+}
+function posRemove(key){ delete posCart[key]; renderPOSCart(); }
+function posClearCart(){ posCart = {}; renderPOSCart(); toast('Venta limpiada'); }
+function posChangeMethod(m){
+  posPaymentMethod = m;
+  document.getElementById('posPaymentLabel').textContent = m[0].toUpperCase() + m.slice(1);
+}
+function renderPOSCart(){
+  const t = posTotals();
+  document.getElementById('posSub').textContent = fmt(t.sub);
+  document.getElementById('posDiscountRow').style.display = t.discountAmt ? 'flex' : 'none';
+  document.getElementById('posDiscount').textContent = '−' + fmt(t.discountAmt);
+  document.getElementById('posIva').textContent = fmt(t.iva);
+  document.getElementById('posTotal').textContent = fmt(t.total);
+  document.getElementById('posCobrarBtn').disabled = !t.count;
+  const box = document.getElementById('posCartItems');
+  if(!t.count){
+    box.innerHTML = '<div style="color:var(--muted);padding:30px 0;text-align:center">Tocá un producto del catálogo para armar la venta.</div>';
+    return;
+  }
+  box.innerHTML = Object.keys(posCart).map(key => {
+    const info = cartLineInfo(key);
+    if(!info) return '';
+    const qty = posCart[key].qty;
+    return '<div class="pos-cart-row">' +
+      '<div class="nm">' + esc(info.label) + '</div>' +
+      '<span class="pv">' + fmt(info.unitPrice * qty) + '</span>' +
+      '<div class="pos-qty">' +
+        '<button onclick="posQty(\'' + key + '\',-1)">−</button><span>' + qty + '</span><button onclick="posQty(\'' + key + '\',1)">+</button>' +
+      '</div>' +
+      '<button class="pos-rm" onclick="posRemove(\'' + key + '\')" title="Quitar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' +
+      '</div>';
+  }).join('');
+}
+function showPOSVariantModal(title, rows){
+  document.getElementById('posVariantTitle').textContent = title;
+  document.getElementById('posVariantBody').innerHTML = rows;
+  document.getElementById('posVariantModal').classList.add('show');
+}
+function closePOSVariantModal(){ document.getElementById('posVariantModal').classList.remove('show'); }
+
+/* ---------- POS: cobrar venta ---------- */
+async function confirmPOSSale(){
+  const t = posTotals();
+  if(!t.count){ toast('La venta está vacía', 'err'); return; }
+  if(!confirm('¿Confirmar la venta por ' + fmt(t.total) + ' (' + posPaymentMethod + ')? Se descontará del inventario.')) return;
+  const now = new Date();
+  const day = posDayKey(now);
+  const number = 'P-' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + String(Date.now()).slice(-5);
+  const items = Object.keys(posCart).map(key => {
+    const parts = key.split('::');
+    const p = products.find(x=>x.id===parts[0]);
+    const info = cartLineInfo(key);
+    return info ? { id:parts[0], variantId: parts[1] || '', name: info.label, price: info.unitPrice, qty: posCart[key].qty, image: (p && p.images && p.images[0]) || '' } : null;
+  }).filter(Boolean);
+  const sale = {
+    number, date: now.toISOString(), createdAtMs: now.getTime(), day,
+    method: posPaymentMethod,
+    items, subtotal: t.sub, discountAmt: t.discountAmt, iva: t.iva, total: t.total, qtyTotal: t.count
+  };
+  const batch = db.batch();
+  batch.set(posSalesRefs().doc(number), sale);
+  batch.set(financeRef(day), {
+    day,
+    salesCount: firebase.firestore.FieldValue.increment(1),
+    salesAmount: firebase.firestore.FieldValue.increment(t.total),
+    lastSaleAt: now.toISOString()
+  }, { merge:true });
+  // Descontar stock de cada producto vendido (mismo inventario que la tienda web)
+  Object.keys(posCart).forEach(key => {
+    const parts = key.split('::');
+    const p = products.find(x=>x.id===parts[0]);
+    if(!p || p.unlimited) return;
+    const qty = posCart[key].qty;
+    if(parts[1]){
+      const variants = (p.variants||[]).map(v => (v.id===parts[1] && !v.removed) ? Object.assign({}, v, { stock: Math.max(0,(v.stock||0)-qty) }) : v);
+      batch.set(productsCol.doc(p.id), { variants }, { merge:true });
+    } else {
+      batch.set(productsCol.doc(p.id), { stock: Math.max(0,(p.stock||0)-qty) }, { merge:true });
+    }
+  });
+  try{
+    await batch.commit();
+  }catch(e){
+    toast('No se pudo registrar la venta. Intentá de nuevo.', 'err');
+    console.error(e);
+    return;
+  }
+  posCart = {};
+  renderPOSCart(); renderPOSCatalog();
+  toast('Venta ' + number + ' registrada', 'ok');
+}
+function renderPOSDashboard(){
+  const todaySales = posSales.filter(s => s.day === posDayKey());
+  const amount = todaySales.reduce((s,x)=>s+x.total,0);
+  document.getElementById('posSalesToday').textContent = fmt(amount);
+  document.getElementById('posOrdersToday').textContent = todaySales.length;
+  document.getElementById('posAvgToday').textContent = fmt(todaySales.length ? amount/todaySales.length : 0);
+  document.getElementById('posUnitsToday').textContent = todaySales.reduce((s,x)=> s + (x.qtyTotal||0), 0);
+  document.getElementById('posHistoryBody').innerHTML = todaySales.map(s => {
+    const d = new Date(s.date);
+    const itemsTxt = s.items.map(it=>it.qty+'× '+it.name).join(', ');
+    return '<tr>' +
+      '<td><b>' + s.number + '</b></td>' +
+      '<td>' + d.toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'}) + '</td>' +
+      '<td><div class="order-items-list" title="'+esc(itemsTxt)+'">'+esc(itemsTxt.length>70?itemsTxt.slice(0,70)+'…':itemsTxt)+'</div></td>' +
+      '<td>' + (s.method||'efectivo') + '</td>' +
+      '<td><b>' + fmt(s.total) + '</b></td>' +
+      '<td style="text-align:right"><button class="icon-btn danger" title="Eliminar" onclick="deletePOSSale(\'' + s.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button></td>' +
+      '</tr>';
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Aún no hay ventas hoy.</td></tr>';
+}
+async function deletePOSSale(number){
+  if(!confirm('¿Eliminar la venta ' + number + '? Se devolverá el stock a los productos.')) return;
+  const sale = posSales.find(s=>s.number===number);
+  try{
+    const batch = db.batch();
+    batch.delete(posSalesRefs().doc(number));
+    if(sale && sale.items && sale.items.length){
+      // Devolver el stock descontado al inventario (misma lógica inversa de confirmPOSSale)
+      sale.items.forEach(it => {
+        const p = products.find(x=>x.id===it.id);
+        if(!p || p.unlimited) return;
+        if(it.variantId){
+          const variants = (p.variants||[]).map(v => (v.id===it.variantId && !v.removed) ? Object.assign({}, v, { stock: (v.stock||0) + it.qty }) : v);
+          batch.set(productsCol.doc(p.id), { variants }, { merge:true });
+        } else {
+          batch.set(productsCol.doc(p.id), { stock: (p.stock||0) + it.qty }, { merge:true });
+        }
+      });
+    }
+    await batch.commit();
+    toast('Venta eliminada y stock devuelto', 'ok');
+  }catch(e){
+    toast('No se pudo eliminar: ' + (e && e.message ? e.message : 'error'), 'err');
+    console.error(e);
+  }
+}
+async function exportPOSPDF(){
+  toast('Preparando el PDF…', 'ok');
+  if(!(await ensurePdfLibs()) || !pdfReady()) return;
+  const todaySales = posSales.filter(s => s.day === posDayKey());
+  const doc = pdfNewDoc('Cierre de caja - Punto de Venta');
+  const body = todaySales.map(s=>{
+    const d = new Date(s.date);
+    const itemsTxt = s.items.map(it=>it.qty+'x '+it.name).join(', ');
+    return [s.number, d.toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'}), s.method||'efectivo', itemsTxt, fmtPdf(s.total)];
+  });
+  doc.autoTable({
+    startY: 92,
+    head: [['Factura','Hora','Método','Detalle','Total']],
+    body: body.length ? body : [['Sin ventas hoy','','','','']],
+    theme:'grid', headStyles:{ fillColor:[27,122,67] }, styles:{ fontSize:9, cellPadding:5 },
+    columnStyles:{ 3:{ cellWidth:150 }, 4:{ halign:'right' } }
+  });
+  const total = todaySales.reduce((s,x)=>s+x.total,0);
+  doc.setFontSize(11);
+  doc.setTextColor(17,32,42);
+  doc.text('TOTAL DEL DÍA: ' + fmtPdf(total), 40, doc.lastAutoTable.finalY + 24);
+  pdfFooter(doc);
+  doc.save((TENANT_ID||'tienda') + '-pos-cierre-' + todayFileStamp() + '.pdf');
+  toast('Cierre de caja descargado', 'ok');
+}
+
+/* ---------- FINANZAS DIARIAS ---------- */
+function posIsLocalToday(ms){
+  const d = new Date(ms||Date.now());
+  const now = new Date();
+  return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();
+}
+function renderFinancePanel(){
+  const t = financeToday || { openCash:0, salesCount:0, salesAmount:0, expenses:[] };
+  const expenses = t.expenses || [];
+  const webIncome = orders.filter(o=>o.status!=='cancelado' && posIsLocalToday(o.createdAtMs)).reduce((s,o)=>s+o.total,0);
+  const income = (t.salesAmount||0) + webIncome;
+  const expense = expenses.reduce((s,x)=>s+x.amount,0);
+  const net = income - expense;
+  document.getElementById('finIncome').textContent = fmt(income);
+  document.getElementById('finIncomeSub').textContent = fmt(t.salesAmount) + ' POS + ' + fmt(webIncome) + ' web';
+  document.getElementById('finExpense').textContent = fmt(expense);
+  document.getElementById('finExpenseCount').textContent = expenses.length;
+  document.getElementById('finNet').textContent = fmt(net);
+  document.getElementById('finNet').parentElement.querySelector('.sub').textContent = 'neto sin contar la apertura';
+  document.getElementById('finStatus').textContent = t.closed ? 'Cerrada' : 'Abierta';
+  document.getElementById('finStatus').style.color = t.closed ? 'var(--green)' : '#B45309';
+  document.getElementById('finOpenCash').value = (t.openCash||0) || '';
+  renderFinanceExpenses();
+  renderFinanceDayDetail(net);
+}
+function renderFinanceExpenses(){
+  const t = financeToday || { expenses:[] };
+  const expenses = t.expenses || [];
+  const el = document.getElementById('finExpenseList');
+  if(!expenses.length){
+    el.innerHTML = '<div style="color:var(--muted);padding:8px 0">Sin gastos hoy.</div>';
+    return;
+  }
+  el.innerHTML = '<table class="mini-table" style="width:100%"><thead><tr><th>Descripción</th><th>Categoría</th><th style="text-align:right">Monto</th><th style="text-align:right"></th></tr></thead><tbody>' +
+    expenses.map(x=>'<tr><td>' + esc(x.desc) + '</td><td>' + esc(x.cat) + '</td><td class="r"><b>' + fmt(x.amount) + '</b></td><td class="r"><button class="icon-btn danger" title="Quitar" onclick="deleteFinanceExpense(\'' + x.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button></td></tr>').join('') +
+    '</tbody></table>';
+}
+function renderFinanceDayDetail(net){
+  const t = financeToday || { openCash:0, salesCount:0, salesAmount:0, expenses:[] };
+  const webIncome = orders.filter(o=>o.status!=='cancelado' && posIsLocalToday(o.createdAtMs)).reduce((s,o)=>s+o.total,0);
+  const expense = (t.expenses||[]).reduce((s,x)=>s+x.amount,0);
+  const rows = [
+    ['Ventas punto de venta (POS)', (t.salesAmount||0)],
+    ['Ventas tienda web', webIncome],
+    ['RESUMEN DE INGRESOS', (t.salesAmount||0) + webIncome],
+    ['Gastos del día', -(expense)],
+    ['Neto del día', net]
+  ];
+  document.getElementById('finDayDetail').innerHTML = rows.map(([lbl,m],i)=>
+    '<tr><td' + (i===2?' style="border-top:1.5px solid var(--line);font-weight:800"':'') + '>' + esc(lbl) + '</td><td class="r"><b style="color:' + (m<0?'var(--danger)':(i===2||i===4?'var(--green-dark)':'var(--ink)')) + '">' + fmt(m) + '</b></td></tr>').join('');
+}
+async function setFinanceOpenCash(){
+  const val = Math.max(0, parseInt(document.getElementById('finOpenCash').value)||0);
+  await financeRef(posDayKey()).set({ openCash: val, day: posDayKey() }, { merge:true });
+  toast('Caja abierta con ' + fmt(val), 'ok');
+}
+async function addFinanceExpense(){
+  const desc = (document.getElementById('finExpDesc').value||'').trim();
+  const amount = Math.max(0, parseInt(document.getElementById('finExpAmount').value)||0);
+  if(!desc){ toast('Escribí una descripción del gasto', 'err'); return; }
+  if(amount <= 0){ toast('Ingresá un monto válido', 'err'); return; }
+  const cat = document.getElementById('finExpCat').value || 'General';
+  const cur = (financeToday && financeToday.expenses) || [];
+  const t = financeToday || {};
+  const updated = cur.concat([{ id: rid(), desc, cat, amount, at: new Date().toISOString() }]);
+  await financeRef(posDayKey()).set({
+    day: posDayKey(),
+    expenses: updated,
+    expensesCount: updated.length
+  }, { merge:true });
+  document.getElementById('finExpDesc').value = '';
+  document.getElementById('finExpAmount').value = '';
+  toast('Gasto registrado', 'ok');
+  renderFinancePanel();
+}
+async function deleteFinanceExpense(id){
+  const cur = (financeToday && financeToday.expenses) || [];
+  const updated = cur.filter(x=>x.id!==id);
+  await financeRef(posDayKey()).set({ expenses: updated, expensesCount: updated.length }, { merge:true });
+  toast('Gasto eliminado', 'ok');
+  renderFinancePanel();
+}
+async function financeCloseDay(){
+  if(!financeToday || financeToday.closed){
+    if(financeToday && financeToday.closed) toast('La caja de hoy ya está cerrada', 'err');
+    return;
+  }
+  if(!confirm('¿Cerrar la caja del día de hoy?')) return;
+  await financeRef(posDayKey()).set({ closed:true, closedAt: new Date().toISOString() }, { merge:true });
+  toast('Caja del día cerrada', 'ok');
+}
+
 /* ---------- rastreo de pedido (cliente, estilo Uber Flash) ---------- */
 function openTracking(){
   document.getElementById('trackForm').style.display = 'block';
@@ -5338,6 +6113,11 @@ function renderTracking(o){
 
 /* ---------- configuraciones ---------- */
 let pendingLogoDataUrl = null;
+/* Iconos (foto) opcionales para los botones de enlaces externos de la tienda
+   (sitio web y bingo). Se guardan como base64 igual que el logo, sin usar
+   Firebase Storage. null = sin cambios pendientes; '' = el admin lo quitó. */
+let pendingWebIcon = null;
+let pendingBingoIcon = null;
 function loadSettingsForm(){
   document.getElementById('sName').value = settings.storeName;
   document.getElementById('sTag').value = settings.tagline;
@@ -5394,6 +6174,10 @@ function loadSettingsForm(){
   document.getElementById('sinpePreview').textContent = settings.sinpe;
   pendingLogoDataUrl = null;
   document.getElementById('logoPreview').innerHTML = settings.logoUrl ? '<img src="' + esc(settings.logoUrl) + '" alt="Logo">' : logoSVG;
+  pendingWebIcon = null;
+  pendingBingoIcon = null;
+  document.getElementById('sWebIconPreview').innerHTML = settings.websiteIcon ? '<img src="' + esc(settings.websiteIcon) + '" alt="Icono">' : '';
+  document.getElementById('sBingoIconPreview').innerHTML = settings.bingoIcon ? '<img src="' + esc(settings.bingoIcon) + '" alt="Icono">' : '';
   bizImages = (settings.landingImages && settings.landingImages.length) ? settings.landingImages.slice() : [];
   while(bizImages.length < 3) bizImages.push('');
   renderBizImageGrid();
@@ -5555,6 +6339,32 @@ function removeLogo(){
   pendingLogoDataUrl = '';
   document.getElementById('logoPreview').innerHTML = logoSVG;
 }
+/* Subir/quit ar una foto que se usa como ícono del botón de enlace externo
+   ("web" o "bingo"). La imagen se comprime a base64 (igual que el logo). */
+function onExternalIconFileChosen(input, key){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  compressImageFile(file, 200, 0.85).then(dataUrl => {
+    if(key === 'web'){
+      pendingWebIcon = dataUrl;
+      document.getElementById('sWebIconPreview').innerHTML = '<img src="' + dataUrl + '" alt="Icono">';
+    } else {
+      pendingBingoIcon = dataUrl;
+      document.getElementById('sBingoIconPreview').innerHTML = '<img src="' + dataUrl + '" alt="Icono">';
+    }
+    toast('Icono cargado, recordá presionar "Guardar cambios"', 'ok');
+  }).catch(()=> toast('No se pudo procesar la imagen del ícono', 'err'));
+  input.value = '';
+}
+function removeExternalIcon(key){
+  if(key === 'web'){
+    pendingWebIcon = '';
+    document.getElementById('sWebIconPreview').innerHTML = '';
+  } else {
+    pendingBingoIcon = '';
+    document.getElementById('sBingoIconPreview').innerHTML = '';
+  }
+}
 async function saveSettings(){
   const name = document.getElementById('sName').value.trim();
   const sinpe = document.getElementById('sSinpe').value.trim();
@@ -5578,8 +6388,10 @@ async function saveSettings(){
     sinpe, whatsapp: wa,
     websiteUrl:document.getElementById('sWebUrl').value.trim(),
     websiteLabel:document.getElementById('sWebLabel').value.trim() || 'Sitio web',
+    websiteIcon: pendingWebIcon !== null ? pendingWebIcon : (settings.websiteIcon||''),
     bingoUrl:document.getElementById('sBingoUrl').value.trim(),
     bingoLabel:document.getElementById('sBingoLabel').value.trim() || 'Bingo de Plantas',
+    bingoIcon: pendingBingoIcon !== null ? pendingBingoIcon : (settings.bingoIcon||''),
     iva: parseFloat(document.getElementById('sIva').value) || 13,
     globalDiscountPercent: parseFloat(document.getElementById('sDiscount').value) || 0,
     storyVideoUrl:document.getElementById('sStoryVideoUrl').value.trim(),
@@ -5632,6 +6444,8 @@ async function saveSettings(){
     await tenantRef().set(tenantMirror, { merge:true });
     settingsFormDirty = false;
     pendingLogoDataUrl = null;
+    pendingWebIcon = null;
+    pendingBingoIcon = null;
     document.getElementById('sinpePreview').textContent = sinpe;
     toast('Configuración guardada', 'ok');
   }catch(e){
@@ -7541,6 +8355,17 @@ bootPlatform();
       <button class="close-x" onclick="closeChangePlanModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body" id="memChangePlanBody"></div>
+  </div>
+</div>
+
+<!-- Modal: elegir variante en el POS -->
+<div class="modal" id="posVariantModal" style="z-index:300">
+  <div class="modal-bg" onclick="closePOSVariantModal()"></div>
+  <div class="modal-card">
+    <div class="modal-head"><h3 id="posVariantTitle">Elegir variante</h3>
+      <button class="close-x" onclick="closePOSVariantModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="posVariantBody"></div>
   </div>
 </div>
 
