@@ -961,6 +961,116 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 .ts-premium-ribbon svg{width:22px;height:22px;color:#fff}
 @keyframes pulseRibbon{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 
+
+/* ============ MENÚ HAMBURGUESA MÓVIL ============ */
+.mobile-menu-btn{
+  display:none;width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line);
+  background:#fff;align-items:center;justify-content:center;flex-shrink:0;z-index:55
+}
+.mobile-menu-btn svg{width:22px;height:22px;color:var(--ink)}
+.mobile-menu-btn:hover{background:var(--green-soft);border-color:var(--green)}
+.mobile-drawer{
+  position:fixed;top:0;right:-320px;width:300px;max-width:85vw;height:100vh;
+  background:#fff;z-index:95;transition:right .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.12)
+}
+.mobile-drawer.open{right:0}
+.mobile-drawer-head{
+  padding:18px 20px;border-bottom:1px solid var(--line);display:flex;
+  align-items:center;justify-content:space-between
+}
+.mobile-drawer-head b{font-size:16px}
+.mobile-drawer-body{padding:10px 0;flex:1;overflow-y:auto}
+.mobile-drawer-body .m-item{
+  display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14.5px;
+  font-weight:600;color:var(--ink);border:none;background:none;width:100%;text-align:left;cursor:pointer
+}
+.mobile-drawer-body .m-item:hover{background:#F9FAFB}
+.mobile-drawer-body .m-item svg{width:20px;height:20px;color:var(--muted);flex-shrink:0}
+.mobile-drawer-body .m-divider{height:1px;background:var(--line);margin:8px 16px}
+
+/* ============ SKELETON LOADING (velocidad percibida) ============ */
+@keyframes skShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.skeleton{
+  background:linear-gradient(90deg,#F1F5F9 25%,#E2E8F0 50%,#F1F5F9 75%);
+  background-size:200% 100%;animation:skShimmer 1.4s infinite;border-radius:12px
+}
+.sk-card{height:280px;border-radius:var(--radius);margin-bottom:16px}
+.sk-img{aspect-ratio:1;border-radius:var(--radius) var(--radius) 0 0}
+.sk-text{height:16px;margin:8px 14px;width:70%}
+.sk-text.short{width:40%}
+
+/* ============ OPTIMIZACIONES DE PERFORMANCE ============ */
+img[loading="lazy"]{opacity:0;transition:opacity .3s}
+img[loading="lazy"].loaded{opacity:1}
+#storeView{opacity:0;animation:fadeIn .25s .1s forwards}
+@keyframes fadeIn{to{opacity:1}}
+
+/* ============ AI CARROUSEL ============ */
+.ai-carousel{
+  display:flex;gap:10px;overflow-x:auto;padding:4px 2px 12px;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch
+}
+.ai-carousel::-webkit-scrollbar{height:4px}
+.ai-carousel::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px}
+.ai-carousel .ai-c-item{
+  flex:0 0 160px;scroll-snap-align:start;background:#fff;border:1px solid var(--line);
+  border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .15s
+}
+.ai-carousel .ai-c-item:hover{transform:translateY(-2px);border-color:var(--green)}
+.ai-carousel .ai-c-img{aspect-ratio:1;background:#F7F8FA;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ai-carousel .ai-c-img img{width:100%;height:100%;object-fit:cover}
+.ai-carousel .ai-c-body{padding:8px 10px}
+.ai-carousel .ai-c-name{font-size:12px;font-weight:700;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
+.ai-carousel .ai-c-price{font-size:13px;font-weight:800;color:#E8351D}
+
+/* ============ POS (PUNTO DE VENTA) ============ */
+.pos-layout{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.pos-layout{grid-template-columns:1fr}}
+.pos-catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.pos-cart{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px;position:sticky;top:20px}
+.pos-cart h4{font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.pos-cart h4 svg{width:18px;height:18px;color:var(--green)}
+.pos-item{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px;font-size:13px}
+.pos-item .pos-qty{display:flex;align-items:center;gap:4px;margin-left:auto}
+.pos-item .pos-qty button{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:13px}
+.pos-item .pos-qty button:hover{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.pos-item .pos-qty span{min-width:20px;text-align:center;font-weight:700;font-size:13px}
+.pos-total-row{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin:12px 0;padding-top:12px;border-top:1px solid var(--line)}
+.pos-total-row.grand{font-size:18px;color:var(--green-dark)}
+.pos-search{margin-bottom:14px}
+.pos-finanzas{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.pos-day-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+.pos-day-card .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.pos-day-card .val{font-size:22px;font-weight:800;margin-top:4px}
+.pos-mesa-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pos-mesa-btn{padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.pos-mesa-btn:hover{border-color:var(--green);background:var(--green-soft)}
+.pos-mesa-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.pos-cobro-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.pos-cobro-actions .btn-primary{flex:1;min-width:140px}
+.pos-cobro-actions .btn-ghost{flex:1;min-width:140px}
+
+/* ============ ENLACES EXTERNOS CON ICONO ============ */
+.ext-btn img.ext-icon{width:22px;height:22px;border-radius:6px;object-fit:cover;margin-right:4px}
+.ext-btn{display:inline-flex;align-items:center;gap:6px}
+
+/* ============ RESPONSIVE HEADER MÓVIL ============ */
+@media(max-width:860px){
+  .mobile-menu-btn{display:flex}
+  .store-header-inner{flex-wrap:nowrap;gap:8px;padding:10px 14px}
+  .store-header-inner .admin-link{display:none}
+  .store-header-inner .back-to-selector{display:none}
+  .search-wrap{order:0;max-width:none;flex:1;margin-left:0}
+  .brand{font-size:18px}
+  .brand .logo{width:36px;height:36px}
+  .cart-btn{width:42px;height:42px}
+}
+@media(max-width:480px){
+  .brand span#brandName{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
+  .search-wrap svg{left:10px}
+  .search-input{padding:10px 12px 10px 36px;font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -1046,8 +1156,39 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
         <span>Administrador</span>
       </button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Menú" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
   </header>
+
+  <!-- Drawer móvil -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-head">
+      <b>Menú</b>
+      <button class="close-x" onclick="toggleMobileMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="mobile-drawer-body">
+      <button class="m-item" onclick="toggleMobileMenu();openTracking()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>
+        Rastrear pedido
+      </button>
+      <button class="m-item" onclick="toggleMobileMenu();shareStoreLink()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5 15.4 6.5M8.6 13.5 15.4 17.5"/></svg>
+        Compartir tienda
+      </button>
+      <div class="m-divider"></div>
+      <button class="m-item" onclick="toggleMobileMenu();location.href=location.pathname">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
+        Ver otros negocios
+      </button>
+      <div class="m-divider"></div>
+      <button class="m-item" onclick="toggleMobileMenu();openLogin()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        Administrador
+      </button>
+    </div>
+  </div>
 
 
   <div class="info-bar" id="infoBar"></div>
@@ -1290,6 +1431,9 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Membresía</span>
         <span class="nav-badge" id="membershipNavBadge" style="display:none">!</span>
       </button>
+      <button class="adm-link" data-panel="pos" onclick="showPanel('pos',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg><span>Punto de Venta</span>
+      </button>
       <button class="adm-link" onclick="viewStore()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5M3 9v11h18V9M3 9h18M9 20v-7h6v7"/></svg><span>Ver tienda</span>
       </button>
@@ -1511,14 +1655,36 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 
       <div class="settings-card">
         <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg>Enlaces externos</h4>
-        <div class="desc">Botones visibles para los clientes en la tienda. Dejalos vacíos para ocultarlos.</div>
+        <div class="desc">Botones visibles para los clientes en la tienda. Dejalos vacíos para ocultarlos. Podés subir una foto que sirva de icono para cada botón.</div>
         <div class="f-row">
           <div class="f-group"><label>Nombre del botón (sitio web)</label><input class="f-input" id="sWebLabel" placeholder="Ej: Sitio web"></div>
           <div class="f-group"><label>Enlace del sitio web</label><input class="f-input" id="sWebUrl" placeholder="https://www.tutienda.com"></div>
         </div>
         <div class="f-row">
+          <div class="f-group"><label>Icono del sitio web (opcional)</label>
+            <div class="logo-upload-row">
+              <span class="logo-preview" id="sWebIconPreview" style="width:48px;height:48px;border-radius:10px"></span>
+              <input type="file" id="sWebIconFile" accept="image/*" style="display:none" onchange="onExternalIconFileChosen(this,'web')">
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="document.getElementById('sWebIconFile').click()">Subir icono</button>
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;color:var(--danger)" onclick="removeExternalIcon('web')">Quitar</button>
+            </div>
+          </div>
+          <div class="f-group"></div>
+        </div>
+        <div class="f-row">
           <div class="f-group"><label>Nombre del botón (juego / bingo)</label><input class="f-input" id="sBingoLabel" placeholder="Ej: Bingo de Plantas"></div>
           <div class="f-group"><label>Enlace de la plataforma de juegos</label><input class="f-input" id="sBingoUrl" placeholder="https://usuario.github.io/bingo-plantas"></div>
+        </div>
+        <div class="f-row">
+          <div class="f-group"><label>Icono del juego (opcional)</label>
+            <div class="logo-upload-row">
+              <span class="logo-preview" id="sBingoIconPreview" style="width:48px;height:48px;border-radius:10px"></span>
+              <input type="file" id="sBingoIconFile" accept="image/*" style="display:none" onchange="onExternalIconFileChosen(this,'bingo')">
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="document.getElementById('sBingoIconFile').click()">Subir icono</button>
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;color:var(--danger)" onclick="removeExternalIcon('bingo')">Quitar</button>
+            </div>
+          </div>
+          <div class="f-group"></div>
         </div>
       </div>
 
@@ -1714,6 +1880,86 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <table class="mini-table" style="width:100%">
             <thead><tr><th>Fecha</th><th>Período</th><th>Plan</th><th>Monto</th><th>Estado</th><th>Referencia</th></tr></thead>
             <tbody id="memHistoryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Cargando historial…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PUNTO DE VENTA (POS) -->
+    <section class="panel" id="panel-pos">
+      <div class="adm-title">Punto de Venta</div>
+      <div class="adm-sub">Ventas rápidas en tienda física. Se descuenta del inventario y se guarda en finanzas diarias.</div>
+
+      <div class="pos-finanzas" id="posFinanzas">
+        <div class="pos-day-card">
+          <div class="lbl">Ventas hoy</div>
+          <div class="val" id="posVentasHoy">₡0</div>
+        </div>
+        <div class="pos-day-card">
+          <div class="lbl">Transacciones hoy</div>
+          <div class="val" id="posTransHoy">0</div>
+        </div>
+        <div class="pos-day-card">
+          <div class="lbl">Ticket promedio hoy</div>
+          <div class="val" id="posTicketHoy">₡0</div>
+        </div>
+        <div class="pos-day-card">
+          <div class="lbl">Productos vendidos hoy</div>
+          <div class="val" id="posProdHoy">0</div>
+        </div>
+      </div>
+
+      <div class="adm-toolbar" style="margin-bottom:14px">
+        <div class="search-wrap pos-search" style="max-width:340px;flex:1;margin:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input class="search-input" id="posSearch" placeholder="Buscar producto para vender…" oninput="renderPOSCatalog()">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select class="sort-select" id="posCatFilter" onchange="renderPOSCatalog()">
+            <option value="">Todas las categorías</option>
+          </select>
+          <button class="btn-export" onclick="exportPOSPDF()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9.5 14.5 12 17l2.5-2.5"/></svg>
+            Exportar cierre
+          </button>
+        </div>
+      </div>
+
+      <div class="pos-mesa-row" id="posMesaRow">
+        <button class="pos-mesa-btn active" data-mesa="Mesa 1" onclick="selectMesa(this)">Mesa 1</button>
+        <button class="pos-mesa-btn" data-mesa="Mesa 2" onclick="selectMesa(this)">Mesa 2</button>
+        <button class="pos-mesa-btn" data-mesa="Mesa 3" onclick="selectMesa(this)">Mesa 3</button>
+        <button class="pos-mesa-btn" data-mesa="Llevar" onclick="selectMesa(this)">Para llevar</button>
+        <button class="pos-mesa-btn" data-mesa="Delivery" onclick="selectMesa(this)">Delivery</button>
+        <button class="btn-ghost" style="width:auto;padding:8px 14px" onclick="addMesa()">+ Nueva</button>
+      </div>
+
+      <div class="pos-layout">
+        <div>
+          <h4 style="font-size:14px;margin-bottom:10px">Catálogo</h4>
+          <div class="pos-catalog" id="posCatalog"><div style="grid-column:1/-1;color:var(--muted);padding:30px 0;text-align:center">Cargando productos…</div></div>
+        </div>
+        <div class="pos-cart" id="posCart">
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/></svg> Venta actual — <span id="posMesaLabel">Mesa 1</span></h4>
+          <div id="posCartItems" style="max-height:50vh;overflow-y:auto"></div>
+          <div class="pos-total-row"><span>Subtotal</span><span id="posSub">₡0</span></div>
+          <div class="pos-total-row"><span>IVA (13%)</span><span id="posIva">₡0</span></div>
+          <div class="pos-total-row grand"><span>TOTAL</span><span id="posTotal">₡0</span></div>
+          <div class="pos-cobro-actions">
+            <button class="btn-primary" onclick="posCobrar('efectivo')">💵 Efectivo</button>
+            <button class="btn-primary" onclick="posCobrar('sinpe')">📱 SINPE</button>
+            <button class="btn-primary" onclick="posCobrar('tarjeta')">💳 Tarjeta</button>
+            <button class="btn-ghost" onclick="posClearCart()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:28px">
+        <h4 style="font-size:15px;margin-bottom:12px">Ventas del día</h4>
+        <div style="overflow-x:auto">
+          <table class="inv-table-adm">
+            <thead><tr><th>Hora</th><th>Mesa/Modo</th><th>Productos</th><th>Total</th><th>Método</th><th style="text-align:right">Acciones</th></tr></thead>
+            <tbody id="posHistoryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Cargando…</td></tr></tbody>
           </table>
         </div>
       </div>
