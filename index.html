@@ -11,9 +11,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<!-- jsPDF (generación de reportes PDF desde el panel de administrador) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<!-- jsPDF: ya NO se carga aquí. Antes bloqueaba la carga inicial de la tienda para
+     TODOS los clientes, aunque solo lo usa el admin al exportar un reporte.
+     Ahora se carga bajo demanda con ensurePdfLibs(), ver más abajo. -->
 <script>
   /* Este es el ÚNICO proyecto Firebase de TODA la plataforma. Las 5 (o más)
      tiendas viven en el mismo proyecto, separadas por documento dentro de
@@ -905,6 +905,17 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 .story-float-2.show{display:block}
 @media (max-width:480px){.story-float-2{left:160px;width:130px}}
 
+/* ============ VIDEOS FLOTANTES 3 Y 4 (exclusivo plan Destacado) — se apilan arriba de 1 y 2 para no desbordar en móvil ============ */
+.story-float-3,.story-float-4{position:fixed;bottom:376px;width:190px;aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:#111;box-shadow:0 10px 28px rgba(0,0,0,.35);z-index:59;display:none}
+.story-float-3.show,.story-float-4.show{display:block}
+.story-float-3{left:22px}
+.story-float-4{left:230px}
+@media (max-width:480px){
+  .story-float-3,.story-float-4{bottom:262px;width:130px}
+  .story-float-3{left:22px}
+  .story-float-4{left:160px}
+}
+
 /* ============ PLAN DESTACADO — VISUALIZACIÓN PREMIUM (morado/rubí) ============ */
 .ts-card.sponsored,.ts-card.tier-destacado{box-shadow:0 0 0 3px var(--ruby),0 0 30px rgba(124,58,237,.35),0 14px 34px rgba(0,0,0,.22);position:relative;overflow:visible}
 .ts-card.sponsored::before,.ts-card.tier-destacado::before{content:'';position:absolute;inset:-3px;border-radius:25px;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent),var(--ruby));background-size:200% 200%;animation:shimmer 3s ease infinite;z-index:-1;opacity:.9}
@@ -1049,10 +1060,11 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 <!-- ================= ASISTENTE DE COMPRAS IA ================= -->
 <button class="ai-float" id="aiFloatBtn" onclick="toggleAI()" title="Hablar con el asistente" style="display:none">
   <div id="aiFloatIcon">✨</div>
+  <img id="aiFloatLogo" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
 </button>
 <div class="ai-panel" id="aiPanel">
   <div class="ai-head">
-    <div class="ai-avatar">✨</div>
+    <div class="ai-avatar" id="aiPanelAvatar">✨</div>
     <div class="t">
       <b id="aiAssistantName">Asistente</b>
       <span>En línea</span>
@@ -1085,6 +1097,25 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M18.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
   </button>
   <div class="story-media" id="storyMedia2"></div>
+</div>
+
+<div class="story-float-3" id="storyFloat3">
+  <button class="story-close" onclick="closeStoryVideo(3)" title="Cerrar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <button class="story-mute" id="storyMuteBtn3" onclick="toggleStoryMute(3)" title="Silenciar / activar sonido">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M18.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+  </button>
+  <div class="story-media" id="storyMedia3"></div>
+</div>
+<div class="story-float-4" id="storyFloat4">
+  <button class="story-close" onclick="closeStoryVideo(4)" title="Cerrar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <button class="story-mute" id="storyMuteBtn4" onclick="toggleStoryMute(4)" title="Silenciar / activar sonido">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M18.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+  </button>
+  <div class="story-media" id="storyMedia4"></div>
 </div>
 
 <div class="overlay" id="cartOverlay" onclick="toggleCart(false)"></div>
@@ -1478,6 +1509,9 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div class="desc" id="sStoryVideoLockNotice" style="display:none;color:#92400E;font-weight:700">🔒 Esta función requiere plan Profesional o superior. Podés guardar el enlace, pero no se mostrará a tus clientes hasta que subas de plan.</div>
         <div class="f-group"><label>Enlace del video 1</label><input class="f-input" id="sStoryVideoUrl" placeholder="https://youtube.com/watch?v=... o enlace directo a un .mp4"></div>
         <div class="f-group"><label>Enlace del video 2 (solo plan Profesional / Destacado)</label><input class="f-input" id="sStoryVideoUrl2" placeholder="Segundo video flotante"></div>
+        <div class="desc" id="sStoryVideoLockNotice34" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 Los videos 3 y 4 son exclusivos del <b>Plan Destacado</b>. Podés dejar los enlaces guardados, pero no se mostrarán a tus clientes hasta que subas de plan.</div>
+        <div class="f-group"><label>Enlace del video 3 (exclusivo Plan Destacado)</label><input class="f-input" id="sStoryVideoUrl3" placeholder="Tercer video flotante"></div>
+        <div class="f-group"><label>Enlace del video 4 (exclusivo Plan Destacado)</label><input class="f-input" id="sStoryVideoUrl4" placeholder="Cuarto video flotante"></div>
       </div>
 
       <div class="settings-card">
@@ -2185,6 +2219,8 @@ const DEFAULT_SETTINGS = {
   bingoLabel:'Bingo de Plantas',
   storyVideoUrl:'',
   storyVideoUrl2:'',
+  storyVideoUrl3:'',
+  storyVideoUrl4:'',
   otherBusinesses:[],
   logoUrl:'',
   landingImages:[],
@@ -2421,64 +2457,58 @@ function tiktokEmbedUrl(url){
   return id ? ('https://www.tiktok.com/embed/v2/' + id) : null;
 }
 
-/* ---------- video flotante tipo historia ---------- */
-let storyClosed = false, storyMuted = true, storyLastUrl = null;
-let storyClosed2 = false, storyLastUrl2 = null;
+/* ---------- video flotante tipo historia (hasta 4 slots) ----------
+   Slot 1: cualquier plan excepto Emprendedor (Profesional/Destacado/Premium).
+   Slot 2: Profesional/Destacado/Premium.
+   Slots 3 y 4: EXCLUSIVOS del plan Destacado/Premium. */
+let storyMuted = true;
+const STORY_SLOTS = {
+  1: { closed:false, lastUrl:null, settingsKey:'storyVideoUrl',  wrapId:'storyFloat',  mediaId:'storyMedia',  muteBtnId:'storyMuteBtn',  planCheck: pid => pid !== 'emprendedor' },
+  2: { closed:false, lastUrl:null, settingsKey:'storyVideoUrl2', wrapId:'storyFloat2', mediaId:'storyMedia2', muteBtnId:'storyMuteBtn2', planCheck: pid => ['profesional','destacado','premium'].includes(pid) },
+  3: { closed:false, lastUrl:null, settingsKey:'storyVideoUrl3', wrapId:'storyFloat3', mediaId:'storyMedia3', muteBtnId:'storyMuteBtn3', planCheck: pid => ['destacado','premium'].includes(pid) },
+  4: { closed:false, lastUrl:null, settingsKey:'storyVideoUrl4', wrapId:'storyFloat4', mediaId:'storyMedia4', muteBtnId:'storyMuteBtn4', planCheck: pid => ['destacado','premium'].includes(pid) }
+};
 function storyYoutubeId(url){
   if(!url) return null;
   const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
   return m ? m[1] : null;
 }
 function renderStoryVideo(){
-  // Video 1
-  const wrap1 = document.getElementById('storyFloat');
-  const url1 = (settings.storyVideoUrl||'').trim();
-  const planOk = (typeof getActivePlanId !== 'function') || getActivePlanId() !== 'emprendedor';
-  if(!url1 || storyClosed || !planOk){ wrap1.classList.remove('show'); }
-  else {
-    if(url1 !== storyLastUrl){
-      storyLastUrl = url1;
-      const media = document.getElementById('storyMedia');
-      const ytId = storyYoutubeId(url1);
+  const activePlanId = (typeof getActivePlanId === 'function') ? getActivePlanId() : 'destacado';
+  Object.keys(STORY_SLOTS).forEach(n=>{
+    const slot = STORY_SLOTS[n];
+    const wrap = document.getElementById(slot.wrapId);
+    if(!wrap) return;
+    const url = (settings[slot.settingsKey]||'').trim();
+    const planOk = (typeof getActivePlanId !== 'function') || slot.planCheck(activePlanId);
+    if(!url || slot.closed || !planOk){ wrap.classList.remove('show'); return; }
+    if(url !== slot.lastUrl){
+      slot.lastUrl = url;
+      const media = document.getElementById(slot.mediaId);
+      const ytId = storyYoutubeId(url);
+      const muteBtn = document.getElementById(slot.muteBtnId);
       if(ytId){
         media.innerHTML = '<iframe src="https://www.youtube.com/embed/' + ytId + '?autoplay=1&mute=' + (storyMuted?1:0) + '&loop=1&playlist=' + ytId + '&controls=0&modestbranding=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
-        document.getElementById('storyMuteBtn').style.display = 'none';
+        if(muteBtn) muteBtn.style.display = 'none';
       }else{
-        media.innerHTML = '<video src="' + esc(url1) + '" autoplay loop playsinline' + (storyMuted?' muted':'') + '></video>';
-        document.getElementById('storyMuteBtn').style.display = 'flex';
+        media.innerHTML = '<video src="' + esc(url) + '" autoplay loop playsinline' + (storyMuted?' muted':'') + '></video>';
+        if(muteBtn) muteBtn.style.display = 'flex';
       }
     }
-    wrap1.classList.add('show');
-  }
-  // Video 2 (solo Profesional o superior)
-  const wrap2 = document.getElementById('storyFloat2');
-  const url2 = (settings.storyVideoUrl2||'').trim();
-  const planAllowsTwo = (typeof getActivePlanId !== 'function') || ['profesional','destacado','premium'].includes(getActivePlanId());
-  if(!url2 || storyClosed2 || !planAllowsTwo){ wrap2.classList.remove('show'); }
-  else {
-    if(url2 !== storyLastUrl2){
-      storyLastUrl2 = url2;
-      const media2 = document.getElementById('storyMedia2');
-      const ytId2 = storyYoutubeId(url2);
-      if(ytId2){
-        media2.innerHTML = '<iframe src="https://www.youtube.com/embed/' + ytId2 + '?autoplay=1&mute=' + (storyMuted?1:0) + '&loop=1&playlist=' + ytId2 + '&controls=0&modestbranding=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
-        document.getElementById('storyMuteBtn2').style.display = 'none';
-      }else{
-        media2.innerHTML = '<video src="' + esc(url2) + '" autoplay loop playsinline' + (storyMuted?' muted':'') + '></video>';
-        document.getElementById('storyMuteBtn2').style.display = 'flex';
-      }
-    }
-    wrap2.classList.add('show');
-  }
+    wrap.classList.add('show');
+  });
 }
 function closeStoryVideo(n){
-  if(!n || n===1){ storyClosed = true; document.getElementById('storyFloat').classList.remove('show'); }
-  if(n===2){ storyClosed2 = true; document.getElementById('storyFloat2').classList.remove('show'); }
+  const slot = STORY_SLOTS[n||1];
+  if(!slot) return;
+  slot.closed = true;
+  const wrap = document.getElementById(slot.wrapId);
+  if(wrap) wrap.classList.remove('show');
 }
 function toggleStoryMute(n){
   storyMuted = !storyMuted;
-  const sel = (n===2) ? '#storyMedia2 video' : '#storyMedia video';
-  const v = document.querySelector(sel);
+  const slot = STORY_SLOTS[n||1];
+  const v = slot ? document.querySelector('#' + slot.mediaId + ' video') : null;
   if(v) v.muted = storyMuted;
 }
 
@@ -2500,6 +2530,17 @@ function renderAIAssistant(){
   const canUse = !!(settings.aiEnabled && hasCreds && planAllows('ai-assistant'));
   btn.style.display = canUse ? 'flex' : 'none';
   document.getElementById('aiAssistantName').textContent = settings.aiAssistantName || 'Asistente';
+  const logoUrl = (settings.logoUrl||'').trim();
+  const floatIcon = document.getElementById('aiFloatIcon');
+  const floatLogo = document.getElementById('aiFloatLogo');
+  const panelAvatar = document.getElementById('aiPanelAvatar');
+  if(logoUrl){
+    floatLogo.src = logoUrl; floatLogo.style.display = 'block'; floatIcon.style.display = 'none';
+    panelAvatar.innerHTML = '<img src="' + esc(logoUrl) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+  } else {
+    floatLogo.style.display = 'none'; floatIcon.style.display = 'flex';
+    panelAvatar.textContent = '✨';
+  }
   if(!canUse){
     document.getElementById('aiPanel').classList.remove('open');
     return;
@@ -3111,7 +3152,7 @@ function renderPlatformBizList(list){
   box.innerHTML = list.map(t => {
     const nombre = esc(t.nombre || t.id);
     const avatar = t.logoUrl
-      ? '<img src="' + esc(t.logoUrl) + '" alt="' + nombre + '">'
+      ? '<img src="' + esc(t.logoUrl) + '" alt="' + nombre + '" loading="lazy" decoding="async">'
       : nombre.charAt(0).toUpperCase();
     return '<button type="button" class="biz-item" onclick="goToTenant(\'' + t.id.replace(/'/g,"") + '\')">' +
       '<span class="biz-avatar" style="background:' + bizColor(nombre) + '">' + avatar + '</span>' +
@@ -4374,8 +4415,29 @@ function pdfReady(){
   toast('No se pudo cargar el generador de PDF. Revisá tu conexión e intentá de nuevo.', 'err');
   return false;
 }
-function exportStatsPDF(){
-  if(!pdfReady()) return;
+/* Carga jsPDF + autoTable solo la primera vez que el admin exporta un reporte,
+   en vez de descargarlos en cada visita de cada cliente a la tienda. */
+let _pdfLibsPromise = null;
+function _loadScriptOnce(src){
+  return new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = src; s.onload = ()=>resolve(); s.onerror = ()=>reject(new Error('No se pudo cargar ' + src));
+    document.head.appendChild(s);
+  });
+}
+function ensurePdfLibs(){
+  if(window.jspdf && window.jspdf.jsPDF) return Promise.resolve(true);
+  if(!_pdfLibsPromise){
+    _pdfLibsPromise = _loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+      .then(()=> _loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'))
+      .then(()=> true)
+      .catch(()=>{ _pdfLibsPromise = null; return false; });
+  }
+  return _pdfLibsPromise;
+}
+async function exportStatsPDF(){
+  toast('Preparando el PDF…', 'ok');
+  if(!(await ensurePdfLibs()) || !pdfReady()) return;
   const doc = pdfNewDoc('Reporte de estadisticas');
   const act = activeOrders();
   const total = act.reduce((s,o)=>s+o.total,0);
@@ -4424,8 +4486,9 @@ function exportStatsPDF(){
   doc.save((TENANT_ID||'tienda') + '-estadisticas-' + todayFileStamp() + '.pdf');
   toast('Reporte de estadisticas descargado', 'ok');
 }
-function exportInventoryPDF(){
-  if(!pdfReady()) return;
+async function exportInventoryPDF(){
+  toast('Preparando el PDF…', 'ok');
+  if(!(await ensurePdfLibs()) || !pdfReady()) return;
   const doc = pdfNewDoc('Reporte de inventario');
   const body = products.map(p=>{
     const st = stockInfo(p);
@@ -4446,8 +4509,9 @@ function exportInventoryPDF(){
   doc.save((TENANT_ID||'tienda') + '-inventario-' + todayFileStamp() + '.pdf');
   toast('Reporte de inventario descargado', 'ok');
 }
-function exportOrdersPDF(){
-  if(!pdfReady()) return;
+async function exportOrdersPDF(){
+  toast('Preparando el PDF…', 'ok');
+  if(!(await ensurePdfLibs()) || !pdfReady()) return;
   const f = document.getElementById('orderFilter').value;
   const list = orders.filter(o=>!f || o.status===f);
   const doc = pdfNewDoc('Reporte de pedidos' + (f ? ' - ' + (STATUS[f]?STATUS[f].lbl:f) : ''));
@@ -4468,8 +4532,9 @@ function exportOrdersPDF(){
   doc.save((TENANT_ID||'tienda') + '-pedidos-' + todayFileStamp() + '.pdf');
   toast('Reporte de pedidos descargado', 'ok');
 }
-function exportCategoriesPDF(){
-  if(!pdfReady()) return;
+async function exportCategoriesPDF(){
+  toast('Preparando el PDF…', 'ok');
+  if(!(await ensurePdfLibs()) || !pdfReady()) return;
   const doc = pdfNewDoc('Reporte de categorias');
   const cats = settings.categories||[];
   const body = cats.map(cat=>{
@@ -5098,8 +5163,12 @@ function loadSettingsForm(){
   document.getElementById('sBingoUrl').value = settings.bingoUrl||'';
   document.getElementById('sStoryVideoUrl').value = settings.storyVideoUrl||'';
   document.getElementById('sStoryVideoUrl2').value = settings.storyVideoUrl2||'';
+  document.getElementById('sStoryVideoUrl3').value = settings.storyVideoUrl3||'';
+  document.getElementById('sStoryVideoUrl4').value = settings.storyVideoUrl4||'';
   const svLockEl = document.getElementById('sStoryVideoLockNotice');
   if(svLockEl) svLockEl.style.display = (getActivePlanId() === 'emprendedor') ? '' : 'none';
+  const svLockEl34 = document.getElementById('sStoryVideoLockNotice34');
+  if(svLockEl34) svLockEl34.style.display = ['destacado','premium'].includes(getActivePlanId()) ? 'none' : '';
   document.getElementById('sIva').value = settings.iva || 13;
   document.getElementById('sDiscount').value = settings.globalDiscountPercent || 0;
   document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
@@ -5322,6 +5391,8 @@ async function saveSettings(){
     globalDiscountPercent: parseFloat(document.getElementById('sDiscount').value) || 0,
     storyVideoUrl:document.getElementById('sStoryVideoUrl').value.trim(),
     storyVideoUrl2:document.getElementById('sStoryVideoUrl2').value.trim(),
+    storyVideoUrl3:document.getElementById('sStoryVideoUrl3').value.trim(),
+    storyVideoUrl4:document.getElementById('sStoryVideoUrl4').value.trim(),
     aiEnabled: document.getElementById('sAiEnabled').checked,
     aiApiKey: document.getElementById('sAiKey').value.trim(),
     aiGeminiModel: (document.getElementById('sAiGeminiModel').value.trim() || 'gemini-2.0-flash'),
