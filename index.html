@@ -1735,7 +1735,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <h4>✨ Asistente de compras con IA</h4>
         <div class="desc">Un chat flotante que recomienda productos a tus clientes.</div>
 <div class="desc" id="sAiLockNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El Asistente de IA (chat + generador de fotos con fondo blanco) es exclusivo del <b>Plan Destacado</b>. Podés dejar los datos guardados, pero no se activará para tus clientes hasta que subas de plan.</div>
-        <div class="desc" id="sAiAdminOnlyNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El proveedor, las claves de API y los modelos del asistente de IA solo los configura el <b>superadministrador de la plataforma</b>.<br>Como administradora de esta tienda podés cambiar el nombre, el mensaje de bienvenida y activar el asistente para los clientes.</div>
+        <div class="desc" id="sAiAdminOnlyNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El proveedor, las claves de API y los modelos del asistente de IA solo los configura el <b>superadministrador de la plataforma</b>.<br>Como administradora de esta tienda podés entrenar a tu agente (instrucciones), cambiar su nombre, el mensaje de bienvenida y activarlo para los clientes.</div>
 
 <div class="f-group" id="sAiProviderGroup"><label>Proveedor del modelo de IA</label>
           <select class="sort-select" id="sAiProvider" style="width:100%" onchange="onAiProviderChange()">
@@ -1769,12 +1769,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
             </div>
             <div class="hint" style="margin-top:4px">No todos los modelos gratuitos de OpenRouter generan imágenes. Si la lista sale vacía, probá de nuevo más tarde o revisá openrouter.ai/models con el filtro de "image output".</div>
           </div>
-          <div class="f-group">
-            <label>Entrenamiento / instrucciones del asistente <span class="hint" style="display:inline">(personalidad, tono, reglas propias de tu negocio)</span></label>
-            <textarea class="f-input" id="sAiSystemPrompt" rows="5" placeholder="Ej: Sos un asistente cálido y directo, con humor costarricense sutil. Siempre ofrecé primero la opción más económica. Si preguntan por algo que no vendemos, recomendá lo más parecido del catálogo en vez de decir que no. Si el cliente quiere hablar con una persona, pedile que escriba por WhatsApp. Nunca prometas descuentos que no estén activos."></textarea>
-            <div class="hint" style="margin-top:4px">El horario, el envío, el SINPE y el IVA que ya configuraste arriba en Datos del negocio se le mandan solos al asistente — no hace falta repetirlos acá. Usá este espacio para personalidad, tono de venta y reglas propias. El asistente solo recomienda productos que existen en tu catálogo (con sus variantes reales) y prioriza los más relevantes a lo que pregunta cada cliente.</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
+<div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
             <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="testOpenRouterConnection()">🧪 Probar conexión</button>
             <div id="sAiORStatus" style="font-size:12.5px"></div>
           </div>
@@ -1813,9 +1808,14 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <div id="sAiExternalStatus" style="font-size:12.5px;margin-top:6px"></div>
         </div><!-- /sAiExternalBlock -->
 
-        <div class="f-row">
+<div class="f-row">
           <div class="f-group"><label>Nombre del asistente</label><input class="f-input" id="sAiName" placeholder="Ej: Cana"></div>
           <div class="f-group"><label>Mensaje de bienvenida</label><input class="f-input" id="sAiWelcome" placeholder="¡Hola! ¿Buscás algo en especial?"></div>
+        </div>
+        <div class="f-group">
+          <label>Entrenamiento / instrucciones del asistente <span class="hint" style="display:inline">(personalidad, tono, reglas propias de tu negocio)</span></label>
+          <textarea class="f-input" id="sAiSystemPrompt" rows="5" placeholder="Ej: Sos un asistente cálido y directo, con humor costarricense sutil. Siempre ofrecé primero la opción más económica. Si preguntan por algo que no vendemos, recomendá lo más parecido del catálogo en vez de decir que no. Si el cliente quiere hablar con una persona, pedile que escriba por WhatsApp. Nunca prometas descuentos que no estén activos."></textarea>
+          <div class="hint" style="margin-top:4px">El horario, el envío, el SINPE y el IVA que ya configuraste arriba en Datos del negocio se le mandan solos al asistente — no hace falta repetirlos acá. Usá este espacio para personalidad, tono de venta y reglas propias. El asistente solo recomienda productos que existen en tu catálogo (con sus variantes reales) y prioriza los más relevantes a lo que pregunta cada cliente.</div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;margin-top:4px">
           <input type="checkbox" id="sAiEnabled" style="width:16px;height:16px"> Activar asistente para los clientes de esta tienda
@@ -3413,7 +3413,7 @@ async function handleAISubmit(e){
   }catch(error){
     loadingMsg.remove();
     console.error(error);
-    const msg = (error && error.message && /quota|cuota|plan|permiso|configurado/.test(error.message))
+const msg = (error && error.message && /quota|cuota|plan|permiso|configurado|clave|modelo|proveedor|timeout|tard|HTTP|no devolvi|Error conectando/.test(error.message))
       ? error.message
       : 'Tuve un problemita técnico. 🌿';
     appendMessage(msg, 'bot');
@@ -7086,8 +7086,9 @@ async function loadSuperadminData(){
   try{
     const snap = await db.collection('tenants').get();
     _saTenants = snap.docs.map(d => Object.assign({id:d.id}, d.data()));
-    _saTenants.sort((a,b) => (a.nombre||a.id).localeCompare(b.nombre||b.id, 'es'));
-renderSuperadminSummary();
+_saTenants.sort((a,b) => (a.nombre||a.id).localeCompare(b.nombre||b.id, 'es'));
+    saLoadAiKeyFlags();
+    renderSuperadminSummary();
     renderSuperadminTable();
     saPopulateAiSlugSelect();
   }catch(e){
@@ -7377,6 +7378,20 @@ async function saMigrateAiKeys(){
 /* ---------- Claves de IA desde el panel superadmin ---------- */
 let _saAiMasked = { openrouter:'', gemini:'', external:'' };
 let _saAiModel = '';
+let _saAiKeyed = {};
+async function saLoadAiKeyFlags(){
+  const slugs = (_saTenants || []).map(t => t.id).filter(Boolean);
+  for(const slug of slugs){
+    try{
+      const snap = await db.collection('tenants').doc(slug).collection('privateSettings').doc('ai').get();
+      const d = (snap.exists && snap.data()) || {};
+      _saAiKeyed[slug] = !!(d.aiOpenrouterKey || d.aiApiKey || d.aiExternalKey || d.aiModel);
+    }catch(e){
+      _saAiKeyed[slug] = false;
+    }
+  }
+  saPopulateAiSlugSelect();
+}
 function saPopulateAiSlugSelect(){
   const sel = document.getElementById('saAiSlug');
   if(!sel) return;
@@ -7384,7 +7399,7 @@ function saPopulateAiSlugSelect(){
   sel.innerHTML = '<option value="">— Elegí una tienda —</option>' +
     (_saTenants || []).map(t =>
       '<option value="' + esc(t.id) + '"' + (t.id === prev ? ' selected' : '') + '>' +
-      esc(t.nombre || t.id) + ' (' + esc(t.id) + ')</option>'
+      esc(t.nombre || t.id) + ' (' + esc(t.id) + ')' + (_saAiKeyed[t.id] ? ' 🔑' : '') + '</option>'
     ).join('');
 }
 function saSetMaskedInput(id, masked, exists, placeholder){
@@ -7456,17 +7471,28 @@ async function saSaveAiKeys(){
   if(newGem && newGem !== _saAiMasked.gemini) priv.aiApiKey = newGem;
   if(newExt && newExt !== _saAiMasked.external) priv.aiExternalKey = newExt;
   if(newModel && newModel !== _saAiModel) priv.aiModel = newModel;
-  if(newModel !== _saAiModel && !newModel) priv.aiModel = admin.firestore.FieldValue.delete();
+  if(newModel !== _saAiModel && !newModel) priv.aiModel = firebase.firestore.FieldValue.delete();
   if(!Object.keys(priv).length){ toast('No hay claves ni modelo nuevos para guardar', 'err'); return; }
   status.textContent = 'Guardando…'; status.style.color = 'var(--muted)';
   try{
     await db.collection('tenants').doc(slug).collection('privateSettings').doc('ai').set(priv, { merge:true });
     await migrateStoreKeys(slug);
+    // el proveedor efectivo del chat se lee de las configuraciones PÚBLICAS de la
+    // tienda: sincronizar acá para que aiChat/aiStatus usen el proveedor correcto
+    const pubUpd = {};
+    if(priv.aiOpenrouterKey || newModel){ pubUpd.aiProvider = 'openrouter'; if(newModel) pubUpd.aiModel = newModel; }
+    if(priv.aiApiKey) pubUpd.aiProvider = 'gemini';
+    if(priv.aiExternalKey) pubUpd.aiProvider = 'external';
+    if(Object.keys(pubUpd).length){
+      await db.collection('tenants').doc(slug).collection('settings').doc('store').set(pubUpd, { merge:true });
+    }
     _saAiMasked = { openrouter:newOr, gemini:newGem, external:newExt };
     _saAiModel = newModel;
     status.innerHTML = '<span style="color:var(--green)">✓ Claves y modelo guardados en el almacén privado de ' + esc(slug) + (newModel ? (' · modelo: <b>' + esc(newModel) + '</b>') : '') + '.</span>';
     toast('Configuración de IA guardada', 'ok');
+    _saAiKeyed[slug] = true;
     saOnAiStoreChange();
+    saPopulateAiSlugSelect();
   }catch(e){
     status.style.color = 'var(--danger)';
     status.textContent = 'No se pudo guardar: ' + (e && e.message ? e.message : 'error');
