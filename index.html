@@ -818,6 +818,12 @@ body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float{disp
 .ai-carousel .ai-c-body{padding:8px 10px}
 .ai-carousel .ai-c-name{font-size:12px;font-weight:700;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
 .ai-carousel .ai-c-price{font-size:13px;font-weight:800;color:#E8351D}
+.ai-carousel-wrap .ai-nav{flex:0 0 30px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:#fff;color:#7C3AED;font-size:20px;line-height:1;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.ai-carousel-wrap .ai-nav:hover{background:#F3EEFF;border-color:#7C3AED}
+.ai-c-wa{display:inline-flex;align-items:center;gap:4px;margin-top:7px;padding:6px 10px;border-radius:999px;background:#25D366;color:#fff;font-size:11px;font-weight:800;cursor:pointer}
+.ai-c-wa:hover{background:#1EBE5B}
+.ai-btn-wa{background:#25D366;color:#fff}
+.ai-btn-wa:hover{background:#1EBE5B}
 @media (max-width:480px){.ai-panel{width:100vw;height:82vh;border-radius:16px 16px 0 0}.ai-head{border-radius:16px 16px 0 0}}
 body.in-admin .ai-float,body.in-admin .ai-panel{display:none}
 
@@ -1767,7 +1773,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
               <select class="sort-select" id="sAiImageModel" style="width:100%;flex:1"><option value="">— Cargá los modelos primero —</option></select>
               <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;white-space:nowrap" onclick="loadOpenRouterModels('image')">🔄 Cargar modelos</button>
             </div>
-            <div class="hint" style="margin-top:4px">No todos los modelos gratuitos de OpenRouter generan imágenes. Si la lista sale vacía, probá de nuevo más tarde o revisá openrouter.ai/models con el filtro de "image output".</div>
+            <div class="hint" style="margin-top:4px">No existen modelos <b>gratis</b> con salida de imagen en OpenRouter. Por defecto usamos <b>google/gemini-3.1-flash-lite-image</b>, el más barato (cuesta centavos por foto). Al pulsar "🔄 Cargar modelos" verás los disponibles ordenados por precio.</div>
           </div>
 <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
             <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="testOpenRouterConnection()">🧪 Probar conexión</button>
@@ -2583,6 +2589,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script>
   /* Este es el ÚNICO proyecto Firebase de TODA la plataforma. Las 5 (o más)
      tiendas viven en el mismo proyecto, separadas por documento dentro de
@@ -2598,6 +2605,14 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
     measurementId: "G-C2PKV0EFNW"
   };
   firebase.initializeApp(firebaseConfig);
+  /* App Check (seguridad): valida que quien llama sea tu app real, no un bot.
+     Si el script o la clave fallan, las llamadas igual siguen con auth normal. */
+  const RECAPTCHA_SITE_KEY = '6LdrmY4tAAAAAHt27QkcdnCVrdV93PMK5iQrieL5';
+  try{
+    if(window.firebase && firebase.appCheck && RECAPTCHA_SITE_KEY){
+      firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY), true);
+    }
+  }catch(e){ console.warn('App Check no se pudo inicializar:', e); }
   const auth = firebase.auth();
   const db = firebase.firestore();
   /* Cloud Functions (backend seguro de IA): el navegador NUNCA usa las API
@@ -2716,7 +2731,7 @@ const DEFAULT_SETTINGS = {
   aiWelcomeMsg:'¡Hola! ¿Buscás algo en especial o querés que te recomiende algo?',
   aiProvider:'gemini',        // 'gemini' | 'openrouter' | 'external'
   aiModel:'',                 // id del modelo elegido en OpenRouter, ej: 'meta-llama/llama-3.3-70b-instruct:free'
-  aiImageModel:'',            // id del modelo de OpenRouter usado para generar fotos con fondo blanco
+  aiImageModel:'google/gemini-3.1-flash-lite-image', // default: el modelo de imagen de pago mínimo (no hay :free con salida de imagen)
   aiSystemPrompt:'',          // instrucciones/"entrenamiento" propio del negocio para el modelo elegido
   aiExternalProvider:'openai', // 'openai' | 'claude' | 'groq' | 'kimi' | 'custom'
   aiExternalModel:'',         // modelo del proveedor externo (ej: gpt-4o-mini, claude-sonnet-4-6, etc.)
@@ -3242,7 +3257,10 @@ function appendProductSuggestion(productId){
   const addAction = product.hasVariants
     ? 'openProductView(\'' + product.id + '\')'
     : 'addToCart(\'' + product.id + '\')';
-  const addLabel = product.hasVariants ? 'Elegir opción' : 'Añadir';
+const addLabel = product.hasVariants ? 'Elegir opción' : 'Añadir';
+  const waBtn = (settings.whatsapp && String(settings.whatsapp).trim())
+    ? '<button class="ai-btn-wa" onclick="openChatWhatsApp(\'' + product.id + '\')">WhatsApp</button>'
+    : '';
   card.innerHTML =
     '<div class="asc-img">' + (img ? '<img src="' + esc(img) + '">' : '') + '</div>' +
     '<div class="asc-body">' +
@@ -3251,10 +3269,52 @@ function appendProductSuggestion(productId){
       '<div class="asc-actions">' +
         '<button class="ai-btn-view" onclick="openProductView(\'' + product.id + '\')">Ver detalle</button>' +
         '<button class="ai-btn-add" onclick="' + addAction + '">' + addLabel + '</button>' +
+        waBtn +
       '</div>' +
     '</div>';
-  body.appendChild(card);
+body.appendChild(card);
   body.scrollTop = body.scrollHeight;
+  appendVariantCarousel(product);
+}
+/* Carpeta de imágenes de las variantes del mismo producto: cuando el agente
+   recomienda un producto que tiene variantes con foto, muestra un carrusel
+   con cada opción (su foto real, nombre y precio) para que el cliente vea
+   todas las presentaciones sin salir del chat. */
+function appendVariantCarousel(p){
+  if(!p || !p.hasVariants) return;
+  const variants = activeVariants(p).filter(v => v && !v.removed);
+  const withImg = variants.filter(v => v.image);
+  if(withImg.length < 2) return;
+  const body = document.getElementById('aiChatBody');
+  const wrap = document.createElement('div');
+  wrap.className = 'ai-carousel-wrap';
+  const hasWa = !!(settings.whatsapp && String(settings.whatsapp).trim());
+  wrap.innerHTML =
+    '<div class="ai-c-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Opciones de ' + esc(p.name) + '</div>' +
+    '<div style="display:flex;align-items:center;gap:6px">' +
+      '<button type="button" class="ai-nav" onclick="aiCarouselNav(this,-1)" aria-label="Anterior">‹</button>' +
+      '<div class="ai-carousel">' +
+        variants.map(v => {
+          const img = v.image || '';
+          const price = fmt(Number(v.price) || 0);
+          return '<div class="ai-c-item" onclick="openProductView(\'' + p.id + '\')">' +
+            '<div class="ai-c-img"><img src="' + esc(img) + '" alt="" loading="lazy"></div>' +
+            '<div class="ai-c-body"><div class="ai-c-name">' + esc(v.name) + '</div><div class="ai-c-price">' + price + '</div>' +
+            (hasWa ? '<div class="ai-c-wa" onclick="event.stopPropagation();openVariantWhatsApp(\'' + p.id + '\',\'' + (v.name || '').replace(/'/g, "\\'") + '\',' + (Number(v.price) || 0) + ')"><svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>WhatsApp</div>' : '') +
+            '</div></div>';
+        }).join('') +
+      '</div>' +
+      '<button type="button" class="ai-nav" onclick="aiCarouselNav(this,1)" aria-label="Siguiente">›</button>' +
+    '</div>';
+  body.appendChild(wrap);
+  body.scrollTop = body.scrollHeight;
+}
+function openVariantWhatsApp(productId, variantName, price){
+  const wa = String(settings.whatsapp || '').trim();
+  if(!wa) return;
+  const p = products.find(x => x.id === productId);
+  const msg = 'Hola ' + (settings.storeName || '') + ', me interesa "' + (p ? p.name : '') + '" (' + variantName + ')' + (price ? ' — ' + fmt(Number(price) || 0) : '') + '. ¿Está disponible?';
+  window.open('https://wa.me/' + waDigits(wa) + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
 }
 /* Muestra una fila horizontal (carrusel) con los productos recomendados por
    el asistente. Si es un solo producto, seguimos usando la tarjeta grande
@@ -3267,22 +3327,50 @@ function appendProductCarousel(productIds){
   const body = document.getElementById('aiChatBody');
   const wrap = document.createElement('div');
   wrap.className = 'ai-carousel-wrap';
+  const hasWa = !!(settings.whatsapp && String(settings.whatsapp).trim());
   wrap.innerHTML =
     '<div class="ai-c-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Recomendados para vos</div>' +
-    '<div class="ai-carousel">' +
-      list.map(id => {
-        const p = products.find(x => x.id === id);
-        const img = firstThumb(p) || '';
-        const g = gradFor(p.id);
-        const media = img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : svgIcon(p.icon, 40);
-        return '<div class="ai-c-item" onclick="openProductView(\'' + p.id + '\')">' +
-          '<div class="ai-c-img" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + media + '</div>' +
-          '<div class="ai-c-body"><div class="ai-c-name">' + esc(p.name) + '</div><div class="ai-c-price">' + displayPrice(p) + '</div></div>' +
-          '</div>';
-      }).join('') +
+    '<div style="display:flex;align-items:center;gap:6px">' +
+      '<button type="button" class="ai-nav" onclick="aiCarouselNav(this,-1)" aria-label="Anterior">‹</button>' +
+      '<div class="ai-carousel">' +
+        list.map(id => {
+          const p = products.find(x => x.id === id);
+          const img = firstThumb(p) || '';
+          const g = gradFor(p.id);
+          const media = img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : svgIcon(p.icon, 40);
+          return '<div class="ai-c-item" onclick="openProductView(\'' + p.id + '\')">' +
+            '<div class="ai-c-img" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + media + '</div>' +
+            '<div class="ai-c-body"><div class="ai-c-name">' + esc(p.name) + '</div><div class="ai-c-price">' + displayPrice(p) + '</div>' +
+            (hasWa ? '<div class="ai-c-wa" onclick="event.stopPropagation();openChatWhatsApp(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>WhatsApp</div>' : '') +
+            '</div></div>';
+        }).join('') +
+      '</div>' +
+      '<button type="button" class="ai-nav" onclick="aiCarouselNav(this,1)" aria-label="Siguiente">›</button>' +
     '</div>';
   body.appendChild(wrap);
   body.scrollTop = body.scrollHeight;
+  list.forEach(id => {
+    const p = products.find(x => x.id === id);
+    appendVariantCarousel(p);
+  });
+}
+function aiCarouselNav(btn, dir){
+  const row = btn.parentElement;
+  const car = row && row.querySelector('.ai-carousel');
+  if(!car) return;
+  const step = Math.max(120, car.clientWidth * 0.75);
+  car.scrollBy({ left: dir * step, behavior: 'smooth' });
+}
+function chatWhatsAppLink(id){
+  const wa = String(settings.whatsapp || '').trim();
+  if(!wa) return '';
+  const p = products.find(x => x.id === id);
+  const msg = 'Hola ' + (settings.storeName || '') + ', me interesa "' + (p ? p.name : '') + '"' + (p ? ' (' + displayPrice(p) + ')' : '') + '. ¿Está disponible?';
+  return 'https://wa.me/' + waDigits(wa) + '?text=' + encodeURIComponent(msg);
+}
+function openChatWhatsApp(id){
+  const url = chatWhatsAppLink(id);
+  if(url) window.open(url, '_blank', 'noopener');
 }
 /* Elige qué productos incluir en el prompt del asistente: si el catálogo es
    chico, van todos; si es grande, se prioriza por relevancia con el último
@@ -3553,12 +3641,20 @@ async function loadOpenRouterModels(kind){
     const res = await cloudCall('aiModels', { slug: TENANT_ID, kind });
     const filtered = (res && Array.isArray(res.models)) ? res.models : [];
     if(!filtered.length){
-      sel.innerHTML = '<option value="">' + (kind==='image' ? 'No hay modelos gratis con salida de imagen ahora mismo' : 'No se encontraron modelos gratis') + '</option>';
-      toast(kind==='image' ? 'OpenRouter no tiene modelos gratuitos de imagen disponibles en este momento' : 'No se encontraron modelos gratuitos en OpenRouter', 'err');
+      sel.innerHTML = '<option value="">' + (kind==='image' ? 'No hay modelos con salida de imagen disponibles' : 'No se encontraron modelos gratis') + '</option>';
+      toast(kind==='image' ? 'OpenRouter no tiene modelos de imagen disponibles en este momento' : 'No se encontraron modelos gratuitos en OpenRouter', 'err');
       return;
     }
-    sel.innerHTML = filtered.map(m => '<option value="'+esc(m.id)+'">'+esc(m.name||m.id)+'</option>').join('');
-    if(previous && filtered.some(m=>m.id===previous)) sel.value = previous;
+    sel.innerHTML = filtered.map(m =>
+      '<option value="'+esc(m.id)+'">'+esc(m.name||m.id)+(m.price ? ' · $' + m.price.toFixed(6) + '/token salida' : '')+'</option>'
+    ).join('');
+    if(previous && filtered.some(m=>m.id===previous)){
+      sel.value = previous;
+    } else if(kind==='image'){
+      // default sugerido: el modelo de imagen de pago mínimo (no hay :free con salida de imagen)
+      const def = filtered.find(m => m.id === 'google/gemini-3.1-flash-lite-image') || filtered[0];
+      if(def) sel.value = def.id;
+    }
     toast('Modelos cargados: ' + filtered.length, 'ok');
   }catch(err){
     console.error(err);
@@ -6238,8 +6334,8 @@ document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
   // Deja el modelo guardado como única opción hasta que el negocio cargue la lista de OpenRouter
   const aiModelSel = document.getElementById('sAiModel');
   if(aiModelSel) aiModelSel.innerHTML = settings.aiModel ? '<option value="'+esc(settings.aiModel)+'">'+esc(settings.aiModel)+'</option>' : '<option value="">— Cargá los modelos primero —</option>';
-  const aiImgModelSel = document.getElementById('sAiImageModel');
-  if(aiImgModelSel) aiImgModelSel.innerHTML = settings.aiImageModel ? '<option value="'+esc(settings.aiImageModel)+'">'+esc(settings.aiImageModel)+'</option>' : '<option value="">— Cargá los modelos primero —</option>';
+const aiImgModelSel = document.getElementById('sAiImageModel');
+  if(aiImgModelSel) aiImgModelSel.innerHTML = '<option value="'+esc(settings.aiImageModel || 'google/gemini-3.1-flash-lite-image')+'">'+esc(settings.aiImageModel || 'google/gemini-3.1-flash-lite-image')+'</option>';
   // Campos de API externa
 const extProvEl = document.getElementById('sAiExternalProvider');
   if(extProvEl) extProvEl.value = settings.aiExternalProvider || 'openai';
