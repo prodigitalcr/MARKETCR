@@ -1734,9 +1734,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <div class="settings-card">
         <h4>✨ Asistente de compras con IA</h4>
         <div class="desc">Un chat flotante que recomienda productos a tus clientes.</div>
-        <div class="desc" id="sAiLockNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El Asistente de IA (chat + generador de fotos con fondo blanco) es exclusivo del <b>Plan Destacado</b>. Podés dejar los datos guardados, pero no se activará para tus clientes hasta que subas de plan.</div>
+<div class="desc" id="sAiLockNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El Asistente de IA (chat + generador de fotos con fondo blanco) es exclusivo del <b>Plan Destacado</b>. Podés dejar los datos guardados, pero no se activará para tus clientes hasta que subas de plan.</div>
+        <div class="desc" id="sAiAdminOnlyNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El proveedor, las claves de API y los modelos del asistente de IA solo los configura el <b>superadministrador de la plataforma</b>.<br>Como administradora de esta tienda podés cambiar el nombre, el mensaje de bienvenida y activar el asistente para los clientes.</div>
 
-        <div class="f-group"><label>Proveedor del modelo de IA</label>
+<div class="f-group" id="sAiProviderGroup"><label>Proveedor del modelo de IA</label>
           <select class="sort-select" id="sAiProvider" style="width:100%" onchange="onAiProviderChange()">
             <option value="gemini">Google Gemini (clave propia de aistudio.google.com)</option>
             <option value="openrouter">OpenRouter (modelos gratuitos via openrouter.ai)</option>
@@ -6149,7 +6150,18 @@ function loadSettingsForm(){
 document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
   /* Las claves de API ya NO viven en settings público: se muestran enmascaradas
      (sk-or-****abcd) desde el estado privado vía el backend (aiStatus). */
-  refreshMaskedAiKeys();
+  const _aiSessUser = auth.currentUser;
+  const _isAdminOnlyView = !_aiSessUser || !isSuperAdminUser(_aiSessUser);
+  const _saAiNotice = document.getElementById('sAiAdminOnlyNotice');
+  const _saAiProvGroup = document.getElementById('sAiProviderGroup');
+  const _saAiBlocks = ['sAiGeminiBlock','sAiOpenrouterBlock','sAiExternalBlock'];
+  if(_saAiNotice) _saAiNotice.style.display = _isAdminOnlyView ? '' : 'none';
+  if(_saAiProvGroup) _saAiProvGroup.style.display = _isAdminOnlyView ? 'none' : '';
+  _saAiBlocks.forEach(function(_bid){
+    const _bel = document.getElementById(_bid);
+    if(_bel) _bel.style.display = 'none';
+  });
+  if(!_isAdminOnlyView) refreshMaskedAiKeys(); // solo el superadmin ve claves (enmascaradas) y las ingresa
   const geminiModelEl = document.getElementById('sAiGeminiModel');
   if(geminiModelEl) geminiModelEl.value = settings.aiGeminiModel || 'gemini-2.0-flash';
   document.getElementById('sAiWelcome').value = settings.aiWelcomeMsg||'';
@@ -6168,8 +6180,14 @@ const extProvEl = document.getElementById('sAiExternalProvider');
   if(extModelEl) extModelEl.value = settings.aiExternalModel || '';
   const extBaseEl = document.getElementById('sAiExternalBaseUrl');
   if(extBaseEl) extBaseEl.value = settings.aiExternalBaseUrl || '';
-  onExternalProviderChange();
+onExternalProviderChange();
   onAiProviderChange();
+  if(_isAdminOnlyView){
+    _saAiBlocks.forEach(function(_bid){
+      const _bel = document.getElementById(_bid);
+      if(_bel) _bel.style.display = 'none';
+    });
+  }
   const aiLockEl = document.getElementById('sAiLockNotice');
   if(aiLockEl) aiLockEl.style.display = planAllows('ai-assistant') ? 'none' : '';
   document.getElementById('sinpePreview').textContent = settings.sinpe;
