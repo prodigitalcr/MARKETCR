@@ -2836,9 +2836,12 @@ async function migrateStoreKeys(slug){
   const keysToMove = ['aiOpenrouterKey','aiApiKey','aiExternalKey'];
   const found = keysToMove.filter(k => typeof d[k] === 'string' && d[k].trim() !== '');
   if(!found.length) return { moved:0 };
-  // no pisar claves privadas ya migradas (priorizar privateSettings)
-  const pSnap = await pRef.get();
-  const p = (pSnap.exists ? pSnap.data() : {}) || {};
+  // no pisar claves privadas ya migradas (priorizar privateSettings).
+  // privateSettings solo lo lee/escribe el superadmin (reglas Firestore),
+  // así que si el guardado lo disparó un admin normal, se saltea el bloqueo.
+  let p = {};
+  try{ const pSnap = await pRef.get(); p = (pSnap.exists ? pSnap.data() : {}) || {}; }
+  catch(_e){ return { moved:0, blocked:true }; }
   const upd = {};
   found.forEach(k => { if(!p[k]) upd[k] = d[k]; });
   if(Object.keys(upd).length) await pRef.set(upd, { merge:true });
@@ -6320,7 +6323,10 @@ const legacySettingsSnap = await db.collection('settings').doc('store').get();
         }
       });
       await settingsRef.set(legacyData, { merge:true });
-      if(Object.keys(privKeys).length) await privateSettingsRef.set(privKeys, { merge:true });
+      if(Object.keys(privKeys).length){
+        try{ await privateSettingsRef.set(privKeys, { merge:true }); }
+        catch(_e){ console.warn('privateSettings restringido a superadmin, no se migraron claves legacy:', _e.message); }
+      }
       migrated.settings = true;
     }
 
