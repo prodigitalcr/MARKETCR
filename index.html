@@ -2373,8 +2373,38 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
       </div>
 <button class="btn-primary" style="width:auto;padding:12px 22px" onclick="saCreateTenant()">Crear negocio</button>
-      <button class="btn-ghost" style="width:auto;padding:12px 22px;margin-left:8px" onclick="saMigrateAiKeys()" title="Mueve las claves de IA que aún estén en el documento público settings/store hacia la subcolección privada privateSettings/ai y las borra del público">🔐 Migrar claves IA (seguridad)</button>
+<button class="btn-ghost" style="width:auto;padding:12px 22px;margin-left:8px" onclick="saMigrateAiKeys()" title="Mueve las claves de IA que aún estén en el documento público settings/store hacia la subcolección privada privateSettings/ai y las borra del público">🔐 Migrar claves IA (seguridad)</button>
       <div id="saMigrateStatus" style="font-size:12.5px;margin-top:6px"></div>
+    </div>
+
+    <div class="settings-card" style="margin-bottom:20px">
+      <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-3-2l2 2m2 2l2-2m-2 2v9a2 2 0 0 1-2 2h-1v3l-2-3H7a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1h5"/></svg>Claves de IA de las tiendas</h4>
+      <div class="desc">Elegí la tienda, pegá la clave de <b>OpenRouter</b> (o Gemini / API externa) y guardá. Las claves se guardan en el almacén privado <code>privateSettings/ai</code> — nunca viajan al navegador de los clientes; el asistente las usa desde el servidor de la plataforma. Vacío = conservar la clave guardada.</div>
+      <div class="f-row">
+        <div class="f-group"><label>Tienda</label>
+          <select class="sort-select" id="saAiSlug" style="width:100%" onchange="saOnAiStoreChange()"><option value="">— Elegí una tienda —</option></select>
+        </div>
+        <div class="f-group"></div>
+      </div>
+      <div class="f-row">
+        <div class="f-group"><label>🔑 Clave de OpenRouter</label>
+          <input class="f-input" id="saAiOpenrouterKey" type="password" autocomplete="off" placeholder="sk-or-v1-..." onkeydown="if(event.key==='Enter')saSaveAiKeys()">
+        </div>
+        <div class="f-group"><label>🔑 Clave de Gemini</label>
+          <input class="f-input" id="saAiGeminiKey" type="password" autocomplete="off" placeholder="AIza..." onkeydown="if(event.key==='Enter')saSaveAiKeys()">
+        </div>
+      </div>
+      <div class="f-row">
+        <div class="f-group"><label>🔑 Clave de API externa (Groq / Kimi / custom)</label>
+          <input class="f-input" id="saAiExternalKey" type="password" autocomplete="off" placeholder="sk-..." onkeydown="if(event.key==='Enter')saSaveAiKeys()">
+        </div>
+        <div class="f-group"></div>
+      </div>
+      <div id="saAiKeyStatus" style="font-size:12.5px;margin-bottom:8px;color:var(--muted)"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-primary" style="width:auto;padding:11px 22px" onclick="saSaveAiKeys()">💾 Guardar claves</button>
+        <button class="btn-ghost" style="width:auto;padding:11px 22px" onclick="saTestAiOpenRouter()" title="Prueba la conexión de OpenRouter con la clave guardada">🧪 Probar OpenRouter</button>
+      </div>
     </div>
 
     <div class="adm-toolbar" style="margin-bottom:10px">
@@ -7023,8 +7053,9 @@ async function loadSuperadminData(){
     const snap = await db.collection('tenants').get();
     _saTenants = snap.docs.map(d => Object.assign({id:d.id}, d.data()));
     _saTenants.sort((a,b) => (a.nombre||a.id).localeCompare(b.nombre||b.id, 'es'));
-    renderSuperadminSummary();
+renderSuperadminSummary();
     renderSuperadminTable();
+    saPopulateAiSlugSelect();
   }catch(e){
     console.error(e);
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--danger);padding:24px">No se pudo cargar la lista de negocios: ' + esc(e && e.message ? e.message : 'error desconocido') + '</td></tr>';
@@ -7307,6 +7338,93 @@ async function saMigrateAiKeys(){
   status.style.color = total || errores ? (errores ? 'var(--danger)' : 'var(--ok,#1B7A43)') : 'var(--ok,#1B7A43)';
   status.textContent = 'Migración lista: ' + total + ' clave(s) movida(s) a privateSettings' + (errores ? (' · ' + errores + ' tienda(s) con error (revisá consola)') : '') + '.';
   toast('Migración de claves IA completada', total || errores ? 'ok' : 'ok');
+}
+
+/* ---------- Claves de IA desde el panel superadmin ---------- */
+let _saAiMasked = { openrouter:'', gemini:'', external:'' };
+function saPopulateAiSlugSelect(){
+  const sel = document.getElementById('saAiSlug');
+  if(!sel) return;
+  const prev = sel.value || '';
+  sel.innerHTML = '<option value="">— Elegí una tienda —</option>' +
+    (_saTenants || []).map(t =>
+      '<option value="' + esc(t.id) + '"' + (t.id === prev ? ' selected' : '') + '>' +
+      esc(t.nombre || t.id) + ' (' + esc(t.id) + ')</option>'
+    ).join('');
+}
+function saSetMaskedInput(id, masked, exists, placeholder){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.value = exists && masked ? masked : '';
+  el.placeholder = exists && masked ? ('Guardada: ' + masked + ' — escribí una nueva para reemplazarla') : placeholder;
+}
+async function saOnAiStoreChange(){
+  const slug = document.getElementById('saAiSlug').value;
+  const status = document.getElementById('saAiKeyStatus');
+  status.textContent = ''; status.style.color = 'var(--muted)';
+  if(!slug) return;
+  status.textContent = 'Consultando estado…';
+  try{
+    const st = await cloudCall('aiStatus', { slug: slug });
+    const orSt = (st && st.openrouter) || {};
+    const gmSt = (st && st.gemini) || {};
+    const exSt = (st && st.external) || {};
+    _saAiMasked = { openrouter: orSt.masked || '', gemini: gmSt.masked || '', external: exSt.masked || '' };
+    saSetMaskedInput('saAiOpenrouterKey', _saAiMasked.openrouter, !!orSt.exists, 'sk-or-v1-...');
+    saSetMaskedInput('saAiGeminiKey', _saAiMasked.gemini, !!gmSt.exists, 'AIza...');
+    saSetMaskedInput('saAiExternalKey', _saAiMasked.external, !!exSt.exists, 'sk-...');
+    status.innerHTML = st && st.configured
+      ? '<span style="color:var(--green)">✓ Asistente configurado para esta tienda.</span>'
+      : '<span style="color:#92400E">La tienda aún no tiene el asistente completamente configurado (falta clave o modelo).</span>';
+  }catch(e){
+    status.style.color = 'var(--danger)';
+    status.textContent = 'No se pudo consultar el estado: ' + (e && e.message ? e.message : 'error');
+  }
+}
+async function saSaveAiKeys(){
+  const slug = document.getElementById('saAiSlug').value;
+  const status = document.getElementById('saAiKeyStatus');
+  if(!slug){ toast('Elegí una tienda primero', 'err'); return; }
+  const newOr = document.getElementById('saAiOpenrouterKey').value.trim();
+  const newGem = document.getElementById('saAiGeminiKey').value.trim();
+  const newExt = document.getElementById('saAiExternalKey').value.trim();
+  const priv = {};
+  if(newOr && newOr !== _saAiMasked.openrouter) priv.aiOpenrouterKey = newOr;
+  if(newGem && newGem !== _saAiMasked.gemini) priv.aiApiKey = newGem;
+  if(newExt && newExt !== _saAiMasked.external) priv.aiExternalKey = newExt;
+  if(!Object.keys(priv).length){ toast('No hay claves nuevas para guardar', 'err'); return; }
+  status.textContent = 'Guardando…'; status.style.color = 'var(--muted)';
+  try{
+    await db.collection('tenants').doc(slug).collection('privateSettings').doc('ai').set(priv, { merge:true });
+    await migrateStoreKeys(slug);
+    _saAiMasked = { openrouter:newOr, gemini:newGem, external:newExt };
+    status.innerHTML = '<span style="color:var(--green)">✓ Claves guardadas en el almacén privado de ' + esc(slug) + '.</span>';
+    toast('Clave de OpenRouter guardada', 'ok');
+    saOnAiStoreChange();
+  }catch(e){
+    status.style.color = 'var(--danger)';
+    status.textContent = 'No se pudo guardar: ' + (e && e.message ? e.message : 'error');
+    console.error(e);
+  }
+}
+async function saTestAiOpenRouter(){
+  const slug = document.getElementById('saAiSlug').value;
+  const status = document.getElementById('saAiKeyStatus');
+  if(!slug){ toast('Elegí una tienda primero', 'err'); return; }
+  status.textContent = 'Probando conexión con OpenRouter…'; status.style.color = 'var(--muted)';
+  try{
+    const res = await cloudCall('aiTest', { slug: slug, provider: 'openrouter' });
+    if(res && res.ok){
+      status.innerHTML = '<span style="color:var(--green)">✓ Conexión OK: ' + esc(res.reply || 'respuesta recibida') + '</span>';
+      toast('Conexión con OpenRouter correcta', 'ok');
+    } else {
+      status.innerHTML = '<span style="color:var(--danger)">✗ ' + esc((res && res.error) || 'Error desconocido') + '</span>';
+    }
+  }catch(e){
+    status.style.color = 'var(--danger)';
+    status.textContent = 'Fallo al probar: ' + (e && e.message ? e.message : 'error');
+    console.error(e);
+  }
 }
 
 /* ---------- eliminar un negocio por completo (tienda + subcolecciones) ---------- */
