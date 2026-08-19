@@ -1745,14 +1745,14 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
 
         <div id="sAiGeminiBlock">
-          <div class="desc">Usa la API de Google Gemini — necesitás tu propia clave (gratuita) desde <b>aistudio.google.com</b>.</div>
-          <div class="f-group"><label>Clave de API de Gemini</label><input class="f-input" type="password" id="sAiKey" autocomplete="off" placeholder="Pegá tu API key aquí"></div>
+<div class="desc">Usa la API de Google Gemini — necesitás tu propia clave (gratuita) desde <b>aistudio.google.com</b>. La clave se guarda en el almacén <b>privado</b> de la tienda: nunca la ve un visitante ni aparece en el código de la página.</div>
+          <div class="f-group"><label>Clave de API de Gemini</label><input class="f-input" type="password" id="sAiKey" autocomplete="off" placeholder="Pegá tu API key aquí (se guarda privada)"></div>
           <div class="f-group"><label>Modelo de Gemini <span class="hint" style="display:inline">(dejalo vacío para usar gemini-2.0-flash)</span></label><input class="f-input" id="sAiGeminiModel" placeholder="gemini-2.0-flash"></div>
         </div>
 
         <div id="sAiOpenrouterBlock" style="display:none">
-          <div class="desc">Usa <b>OpenRouter</b> (openrouter.ai) para conectar el asistente a modelos gratuitos de distintos proveedores (Llama, Gemini, DeepSeek, Qwen, etc.). Creá tu clave gratis en <b>openrouter.ai/keys</b>.</div>
-          <div class="f-group"><label>Clave de API de OpenRouter</label><input class="f-input" type="password" id="sAiOpenrouterKey" autocomplete="off" placeholder="sk-or-v1-..."></div>
+<div class="desc">Usa <b>OpenRouter</b> (openrouter.ai) para conectar el asistente a modelos gratuitos de distintos proveedores (Llama, Gemini, DeepSeek, Qwen, etc.). Creá tu clave gratis en <b>openrouter.ai/keys</b>. <b>Seguridad:</b> la clave se guarda en el almacén privado de la tienda y todas las llamadas pasan por el servidor de la plataforma — nunca viaja al navegador.</div>
+          <div class="f-group"><label>Clave de API de OpenRouter</label><input class="f-input" type="password" id="sAiOpenrouterKey" autocomplete="off" placeholder="sk-or-v1-... (se guarda privada)"></div>
           <div class="f-group">
             <label>Modelo para el chat (solo modelos gratis :free)</label>
             <div style="display:flex;gap:8px">
@@ -1781,7 +1781,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 
         <!-- === BLOQUE API DIRECTA (ChatGPT, Claude, Groq, Kimi) === -->
         <div id="sAiExternalBlock" style="display:none">
-          <div class="desc">Conectá el asistente directamente a <b>ChatGPT (OpenAI)</b>, <b>Claude (Anthropic)</b>, <b>Groq</b>, <b>Kimi (Moonshot)</b> u otra API compatible. Necesitás tu propia clave del proveedor elegido.</div>
+          <div class="desc">Conectá el asistente directamente a <b>ChatGPT (OpenAI)</b>, <b>Claude (Anthropic)</b>, <b>Groq</b>, <b>Kimi (Moonshot)</b> u otra API compatible. Necesitás tu propia clave del proveedor elegido. La clave se guarda en el almacén <b>privado</b> de la tienda y las llamadas pasan por el servidor de la plataforma.</div>
           <div class="f-group"><label>Proveedor externo</label>
             <select class="sort-select" id="sAiExternalProvider" style="width:100%" onchange="onExternalProviderChange()">
               <option value="openai">ChatGPT — OpenAI ⚠️ no compatible con este chat</option>
@@ -1790,7 +1790,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
               <option value="kimi">Kimi — Moonshot AI (platform.moonshot.cn)</option>
               <option value="custom">URL base propia (cualquier API compatible con OpenAI)</option>
             </select>
-            <div class="desc" id="sAiExternalWarning" style="display:none;color:var(--danger);font-weight:600;margin-top:4px">⚠️ La API de OpenAI (ChatGPT) bloquea las llamadas directas desde el navegador (CORS) — este chat no puede conectarse a ella sin un servidor propio, así que nunca va a responder. Usá <b>OpenRouter</b> (tiene modelos gratuitos) o <b>Claude</b> en su lugar.</div>
+            <div class="desc" id="sAiExternalWarning" style="display:none;color:var(--danger);font-weight:600;margin-top:4px">⚠️ OpenAI (ChatGPT) no está soportado en la plataforma (su API bloquea las llamadas directas del navegador y no la habilitamos en el proxy). Usá <b>OpenRouter</b> (tiene modelos gratuitos), <b>Claude</b>, <b>Groq</b> o <b>Kimi</b> en su lugar.</div>
           </div>
           <div class="f-group"><label>Clave de API</label>
             <input class="f-input" type="password" id="sAiExternalKey" autocomplete="off" placeholder="sk-... o la clave del proveedor elegido">
@@ -2371,7 +2371,9 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           </select>
         </div>
       </div>
-      <button class="btn-primary" style="width:auto;padding:12px 22px" onclick="saCreateTenant()">Crear negocio</button>
+<button class="btn-primary" style="width:auto;padding:12px 22px" onclick="saCreateTenant()">Crear negocio</button>
+      <button class="btn-ghost" style="width:auto;padding:12px 22px;margin-left:8px" onclick="saMigrateAiKeys()" title="Mueve las claves de IA que aún estén en el documento público settings/store hacia la subcolección privada privateSettings/ai y las borra del público">🔐 Migrar claves IA (seguridad)</button>
+      <div id="saMigrateStatus" style="font-size:12.5px;margin-top:6px"></div>
     </div>
 
     <div class="adm-toolbar" style="margin-bottom:10px">
@@ -2537,6 +2539,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script>
   /* Este es el ÚNICO proyecto Firebase de TODA la plataforma. Las 5 (o más)
      tiendas viven en el mismo proyecto, separadas por documento dentro de
@@ -2554,6 +2557,14 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
+  /* Cloud Functions (backend seguro de IA): el navegador NUNCA usa las API
+     keys directamente. Todas las llamadas a proveedores de IA pasan por acá. */
+  const cloudFns = firebase.functions();
+  async function cloudCall(name, data){
+    const fn = cloudFns.httpsCallable(name);
+    const res = await fn(data || {});
+    return res.data;
+  }
   /* Cache local (IndexedDB): la info de la tienda (settings) y el catálogo
      (products) quedan guardados en el navegador del cliente. La próxima vez
      que entre a la misma tienda (o navegue entre tiendas ya visitadas), la
@@ -2605,17 +2616,17 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 
 const DEFAULT_SETTINGS = {
   storeName:'Mi Tienda',
-  tagline:'productos y servicios',
+  tagline:'Vivero, jardinería y servicios',
   hours:'Lun - Sáb · 6:00 a.m. - 5:00 p.m.',
-  shipping:'Hacemos envíos · San José, CR',
+  shipping:'Hacemos envíos por Uber Flash · San José, CR',
   sinpe:'8888-8888',
   whatsapp:'50688888888',
-  categories:['Productos','Servicios'],
+  categories:['Plantas','Productos','Servicios'],
   websiteUrl:'',
   websiteLabel:'Sitio web',
   websiteIcon:'',
   bingoUrl:'',
-  bingoLabel:'plataforma',
+  bingoLabel:'Bingo de Plantas',
   bingoIcon:'',
   storyVideoUrl:'',
   storyVideoUrl2:'',
@@ -2629,17 +2640,20 @@ const DEFAULT_SETTINGS = {
   categoria:'', // categoría principal mostrada en el landing de profesionales
   servicios:[], // lista corta de servicios mostrada en el landing (independiente de "categories")
   aiEnabled:false,
-  aiApiKey:'',
+  /* NOTA DE SEGURIDAD: las claves de API (aiApiKey / aiOpenrouterKey /
+     aiExternalKey) ya NO se guardan acá (documento público). Viven en la
+     subcolección PRIVADA tenants/{slug}/privateSettings/ai, que solo leen
+     el administrador y el backend. Este flag es lo único que necesita la
+     tienda pública para saber si el asistente está configurado. */
+  aiConfigured:false,
   aiGeminiModel:'gemini-2.0-flash',
   aiAssistantName:'Cana',
   aiWelcomeMsg:'¡Hola! ¿Buscás algo en especial o querés que te recomiende algo?',
   aiProvider:'gemini',        // 'gemini' | 'openrouter' | 'external'
-  aiOpenrouterKey:'',         // clave de API de OpenRouter (openrouter.ai/keys)
   aiModel:'',                 // id del modelo elegido en OpenRouter, ej: 'meta-llama/llama-3.3-70b-instruct:free'
   aiImageModel:'',            // id del modelo de OpenRouter usado para generar fotos con fondo blanco
   aiSystemPrompt:'',          // instrucciones/"entrenamiento" propio del negocio para el modelo elegido
   aiExternalProvider:'openai', // 'openai' | 'claude' | 'groq' | 'kimi' | 'custom'
-  aiExternalKey:'',           // API key del proveedor externo
   aiExternalModel:'',         // modelo del proveedor externo (ej: gpt-4o-mini, claude-sonnet-4-6, etc.)
   aiExternalBaseUrl:'',       // URL base custom (solo para 'custom')
   facturaEmisor:'',           // = settings para emitir factura en el POS:
@@ -2688,9 +2702,10 @@ let TENANT_DATA = null;
 function tenantRef(){ return db.collection('tenants').doc(TENANT_ID); }
 function tenantCol(name){ return tenantRef().collection(name); }
 
-let settingsRef, productsCol, ordersCol, posSalesCol, financeCol;
+let settingsRef, privateSettingsRef, productsCol, ordersCol, posSalesCol, financeCol;
 function bindTenantRefs(){
   settingsRef = tenantCol('settings').doc('store');
+  privateSettingsRef = tenantCol('privateSettings').doc('ai');
   productsCol = tenantCol('products');
   ordersCol = tenantCol('orders');
   posSalesCol = tenantCol('posSales');
@@ -2807,6 +2822,39 @@ function updateOrdersNavBadge(){
 }
 
 async function saveSettingsToDB(data){ await settingsRef.set(data, {merge:true}); }
+/* Migración segura: mueve claves que aún estén en el doc PÚBLICO
+   tenants/{slug}/settings/store hacia la subcolección PRIVADA
+   tenants/{slug}/privateSettings/ai y las borra del público. NO elimina
+   datos si no existen; solo mueve y deja documentado cuántas movió. */
+async function migrateStoreKeys(slug){
+  const sRef = db.collection('tenants').doc(slug).collection('settings').doc('store');
+  const pRef = db.collection('tenants').doc(slug).collection('privateSettings').doc('ai');
+  const sSnap = await sRef.get();
+  if(!sSnap.exists) return { moved:0 };
+  const d = sSnap.data() || {};
+  const keysToMove = ['aiOpenrouterKey','aiApiKey','aiExternalKey'];
+  const found = keysToMove.filter(k => typeof d[k] === 'string' && d[k].trim() !== '');
+  if(!found.length) return { moved:0 };
+  // no pisar claves privadas ya migradas (priorizar privateSettings)
+  const pSnap = await pRef.get();
+  const p = (pSnap.exists ? pSnap.data() : {}) || {};
+  const upd = {};
+  found.forEach(k => { if(!p[k]) upd[k] = d[k]; });
+  if(Object.keys(upd).length) await pRef.set(upd, { merge:true });
+  // borrar las claves del doc público: ya pasaron o ya existían en privado
+  const del = {};
+  found.forEach(k => { del[k] = firebase.firestore.FieldValue.delete(); });
+  await sRef.update(del);
+  // si con esto el asistente queda configurado, marcarlo para la tienda pública
+  if(found.includes('aiOpenrouterKey') && d.aiModel){
+    try{ await sRef.update({ aiConfigured: true }); }catch(_e){}
+  } else if(found.includes('aiExternalKey') && d.aiExternalModel){
+    try{ await sRef.update({ aiConfigured: true }); }catch(_e){}
+  } else if(found.includes('aiApiKey') && d.aiGeminiModel){
+    try{ await sRef.update({ aiConfigured: true }); }catch(_e){}
+  }
+  return { moved: found.length };
+}
 async function saveProductToDB(id, data){
   if(id) await productsCol.doc(id).set(data, {merge:true});
   else await productsCol.add(data);
@@ -3044,18 +3092,17 @@ function toggleStoryMute(n){
   if(v) v.muted = storyMuted;
 }
 
-/* ---------- asistente de compras con IA (Google Gemini) ----------
-   Cada tienda activa esto por su cuenta desde Configuraciones, con su
-   propia clave de API. Si no hay clave o está desactivado, el botón
-   flotante ni siquiera se muestra. El asistente solo conoce los
-   productos de ESTA tienda (nunca datos de otros negocios). */
-let aiHistory = [];
+/* ---------- asistente de compras con IA ----------
+   Cada tienda lo activa desde Configuraciones con su propio proveedor,
+   modelo y clave. Las claves viven en privateSettings (privadas, solo las usa
+   el backend) y el público ve el botón solo si aiConfigured + plan lo permiten.
+   El asistente solo conoce los productos de ESTA tienda (nunca otros negocios). */
+let aiMessages = []; // historial (role/content) que viaja al backend "aiChat"
 let aiWelcomeShown = false;
-/* Proveedores que NO pueden funcionar desde este chat (arquitectura 100%
-   navegador, sin backend propio): hoy solo OpenAI, cuya API bloquea las
-   llamadas directas del navegador (CORS) sin importar la clave que se use.
-   Se centraliza acá para que tanto el panel de Configuraciones como lo que
-   ven los clientes reales usen el mismo criterio. */
+/* Proveedores que la plataforma NO soporta: hoy solo OpenAI (ChatGPT), cuya
+   API bloquea las llamadas del navegador con CORS y que no habilitamos en el
+   proxy del servidor. Se centraliza acá para que el panel de Configuraciones y
+   lo que ven los clientes usen el mismo criterio. */
 function aiProviderWorksHere(provider, externalProvider){
   if(provider === 'external' && externalProvider === 'openai') return false;
   return true;
@@ -3063,11 +3110,16 @@ function aiProviderWorksHere(provider, externalProvider){
 function renderAIAssistant(){
   const btn = document.getElementById('aiFloatBtn');
   const provider = settings.aiProvider || 'gemini';
-  const hasCreds = provider === 'openrouter'
-    ? !!(settings.aiOpenrouterKey && settings.aiModel)
-    : provider === 'external'
-      ? !!(settings.aiExternalKey && settings.aiExternalModel)
-      : !!settings.aiApiKey;
+  // La clave ya no vive en settings público: miramos el flag aiConfigured
+  // (lo refresca el servidor al guardar). Para tiendas viejas sin migrar,
+  // caemos al chequeo legacy si todavía tienen los campos de clave en el doc.
+  const hasCreds = (settings.aiConfigured !== undefined)
+    ? !!settings.aiConfigured
+    : provider === 'openrouter'
+      ? !!(settings.aiOpenrouterKey && settings.aiModel)
+      : provider === 'external'
+        ? !!(settings.aiExternalKey && settings.aiExternalModel)
+        : !!settings.aiApiKey;
   // A los clientes reales solo les mostramos el asistente si de verdad puede
   // responder en este chat — si el negocio dejó configurado un proveedor que
   // no funciona desde el navegador (ver aiProviderWorksHere), es mejor no
@@ -3270,16 +3322,17 @@ async function handleAISubmit(e){
   body.scrollTop = body.scrollHeight;
 
   try{
-    let data;
-    if(settings.aiProvider === 'openrouter'){
-      data = await callOpenRouterAI(userText);
-    } else if(settings.aiProvider === 'external'){
-      data = await callExternalAI(userText);
-    } else {
-      data = await callGeminiAI(userText);
-    }
+    aiMessages.push({ role:'user', content: userText });
+    if(aiMessages.length > 16) aiMessages = aiMessages.slice(-16);
+    const data = await cloudCall('aiChat', {
+      slug: TENANT_ID,
+      text: userText,
+      system: buildAiSystemInstruction(userText),
+      history: aiMessages.slice(0, -1)
+    });
     loadingMsg.remove();
     if(data && data.reply !== undefined){
+      aiMessages.push({ role:'assistant', content: data.reply });
       appendMessage(data.reply, 'bot');
       if(Array.isArray(data.productIdsToRecommend) && data.productIdsToRecommend.length){
         appendProductCarousel(data.productIdsToRecommend);
@@ -3288,290 +3341,24 @@ async function handleAISubmit(e){
       // JSON malformado del modelo — pedir que repita
       appendMessage('Perdón, no entendí bien eso. ¿Podés repetirlo?', 'bot');
     }
-    // data === undefined: el proveedor ya mostró su propio mensaje de error, no repetir
+    // data === undefined: el backend ya mostró su propio mensaje de error, no repetir
   }catch(error){
     loadingMsg.remove();
     console.error(error);
-    appendMessage('Tuve un problemita técnico. 🌿', 'bot');
-  }
-}
-
-/* ---------- Proveedor: Google Gemini ---------- */
-async function callGeminiAI(userText){
-  aiHistory.push({ role:'user', parts:[{ text: userText }] });
-  const MAX_TURNS = 8;
-  if(aiHistory.length > MAX_TURNS) aiHistory = aiHistory.slice(-MAX_TURNS);
-  const GEMINI_MODEL = settings.aiGeminiModel || 'gemini-2.0-flash';
-  const apiKey = settings.aiApiKey || '';
-  const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(GEMINI_MODEL) + ':generateContent?key=' + encodeURIComponent(apiKey);
-  const response = await fetch(apiUrl, {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({
-      contents: aiHistory,
-      systemInstruction: { parts:[{ text: buildAiSystemInstruction(userText) }] },
-      generationConfig: { responseMimeType:'application/json' }
-    })
-  });
-  const result = await response.json();
-  if(result.candidates && result.candidates[0] && result.candidates[0].content){
-    const jsonText = result.candidates[0].content.parts[0].text;
-    aiHistory.push({ role:'model', parts:[{ text: jsonText }] });
-    try{ return JSON.parse(jsonText); }catch(err){ return null; }
-  }
-  if(result.error){
-    appendMessage('No se pudo conectar con el asistente (revisá la clave de API en Configuraciones).', 'bot');
-    console.error(result.error);
-  }
-  return undefined; // ya se mostró un mensaje específico, no repetir el genérico
-}
-
-/* ---------- Helper: fetch a OpenRouter ----------
-   OpenRouter soporta llamadas CORS directas desde el navegador (es su forma
-   oficial de uso client-side), así que NO usamos ningún proxy público:
-   los proxys gratuitos (corsproxy.io, etc.) bloquean o eliminan el header
-   Authorization por seguridad, lo que hacía fallar el asistente aunque la
-   clave fuera correcta. Si esta página se sirve por https (Firebase Hosting,
-   por ejemplo) el fetch directo funciona sin nada más. */
-const OR_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
-const OR_MODELS_URL = 'https://openrouter.ai/api/v1/models';
-
-async function orFetch(url, options){
-  const referer = (location.origin && location.protocol !== 'file:')
-    ? location.origin
-    : 'https://prodigital.com';
-  // Headers de atribución de OpenRouter: son opcionales y el nombre correcto
-  // hoy es 'X-OpenRouter-Title' (el viejo 'X-Title' ya no está permitido por
-  // su CORS y hacía que el navegador bloqueara el preflight con "Failed to fetch").
-  const headers = Object.assign({}, options.headers || {}, {
-    'HTTP-Referer': referer,
-    'X-OpenRouter-Title': (typeof settings !== 'undefined' && settings.storeName) ? settings.storeName : 'PRO.DIGITAL'
-  });
-  try{
-    return await fetch(url, Object.assign({}, options, { headers }));
-  }catch(e1){
-    // Da contexto real en consola en vez de un mensaje genérico: si esto es
-    // "TypeError: Failed to fetch" desde una página https, casi siempre es
-    // adblocker/extensión, red caída, o (si se abrió con file://) que no hay
-    // forma de saltar CORS sin un backend propio.
-    console.error('orFetch: fallo de red hacia OpenRouter.', {
-      url, protocol: location.protocol, origin: location.origin, error: e1
-    });
-    throw e1;
-  }
-}
-
-/* ---------- Proveedor: OpenRouter (modelos gratuitos, elegidos por el negocio) ----------
-   OpenRouter usa el formato de mensajes estilo OpenAI (role/content). Guardamos el
-   historial en ese mismo formato para poder mandarlo tal cual en cada turno. */
-let aiHistoryOR = [];
-async function callOpenRouterAI(userText){
-  aiHistoryOR.push({ role:'user', content: userText });
-  const MAX_TURNS = 8;
-  if(aiHistoryOR.length > MAX_TURNS) aiHistoryOR = aiHistoryOR.slice(-MAX_TURNS);
-
-  const key = settings.aiOpenrouterKey || '';
-  const model = settings.aiModel || '';
-  if(!key || !model){
-    appendMessage('El asistente de OpenRouter no esta configurado (falta la clave o el modelo) — revisa Configuraciones.', 'bot');
-    return undefined;
-  }
-
-  let response;
-  try{
-    response = await orFetch(OR_ENDPOINT, {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer ' + key,
-        'X-OpenRouter-Title': (settings.storeName||'MarketCR') + ' — Asistente IA'
-      },
-      body: JSON.stringify({
-        model: model,
-        max_tokens: 800,
-        messages: [ { role:'system', content: buildAiSystemInstruction(userText) }, ...aiHistoryOR ]
-      })
-    });
-  }catch(networkErr){
-    console.error('OpenRouter network error:', networkErr);
-    const msg = location.protocol === 'file:'
-      ? 'No se pudo conectar con OpenRouter: esta página se abrió como archivo local (file://), y OpenRouter no permite eso por seguridad del navegador. Abrí la tienda desde su URL https (Firebase Hosting) en vez del archivo.'
-      : 'No se pudo conectar con OpenRouter. Revisa tu conexión a internet, que no haya un adblocker/extensión bloqueando openrouter.ai, y que la clave empiece con "sk-or-v1-". Detalle técnico en la consola del navegador (F12).';
+    const msg = (error && error.message && /quota|cuota|plan|permiso|configurado/.test(error.message))
+      ? error.message
+      : 'Tuve un problemita técnico. 🌿';
     appendMessage(msg, 'bot');
-    return undefined;
-  }
-
-  const rawText = await response.text();
-  let result;
-  try{ result = JSON.parse(rawText); }
-  catch(parseErr){
-    console.error('OpenRouter resp no-JSON:', response.status, rawText.slice(0,400));
-    appendMessage('OpenRouter respondio algo inesperado (codigo ' + response.status + '). Proba con otro modelo desde Configuraciones.', 'bot');
-    return undefined;
-  }
-
-  if(!response.ok || result.error){
-    const errMsg = (result.error && result.error.message) || ('HTTP ' + response.status);
-    console.error('OpenRouter error:', errMsg, result);
-    appendMessage('OpenRouter: ' + errMsg, 'bot');
-    return undefined;
-  }
-
-  const msg = result.choices && result.choices[0] && result.choices[0].message;
-  const text = msg && (msg.content || '');
-  if(!text){ console.error('OpenRouter sin contenido:', result); return null; }
-  aiHistoryOR.push({ role:'assistant', content: text });
-  try{
-    const clean = text.replace(/```json|```/g,'').trim();
-    return JSON.parse(clean);
-  }catch(err){
-    return { reply: text, productIdsToRecommend: [] };
   }
 }
 
-/* ---------- Proveedor: API externa (ChatGPT, Claude, Groq, Kimi, custom) ---------- */
-let aiHistoryEXT = [];
-async function callExternalAI(userText){
-  // Leer config desde settings (ya guardados) o desde el DOM si se llama desde testExternalConnection
-  const prov     = (document.getElementById('sAiExternalProvider') && document.getElementById('sAiProvider').value === 'external')
-                   ? document.getElementById('sAiExternalProvider').value
-                   : (settings.aiExternalProvider || 'openai');
-  const key      = (document.getElementById('sAiExternalKey') && document.getElementById('sAiProvider').value === 'external')
-                   ? document.getElementById('sAiExternalKey').value.trim()
-                   : (settings.aiExternalKey || '');
-  const model    = (document.getElementById('sAiExternalModel') && document.getElementById('sAiProvider').value === 'external')
-                   ? document.getElementById('sAiExternalModel').value.trim()
-                   : (settings.aiExternalModel || '');
-  const cfg      = EXTERNAL_PROVIDERS[prov] || EXTERNAL_PROVIDERS.custom;
-  const baseUrl  = (prov === 'custom')
-                   ? ((settings.aiExternalBaseUrl || document.getElementById('sAiExternalBaseUrl')?.value || '').trim().replace(/\/+$/,''))
-                   : cfg.baseUrl;
-
-  if(!key || !model){
-    appendMessage('El asistente externo no está configurado del todo (falta la clave o el modelo) — revisá Configuraciones.', 'bot');
-    return undefined;
-  }
-
-  // OpenAI bloquea las llamadas directas desde el navegador (no manda el
-  // header CORS necesario), así que cualquier intento acá siempre fallaría
-  // con un error de red confuso. Lo cortamos antes de perder tiempo con un
-  // fetch condenado a fallar y explicamos exactamente por qué.
-  if(prov === 'openai'){
-    appendMessage('El asistente no puede usar OpenAI directamente desde este chat (su API bloquea llamadas del navegador). Elegí OpenRouter, Claude o Groq en Configuraciones.', 'bot');
-    return undefined;
-  }
-
-  aiHistoryEXT.push({ role:'user', content: userText });
-  const MAX_TURNS = 8;
-  if(aiHistoryEXT.length > MAX_TURNS) aiHistoryEXT = aiHistoryEXT.slice(-MAX_TURNS);
-
-  /* Claude (Anthropic) usa un formato y endpoint distintos a OpenAI */
-  if(prov === 'claude'){
-    return await callClaudeDirectAPI(userText, key, model);
-  }
-
-  /* Todos los demás (OpenAI, Groq, Kimi, custom) usan el formato OpenAI */
-  let response;
-  try{
-    response = await fetch(baseUrl + '/chat/completions', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer ' + key
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: [ { role:'system', content: buildAiSystemInstruction(userText) }, ...aiHistoryEXT ],
-        max_tokens: 800
-      })
-    });
-  }catch(networkErr){
-    console.error('API externa network error:', networkErr);
-    appendMessage('No se pudo conectar con ' + prov + '. Revisá tu clave y conexión a internet.', 'bot');
-    return undefined;
-  }
-
-  const rawText = await response.text();
-  let result;
-  try{ result = JSON.parse(rawText); }
-  catch(e){
-    console.error('Respuesta no-JSON de', prov, response.status, rawText.slice(0,300));
-    appendMessage('La API de ' + prov + ' respondió algo inesperado (código ' + response.status + ').', 'bot');
-    return undefined;
-  }
-
-  if(!response.ok || result.error){
-    const errMsg = (result.error && (result.error.message || result.error.code)) || ('HTTP ' + response.status);
-    console.error('API externa error:', errMsg, result);
-    appendMessage('Error de ' + prov + ': ' + errMsg, 'bot');
-    return undefined;
-  }
-
-  const msg = result.choices && result.choices[0] && result.choices[0].message;
-  const text = msg && (msg.content || '');
-  if(!text){ console.error('API externa sin contenido:', result); return null; }
-  aiHistoryEXT.push({ role:'assistant', content: text });
-  try{
-    const clean = text.replace(/```json|```/g,'').trim();
-    return JSON.parse(clean);
-  }catch(e){
-    return { reply: text, productIdsToRecommend: [] };
-  }
-}
-
-/* Claude usa /v1/messages con formato diferente (no OpenAI-compatible en su endpoint nativo) */
-async function callClaudeDirectAPI(userText, key, model){
-  // Construir messages sin el system (Claude lo separa)
-  const msgs = aiHistoryEXT.map(m => ({ role: m.role, content: m.content }));
-  let response;
-  try{
-    response = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: model,
-        max_tokens: 800,
-        system: buildAiSystemInstruction(userText),
-        messages: msgs
-      })
-    });
-  }catch(networkErr){
-    console.error('Claude direct API network error:', networkErr);
-    appendMessage('No se pudo conectar con Claude (Anthropic). Revisá tu clave y conexión.', 'bot');
-    return undefined;
-  }
-
-  const rawText = await response.text();
-  let result;
-  try{ result = JSON.parse(rawText); }
-  catch(e){
-    appendMessage('Claude respondió algo inesperado (código ' + response.status + ').', 'bot');
-    return undefined;
-  }
-
-  if(!response.ok || result.error){
-    const errMsg = (result.error && (result.error.message || result.error.type)) || ('HTTP ' + response.status);
-    console.error('Claude API error:', errMsg, result);
-    appendMessage('Error de Claude: ' + errMsg, 'bot');
-    return undefined;
-  }
-
-  const text = result.content && result.content[0] && result.content[0].text;
-  if(!text){ return null; }
-  aiHistoryEXT.push({ role:'assistant', content: text });
-  try{
-    const clean = text.replace(/```json|```/g,'').trim();
-    return JSON.parse(clean);
-  }catch(e){
-    return { reply: text, productIdsToRecommend: [] };
-  }
-}
-
+/* ============================================================================
+   ASISTENTE DE IA — TODO el tráfico pasa por el backend (Cloud Functions
+   "aiChat"). El navegador ya NO tiene ni usa ninguna API key: las claves viven
+   en la subcolección PRIVADA tenants/{slug}/privateSettings/ai y solo el
+   servidor las lee (Admin SDK) para llamar a OpenRouter / Gemini / API externa.
+Cada tienda conserva su proveedor, modelo, prompt y clave (multi-tenant).
+   ============================================================================ */
 /* ---------- Configuraciones: proveedor de IA y catálogo de modelos de OpenRouter ---------- */
 function onAiProviderChange(){
   const provider = document.getElementById('sAiProvider').value;
@@ -3581,8 +3368,8 @@ function onAiProviderChange(){
   if(geminiBlock) geminiBlock.style.display = (provider === 'gemini') ? '' : 'none';
   if(orBlock) orBlock.style.display = (provider === 'openrouter') ? '' : 'none';
   if(extBlock) extBlock.style.display = (provider === 'external') ? '' : 'none';
-  // Limpiar todos los historiales al cambiar proveedor para evitar contexto cruzado
-  aiHistory = []; aiHistoryOR = []; aiHistoryEXT = [];
+// Limpiar el historial al cambiar proveedor para evitar contexto cruzado
+  aiMessages = [];
   aiWelcomeShown = false;
   const chatBody = document.getElementById('aiChatBody');
   if(chatBody) chatBody.innerHTML = '';
@@ -3612,134 +3399,91 @@ function onExternalProviderChange(){
   document.getElementById('sAiExternalStatus').textContent = '';
 }
 
-/* Cargar lista de modelos del proveedor externo (solo funciona en los que exponen GET /models) */
+/* ====== Configuración IA (admin): todo pasa por el backend. Las claves nunca
+   salen de tenants/{slug}/privateSettings/ai — el servidor las usa y devuelve
+   resultados sin exponerlas. ====== */
+
+/* Cargar lista de modelos del proveedor externo (a través del backend seguro) */
 async function loadExternalModels(){
   const prov = document.getElementById('sAiExternalProvider').value;
-  const key  = document.getElementById('sAiExternalKey').value.trim();
-  const cfg  = EXTERNAL_PROVIDERS[prov] || EXTERNAL_PROVIDERS.custom;
-  const baseUrl = (prov === 'custom')
-    ? (document.getElementById('sAiExternalBaseUrl').value.trim().replace(/\/+$/,''))
-    : cfg.baseUrl;
   const statusEl = document.getElementById('sAiExternalStatus');
-  statusEl.textContent = 'Cargando modelos…';
+  const modelInput = document.getElementById('sAiExternalModel');
+  const baseUrl = document.getElementById('sAiExternalBaseUrl') ? document.getElementById('sAiExternalBaseUrl').value.trim() : '';
+  statusEl.textContent = 'Cargando modelos (servidor)…';
   try{
-    // Claude usa endpoint distinto y autenticación diferente — usamos lista estática
     if(prov === 'claude'){
-      const modelInput = document.getElementById('sAiExternalModel');
+      // Claude no expone GET /models igual que los demás — lista estática
       if(!modelInput.value) modelInput.value = 'claude-haiku-4-5-20251001';
       statusEl.innerHTML = '<span style="color:var(--green)">✓ Modelos de Claude: ' + EXTERNAL_PROVIDERS.claude.models.join(', ') + '</span>';
       return;
     }
-    const headers = { 'Content-Type':'application/json' };
-    if(key) headers['Authorization'] = 'Bearer ' + key;
-    const res = await fetch(baseUrl + '/models', { headers });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    const list = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
-    if(!list.length) throw new Error('No se encontraron modelos');
-    const modelInput = document.getElementById('sAiExternalModel');
-    const current = modelInput.value;
-    // Mostrar lista como hint expandido
-    const names = list.map(m=>m.id||m.name).filter(Boolean);
+    const res = await cloudCall('aiModels', { slug: TENANT_ID, provider: 'external', providerName: prov, baseUrl });
+    const names = (res && Array.isArray(res.models)) ? res.models : [];
+    if(!names.length) throw new Error('No se encontraron modelos');
     statusEl.innerHTML = '<span style="color:var(--green)">✓ ' + names.length + ' modelos disponibles: ' + names.slice(0,8).join(', ') + (names.length > 8 ? '…' : '') + '</span>';
-    if(!current && names.length) modelInput.value = names[0];
+    if(!modelInput.value && names.length) modelInput.value = names[0];
     toast('Modelos cargados: ' + names.length, 'ok');
   }catch(err){
     console.error('loadExternalModels error:', err);
-    statusEl.innerHTML = '<span style="color:var(--danger)">✗ No se pudo cargar: ' + (err.message||'error desconocido') + '. Ingresá el modelo manualmente.</span>';
+    statusEl.innerHTML = '<span style="color:var(--danger)">✗ No se pudo cargar: ' + esc(err.message||'error desconocido') + '. Ingresá el modelo manualmente.</span>';
     // Si falla la carga, mostramos sugerencias hardcoded
     const cfg2 = EXTERNAL_PROVIDERS[prov];
-    if(cfg2?.models.length){
+    if(cfg2 && cfg2.models.length){
       const el = document.getElementById('sAiExternalModelSuggestions');
       if(el) el.textContent = cfg2.models.join(', ');
     }
   }
 }
 
-/* Prueba rápida de conexión OpenRouter */
+/* Prueba rápida de conexión OpenRouter (la hace el servidor con la clave guardada) */
 async function testOpenRouterConnection(){
   const statusEl = document.getElementById('sAiORStatus');
-  const key = document.getElementById('sAiOpenrouterKey').value.trim();
   const model = document.getElementById('sAiModel').value.trim();
-  if(!key){ statusEl.innerHTML = '<span style="color:var(--danger)">✗ Ingresá tu clave de OpenRouter primero.</span>'; return; }
   if(!model){ statusEl.innerHTML = '<span style="color:var(--danger)">✗ Cargá y seleccioná un modelo primero.</span>'; return; }
-  statusEl.innerHTML = '<span style="color:var(--muted)">Probando conexión…</span>';
+  statusEl.innerHTML = '<span style="color:var(--muted)">Probando conexión (desde el servidor)…</span>';
   try{
-    const response = await orFetch(OR_ENDPOINT, {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer ' + key,
-        'X-OpenRouter-Title': 'PRO.DIGITAL — Test'
-      },
-      body: JSON.stringify({
-        model: model,
-        max_tokens: 30,
-        messages:[{ role:'user', content:'Respondé solo con la palabra "ok".' }]
-      })
-    });
-    const json = await response.json();
-    if(!response.ok || json.error){
-      const msg = (json.error && json.error.message) || ('HTTP ' + response.status);
-      statusEl.innerHTML = '<span style="color:var(--danger)">✗ ' + esc(msg) + '</span>';
-      return;
+    const res = await cloudCall('aiTest', { slug: TENANT_ID, provider: 'openrouter', model });
+    if(res && res.ok){
+      statusEl.innerHTML = '<span style="color:var(--green)">✓ Conexión exitosa. Respuesta: "' + esc((res.reply||'ok').slice(0,60)) + '"</span>';
+    } else {
+      statusEl.innerHTML = '<span style="color:var(--danger)">✗ ' + esc((res && res.error) || 'Sin respuesta del servidor') + '</span>';
     }
-    const reply = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
-    statusEl.innerHTML = '<span style="color:var(--green)">✓ Conexión exitosa. Respuesta: "' + esc((reply||'').slice(0,60)) + '"</span>';
   }catch(e){
     statusEl.innerHTML = '<span style="color:var(--danger)">✗ ' + esc(e.message||'Error de red') + '</span>';
   }
 }
 
-/* Prueba rápida de conexión enviando "hola" */
+/* Prueba rápida de conexión de la API externa (desde el servidor, sin exponer la clave) */
 async function testExternalConnection(){
   const statusEl = document.getElementById('sAiExternalStatus');
-  statusEl.innerHTML = '<span style="color:var(--muted)">Probando conexión…</span>';
+  statusEl.innerHTML = '<span style="color:var(--muted)">Probando conexión (desde el servidor)…</span>';
   try{
-    const result = await callExternalAI('¿Podés responder "ok" en una palabra?');
-    if(result && result.reply){
-      statusEl.innerHTML = '<span style="color:var(--green)">✓ Conexión exitosa. Respuesta: "' + result.reply.slice(0,80) + '"</span>';
+const prov = document.getElementById('sAiExternalProvider').value;
+    const model = document.getElementById('sAiExternalModel').value.trim();
+    const baseUrl = document.getElementById('sAiExternalBaseUrl') ? document.getElementById('sAiExternalBaseUrl').value.trim() : '';
+    const res = await cloudCall('aiTest', { slug: TENANT_ID, provider: 'external', providerName: prov, model, baseUrl });
+    if(res && res.ok){
+      statusEl.innerHTML = '<span style="color:var(--green)">✓ Conexión exitosa. Respuesta: "' + esc((res.reply||'ok').slice(0,80)) + '"</span>';
     } else {
-      statusEl.innerHTML = '<span style="color:var(--danger)">✗ Respuesta vacía o inesperada del modelo.</span>';
+      statusEl.innerHTML = '<span style="color:var(--danger)">✗ ' + esc((res && res.error) || 'Respuesta vacía o inesperada del modelo') + '</span>';
     }
   }catch(e){
-    statusEl.innerHTML = '<span style="color:var(--danger)">✗ Error: ' + (e.message||'desconocido') + '</span>';
+    statusEl.innerHTML = '<span style="color:var(--danger)">✗ Error: ' + esc(e.message||'desconocido') + '</span>';
   }
 }
 
-/* Trae el catálogo público de modelos de OpenRouter y llena el <select> correspondiente
-   con los modelos gratuitos (":free"). kind='chat' llena el modelo del chat;
-   kind='image' llena el modelo del generador de fotos con fondo blanco (solo modelos
-   cuya salida incluya imagen, según metadata de OpenRouter). */
+/* Trae el catálogo de modelos de OpenRouter a través del backend (la clave
+   guardada la usa el servidor; el navegador no la ve). kind='chat' llena el
+   modelo del chat; kind='image' llena el del generador de fotos con fondo blanco. */
 async function loadOpenRouterModels(kind){
   const selId = kind === 'image' ? 'sAiImageModel' : 'sAiModel';
   const sel = document.getElementById(selId);
   if(!sel) return;
   const previous = sel.value;
-  sel.innerHTML = '<option value="">Cargando modelos…</option>';
+  sel.innerHTML = '<option value="">Cargando modelos (servidor)…</option>';
   try{
-    const key = document.getElementById('sAiOpenrouterKey').value.trim();
-    const res = await orFetch(OR_MODELS_URL, {
-      headers: key ? { 'Authorization':'Bearer ' + key } : {}
-    });
-    const json = await res.json();
-    if(!res.ok || json.error){
-      const errMsg = (json.error && json.error.message) || ('HTTP ' + res.status);
-      sel.innerHTML = '<option value="">Error: ' + esc(errMsg) + '</option>';
-      toast('OpenRouter: ' + errMsg, 'err');
-      return;
-    }
-    const all = (json && json.data) || [];
-    const isFree = m => (typeof m.id === 'string' && m.id.endsWith(':free')) ||
-      (m.pricing && parseFloat(m.pricing.prompt||'0') === 0 && parseFloat(m.pricing.completion||'0') === 0);
-    const supportsImageOut = m => {
-      const out = m.architecture && (m.architecture.output_modalities || m.architecture.modality);
-      if(Array.isArray(out)) return out.includes('image');
-      if(typeof out === 'string') return out.includes('image');
-      return false;
-    };
-    let filtered = all.filter(isFree);
-    if(kind === 'image') filtered = filtered.filter(supportsImageOut);
+    const res = await cloudCall('aiModels', { slug: TENANT_ID, kind });
+    const filtered = (res && Array.isArray(res.models)) ? res.models : [];
     if(!filtered.length){
       sel.innerHTML = '<option value="">' + (kind==='image' ? 'No hay modelos gratis con salida de imagen ahora mismo' : 'No se encontraron modelos gratis') + '</option>';
       toast(kind==='image' ? 'OpenRouter no tiene modelos gratuitos de imagen disponibles en este momento' : 'No se encontraron modelos gratuitos en OpenRouter', 'err');
@@ -3751,10 +3495,9 @@ async function loadOpenRouterModels(kind){
   }catch(err){
     console.error(err);
     sel.innerHTML = '<option value="">Error al cargar — probá de nuevo</option>';
-    toast('No se pudo consultar OpenRouter (revisá tu conexión o la clave)', 'err');
+    toast('No se pudieron cargar los modelos: ' + (err.message||'error'), 'err');
   }
 }
-
 /* ---------- selector de negocios (accesos rápidos a otras tiendas) ---------- */
 const BIZ_COLORS = ['#2E9E5B','#D97706','#2563EB','#DB2777','#7C3AED','#0D9488','#DC2626','#4B5563'];
 function bizColor(seed){
@@ -5314,87 +5057,37 @@ function addImageField(){
 function removeImageField(i){ pmImages.splice(i,1); if(!pmImages.length) pmImages.push(''); renderImageGrid(); }
 
 /* ---------- generador de fotos con fondo blanco (IA, exclusivo Plan Destacado) ----------
-   Toma la foto ya subida en el recuadro "slot", se la manda a un modelo de OpenRouter
-   con salida de imagen (elegido en Configuraciones > sAiImageModel) pidiéndole que
-   recorte/recompone el producto sobre un fondo blanco puro, y reemplaza esa foto por
-   el resultado. Requiere Plan Destacado + clave de OpenRouter + modelo de imagen configurados. */
+   La foto viaja al backend seguro (Cloud Function "aiImage"), que usa la clave
+   de OpenRouter guardada en privateSettings y devuelve la imagen ya editada.
+   El navegador no llega a ver la clave. */
 async function generateWhiteBackgroundImage(slot){
   if(!planAllows('ai-image')){ showPlanWall('ai-image'); return; }
   const sourceUrl = pmImages[slot];
   if(!sourceUrl){ toast('Subí primero una foto en ese recuadro', 'err'); return; }
-  const key = settings.aiOpenrouterKey || '';
   const model = settings.aiImageModel || '';
-  if(!key || !model){
-    toast('Configurá tu clave de OpenRouter y el modelo de imagen en Configuraciones → Asistente de IA', 'err');
+  if(!model){
+    toast('Configurá el modelo de imagen en Configuraciones → Asistente de IA', 'err');
     return;
   }
   const btn = document.getElementById('aiBgBtn' + slot);
   if(btn){ btn.disabled = true; btn.textContent = 'Generando…'; }
   try{
-    const response = await orFetch(OR_ENDPOINT, {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer ' + key,
-        'X-OpenRouter-Title': (settings.storeName||'MarketCR') + ' — Fondo blanco IA'
-      },
-      body: JSON.stringify({
-        model: model,
-        modalities: ['image','text'],
-        messages: [{
-          role:'user',
-          content: [
-            { type:'text', text: 'Editá esta foto de producto: colocá el producto sobre un fondo blanco puro (#FFFFFF), totalmente liso, con iluminación uniforme de estudio y sin sombras duras. No cambies el producto, su forma, color ni proporciones — solo reemplazá el fondo. Devolveme la imagen editada.' },
-            { type:'image_url', image_url:{ url: sourceUrl } }
-          ]
-        }]
-      })
-    });
-    const result = await response.json();
-    if(result.error){
-      toast('OpenRouter: ' + (result.error.message || 'no se pudo generar la imagen') , 'err');
-      console.error(result.error);
-      return;
+    const res = await cloudCall('aiImage', { slug: TENANT_ID, imageUrl: sourceUrl });
+    if(res && res.image){
+      pmImages[slot] = res.image;
+      renderImageGrid();
+      toast('Foto con fondo blanco generada ✨', 'ok');
+    } else {
+      toast((res && res.error) || 'El modelo elegido no devolvió una imagen. Probá con otro modelo de imagen en Configuraciones.', 'err');
     }
-    const newImg = extractOpenRouterImage(result);
-    if(!newImg){
-      toast('El modelo elegido no devolvió una imagen. Probá con otro modelo de imagen en Configuraciones.', 'err');
-      return;
-    }
-    pmImages[slot] = newImg;
-    renderImageGrid();
-    toast('Foto con fondo blanco generada ✨', 'ok');
   }catch(err){
     console.error(err);
-    toast('No se pudo conectar con OpenRouter para generar la imagen', 'err');
+    toast('No se pudo generar la imagen desde el servidor: ' + (err.message||'error'), 'err');
   }finally{
     // renderImageGrid() ya reconstruye el botón; esto solo cubre el caso de error donde no se re-renderiza
     const btn2 = document.getElementById('aiBgBtn' + slot);
     if(btn2){ btn2.disabled = false; btn2.textContent = 'Fondo blanco'; }
   }
-}
-
-/* La forma exacta de la respuesta de imagen varía según el modelo de OpenRouter.
-   Probamos las variantes más comunes documentadas por OpenRouter antes de rendirnos. */
-function extractOpenRouterImage(result){
-  const msg = result.choices && result.choices[0] && result.choices[0].message;
-  if(!msg) return null;
-  // Variante 1: message.images = [{ type:'image_url', image_url:{ url:'data:image/...;base64,...' } }]
-  if(Array.isArray(msg.images) && msg.images.length){
-    const first = msg.images[0];
-    const url = first.image_url && first.image_url.url;
-    if(url) return url;
-  }
-  // Variante 2: message.content = [{type:'image_url', image_url:{url:'data:...'}}, ...]
-  if(Array.isArray(msg.content)){
-    const imgPart = msg.content.find(p => p.type === 'image_url' && p.image_url && p.image_url.url);
-    if(imgPart) return imgPart.image_url.url;
-  }
-  // Variante 3: message.content es directamente una data URL en texto plano
-  if(typeof msg.content === 'string' && msg.content.trim().startsWith('data:image')){
-    return msg.content.trim();
-  }
-  return null;
 }
 
 /* ---------- fotos del negocio para el carrusel del landing (subidas como archivo, comprimidas a base64) ---------- */
@@ -6383,6 +6076,40 @@ let pendingLogoDataUrl = null;
    Firebase Storage. null = sin cambios pendientes; '' = el admin lo quitó. */
 let pendingWebIcon = null;
 let pendingBingoIcon = null;
+/* ---------- claves enmascaradas (estado privado vía backend aiStatus) ----------
+   El navegador NUNCA recibe la clave real: el servidor devuelve solo una
+   versión enmascarada (ej: sk-or-v1-****abcd) y si existe. El admin la ve
+   para saber que está guardada y puede reemplazarla escribiendo una nueva. */
+let _masked = { openrouter:'', gemini:'', external:'' };
+async function refreshMaskedAiKeys(){
+  const setMask = (id, masked, exists, placeholder) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(exists && masked){
+      el.value = masked;
+      el.placeholder = placeholder;
+    } else {
+      el.value = '';
+      el.placeholder = placeholder;
+    }
+  };
+  try{
+    const st = await cloudCall('aiStatus', { slug: TENANT_ID });
+    if(!st) return;
+    const orSt = st.openrouter || {};
+    const gmSt = st.gemini || {};
+    const exSt = st.external || {};
+    _masked.openrouter = orSt.masked || '';
+    _masked.gemini = gmSt.masked || '';
+    _masked.external = exSt.masked || '';
+    setMask('sAiOpenrouterKey', _masked.openrouter, !!orSt.exists, orSt.exists ? ('Guardada: ' + _masked.openrouter + ' — escribí una nueva para reemplazarla') : 'sk-or-v1-...');
+    setMask('sAiKey', _masked.gemini, !!gmSt.exists, gmSt.exists ? ('Guardada: ' + _masked.gemini + ' — escribí una nueva para reemplazarla') : 'Pegá tu API key de Gemini');
+    setMask('sAiExternalKey', _masked.external, !!exSt.exists, exSt.exists ? ('Guardada: ' + _masked.external + ' — escribí una nueva para reemplazarla') : 'sk-... o la clave del proveedor elegido');
+  }catch(e){
+    console.warn('aiStatus no disponible (¿Cloud Functions desplegadas?):', e && e.message);
+  }
+}
+
 function loadSettingsForm(){
   document.getElementById('sName').value = settings.storeName;
   document.getElementById('sTag').value = settings.tagline;
@@ -6419,14 +6146,15 @@ function loadSettingsForm(){
   document.getElementById('sFacturaCondicion').value = settings.facturaCondicion || '01';
   document.getElementById('sFacturaDocumento').value = settings.facturaDocumento || '01';
   document.getElementById('sFacturaDigital').checked = !!settings.facturaDigital;
-  document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
-  document.getElementById('sAiKey').value = settings.aiApiKey||'';
+document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
+  /* Las claves de API ya NO viven en settings público: se muestran enmascaradas
+     (sk-or-****abcd) desde el estado privado vía el backend (aiStatus). */
+  refreshMaskedAiKeys();
   const geminiModelEl = document.getElementById('sAiGeminiModel');
   if(geminiModelEl) geminiModelEl.value = settings.aiGeminiModel || 'gemini-2.0-flash';
   document.getElementById('sAiWelcome').value = settings.aiWelcomeMsg||'';
   document.getElementById('sAiEnabled').checked = !!settings.aiEnabled;
   document.getElementById('sAiProvider').value = settings.aiProvider || 'gemini';
-  document.getElementById('sAiOpenrouterKey').value = settings.aiOpenrouterKey || '';
   document.getElementById('sAiSystemPrompt').value = settings.aiSystemPrompt || '';
   // Deja el modelo guardado como única opción hasta que el negocio cargue la lista de OpenRouter
   const aiModelSel = document.getElementById('sAiModel');
@@ -6434,10 +6162,8 @@ function loadSettingsForm(){
   const aiImgModelSel = document.getElementById('sAiImageModel');
   if(aiImgModelSel) aiImgModelSel.innerHTML = settings.aiImageModel ? '<option value="'+esc(settings.aiImageModel)+'">'+esc(settings.aiImageModel)+'</option>' : '<option value="">— Cargá los modelos primero —</option>';
   // Campos de API externa
-  const extProvEl = document.getElementById('sAiExternalProvider');
+const extProvEl = document.getElementById('sAiExternalProvider');
   if(extProvEl) extProvEl.value = settings.aiExternalProvider || 'openai';
-  const extKeyEl = document.getElementById('sAiExternalKey');
-  if(extKeyEl) extKeyEl.value = settings.aiExternalKey || '';
   const extModelEl = document.getElementById('sAiExternalModel');
   if(extModelEl) extModelEl.value = settings.aiExternalModel || '';
   const extBaseEl = document.getElementById('sAiExternalBaseUrl');
@@ -6563,9 +6289,20 @@ async function runLegacyMigration(){
   try{
     const migrated = { settings:false, products:0, orders:0 };
 
-    const legacySettingsSnap = await db.collection('settings').doc('store').get();
+const legacySettingsSnap = await db.collection('settings').doc('store').get();
     if(legacySettingsSnap.exists){
-      await settingsRef.set(legacySettingsSnap.data(), { merge:true });
+      const legacyData = Object.assign({}, legacySettingsSnap.data());
+      // Seguridad: nunca copiar claves de IA al doc público; si el formato viejo
+      // las traía, se llevan directo a privateSettings (privado).
+      const privKeys = {};
+      ['aiOpenrouterKey','aiApiKey','aiExternalKey'].forEach(k => {
+        if(typeof legacyData[k] === 'string' && legacyData[k].trim() !== ''){
+          privKeys[k] = legacyData[k];
+          delete legacyData[k];
+        }
+      });
+      await settingsRef.set(legacyData, { merge:true });
+      if(Object.keys(privKeys).length) await privateSettingsRef.set(privKeys, { merge:true });
       migrated.settings = true;
     }
 
@@ -6653,7 +6390,12 @@ async function saveSettings(){
     showPlanWall('ai-assistant');
     return;
   }
-  const cats = document.getElementById('sCats').value.split(',').map(s=>s.trim()).filter(Boolean);
+const cats = document.getElementById('sCats').value.split(',').map(s=>s.trim()).filter(Boolean);
+  /* Claves de API: nunca van al documento público. Se extraen acá para
+     escribirlas en privateSettings (privado) y NO se incluyen en "data". */
+  const newGemKey = document.getElementById('sAiKey').value.trim();
+  const newORKey  = document.getElementById('sAiOpenrouterKey').value.trim();
+  const newExtKey = document.getElementById('sAiExternalKey').value.trim();
   const data = {
     storeName:name,
     tagline:document.getElementById('sTag').value.trim(),
@@ -6684,18 +6426,16 @@ async function saveSettings(){
     storyVideoUrl2:document.getElementById('sStoryVideoUrl2').value.trim(),
     storyVideoUrl3:document.getElementById('sStoryVideoUrl3').value.trim(),
     storyVideoUrl4:document.getElementById('sStoryVideoUrl4').value.trim(),
-    aiEnabled: document.getElementById('sAiEnabled').checked,
-    aiApiKey: document.getElementById('sAiKey').value.trim(),
+aiEnabled: document.getElementById('sAiEnabled').checked,
+    aiConfigured: false, // se corrige tras guardar, con el estado real del backend
     aiGeminiModel: (document.getElementById('sAiGeminiModel').value.trim() || 'gemini-2.0-flash'),
     aiAssistantName: document.getElementById('sAiName').value.trim() || 'Cana',
     aiWelcomeMsg: document.getElementById('sAiWelcome').value.trim() || DEFAULT_SETTINGS.aiWelcomeMsg,
     aiProvider: (['openrouter','external','gemini'].includes(document.getElementById('sAiProvider').value) ? document.getElementById('sAiProvider').value : 'gemini'),
-    aiOpenrouterKey: document.getElementById('sAiOpenrouterKey').value.trim(),
     aiModel: document.getElementById('sAiModel').value.trim(),
     aiImageModel: document.getElementById('sAiImageModel').value.trim(),
     aiSystemPrompt: document.getElementById('sAiSystemPrompt').value.trim(),
     aiExternalProvider: document.getElementById('sAiExternalProvider').value || 'openai',
-    aiExternalKey: document.getElementById('sAiExternalKey').value.trim(),
     aiExternalModel: document.getElementById('sAiExternalModel').value.trim(),
     aiExternalBaseUrl: (document.getElementById('sAiExternalBaseUrl') ? document.getElementById('sAiExternalBaseUrl').value.trim() : ''),
     logoUrl: pendingLogoDataUrl !== null ? pendingLogoDataUrl : (settings.logoUrl||''),
@@ -6704,8 +6444,27 @@ async function saveSettings(){
     categoria: document.getElementById('sCategoriaProf').value.trim(),
     servicios: document.getElementById('sServiciosProf').value.split(',').map(s=>s.trim()).filter(Boolean)
   };
-  try{
+try{
     await saveSettingsToDB(data);
+    /* Migración de seguridad: si este tenant todavía tenía claves en el doc
+       público (formato viejo), se mueven a privateSettings y se eliminan de
+       settings para que ningún visitante pueda leerlas. */
+    await migrateStoreKeys(TENANT_ID);
+    /* Escribir claves NUEVAS en privateSettings. Dejar el campo vacío (o con
+       el valor enmascarado) = conservar la clave guardada. */
+    const priv = {};
+    if(newORKey && newORKey !== _masked.openrouter) priv.aiOpenrouterKey = newORKey;
+    if(newGemKey && newGemKey !== _masked.gemini) priv.aiApiKey = newGemKey;
+    if(newExtKey && newExtKey !== _masked.external) priv.aiExternalKey = newExtKey;
+    if(Object.keys(priv).length) await privateSettingsRef.set(priv, { merge:true });
+    /* Refrescar el flag público "aiConfigured" con el estado real del backend
+       (el navegador no puede saber si hay clave: solo el servidor). */
+    try{
+      const st = await cloudCall('aiStatus', { slug: TENANT_ID });
+      if(st && typeof st.configured === 'boolean' && st.configured !== settings.aiConfigured){
+        await settingsRef.update({ aiConfigured: st.configured });
+      }
+    }catch(_e){ /* sin funciones desplegadas: se mantiene el flag actual */ }
     // Mantiene sincronizados el nombre, la descripción, el logo, las fotos
     // y el tipo de negocio (tienda / profesional) de esta tienda con su
     // tarjeta en la pantalla de inicio (tenants/{slug}), así lo que se
@@ -7498,6 +7257,34 @@ async function saSaveEditModal(){
   }
 }
 
+/* Migración masiva de seguridad (superadmin): mueve las claves de IA de todos
+   los tenants que aún las tengan en el doc público settings/store hacia la
+   subcolección privada privateSettings/ai y las elimina del público. Con esto
+   ninguna clave queda expuesta a los visitantes. */
+async function saMigrateAiKeys(){
+  const status = document.getElementById('saMigrateStatus');
+  if(!confirm('¿Migrar las claves de IA (OpenRouter/Gemini/API externa) de TODAS las tiendas al almacén privado? Se moverán las claves que aún estén en settings públicos y se borrarán de ahí. Los datos actuales no se pierden.')) return;
+  if(!_saTenants || !_saTenants.length){
+    try{ await loadSuperadminData(); }catch(e){}
+  }
+  status.textContent = 'Migrando…';
+  status.style.color = 'var(--muted)';
+  const slugs = (_saTenants || []).map(t => t.id).filter(Boolean);
+  let total = 0, errores = 0;
+  for(const slug of slugs){
+    try{
+      const res = await migrateStoreKeys(slug);
+      total += res.moved || 0;
+    }catch(e){
+      errores++;
+      console.warn('saMigrateAiKeys:', slug, e && e.message);
+    }
+  }
+  status.style.color = total || errores ? (errores ? 'var(--danger)' : 'var(--ok,#1B7A43)') : 'var(--ok,#1B7A43)';
+  status.textContent = 'Migración lista: ' + total + ' clave(s) movida(s) a privateSettings' + (errores ? (' · ' + errores + ' tienda(s) con error (revisá consola)') : '') + '.';
+  toast('Migración de claves IA completada', total || errores ? 'ok' : 'ok');
+}
+
 /* ---------- eliminar un negocio por completo (tienda + subcolecciones) ---------- */
 async function saDeleteCollectionDocs(colRef){
   const snap = await colRef.get();
@@ -7518,10 +7305,11 @@ async function saDeleteTenant(id){
   const check = prompt('Para confirmar, escribí exactamente el slug del negocio:\n' + id);
   if(check !== id){ toast('Eliminación cancelada: el texto no coincide', 'err'); return; }
   try{
-    const ref = db.collection('tenants').doc(id);
+const ref = db.collection('tenants').doc(id);
     await saDeleteCollectionDocs(ref.collection('products'));
     await saDeleteCollectionDocs(ref.collection('orders'));
     await saDeleteCollectionDocs(ref.collection('settings'));
+    await saDeleteCollectionDocs(ref.collection('privateSettings'));
     await saDeleteCollectionDocs(ref.collection('analytics'));
     await ref.delete();
     _saTenants = _saTenants.filter(x => x.id !== id);
