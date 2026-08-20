@@ -36,6 +36,43 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* ===================== ETIQUETA (tag) Y TOTALES INVENTARIO ===================== */
+.prod-tag{
+  display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.3px;
+  padding:2px 8px;border-radius:999px;background:var(--ruby-soft);color:var(--ruby-dark);
+  border:1px solid var(--line);text-transform:uppercase;
+}
+.inv-totals-line{font-size:12.5px;color:var(--muted);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap}
+.inv-totals-line b{color:var(--ink)}
+/* ===================== POS: con cuánto paga / vuelto ===================== */
+.pos-paid-wrap{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.pos-paid-wrap label{font-size:12.5px;font-weight:700;color:var(--muted)}
+.pos-paid-wrap input{
+  width:130px;padding:8px 10px;border-radius:var(--radius);border:1px solid var(--line);
+  font-size:15px;font-weight:700;background:var(--card);color:var(--ink);
+}
+.pos-change-box{
+  font-size:14px;font-weight:800;padding:8px 12px;border-radius:var(--radius);
+  background:var(--green-soft);color:var(--green-dark);
+}
+.pos-change-box.bad{background:var(--danger-soft);color:var(--danger)}
+.pos-quick-chip{
+  padding:6px 12px;font-size:12px;font-weight:700;border-radius:999px;cursor:pointer;
+  background:var(--ruby-soft);color:var(--ruby-dark);border:1px solid var(--line);
+}
+/* ===================== MODAL SCANNER QR ===================== */
+.qrscan-stage{width:100%;max-width:340px;aspect-ratio:1/1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin:0 auto}
+.qrscan-stage video{width:100%;height:100%;object-fit:cover}
+.qrscan-stage .placeholder{color:#8a94a6;font-size:13px;text-align:center;padding:20px}
+/* ===================== ETIQUETA IMPRIMIBLE QR ===================== */
+.qr-label{text-align:center;font-family:var(--font);padding:14px;page-break-after:inside}
+.qr-label img{width:150px;height:150px;border:1px solid #ddd;border-radius:8px;padding:4px;background:#fff}
+.qr-label .nm{font-weight:800;font-size:15px;color:#111}
+.qr-label .pr{font-weight:700;font-size:13px;color:#555;margin-top:2px}
+@media print{
+  .qr-label{page-break-inside:avoid}
+}
 button{font-family:var(--font);cursor:pointer;border:none;background:none}
 input,select,textarea{font-family:var(--font);font-size:14px}
 img{max-width:100%}
@@ -45,9 +82,9 @@ img{max-width:100%}
 /* ============ TIENDA (CLIENTES) ============ */
 .store-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
 .store-header-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 20px}
-.brand{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;letter-spacing:.5px}
-.brand .logo{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2E9E5B,#0F5A30);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.brand .logo svg{width:24px;height:24px}
+.brand{display:flex;align-items:center;gap:12px;font-size:24px;font-weight:800;letter-spacing:.5px}
+.brand .logo{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2E9E5B,#0F5A30);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(15,90,48,.25)}
+.brand .logo svg{width:32px;height:32px}
 .brand .logo img,.adm-brand .logo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .search-wrap{flex:1;max-width:560px;margin-left:auto;position:relative}
 .search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#9CA3AF}
@@ -561,6 +598,50 @@ body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float{disp
 .panel.active{display:block;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
+/* Logo del negocio dentro de las facturas (pantalla y PDF) */
+.inv-logo{width:52px;height:52px;border-radius:14px;object-fit:cover;margin-right:12px;flex-shrink:0;display:inline-block;vertical-align:middle}
+
+/* ============ PUNTO DE VENTA PARA EMPLEADOS ============ */
+.emp-access-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green-dark);padding:10px 12px;border-radius:10px;flex-shrink:0;transition:.15s}
+.emp-access-btn:hover{background:var(--green-soft)}
+.emp-access-btn svg{width:16px;height:16px}
+/* Vista de empleado: sin sidebar, solo el panel POS a pantalla completa */
+body.employee-view .adm-sidebar{display:none}
+body.employee-view .adm-main{padding:0}
+body.employee-view .panel{display:none}
+body.employee-view #panel-pos{display:block}
+body.employee-view .emp-topbar{display:flex}
+body.employee-view .panel.pos-contained{padding-bottom:60px}
+body.employee-view #posExportCierre,
+body.employee-view #posHistoryWrap,
+body.employee-view #posShareWaRow{display:none !important}
+.emp-topbar{display:none;position:sticky;top:0;z-index:60;background:linear-gradient(135deg,#0F5A30,#2E9E5B);color:#fff;align-items:center;gap:10px;padding:10px 16px;flex-wrap:wrap}
+.emp-topbar .t{flex:1;font-weight:800;font-size:15px}
+.emp-topbar .t span{font-weight:600;font-size:12px;opacity:.9;display:block}
+.emp-topbar .chip{background:rgba(255,255,255,.18);color:#fff;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.emp-topbar .btn{background:rgba(255,255,255,.2);color:#fff;padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+.emp-topbar .btn:hover{background:rgba(255,255,255,.32)}
+.emp-table-wrap{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+.emp-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.emp-table th{text-align:left;font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.emp-table td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.emp-table tr:last-child td{border-bottom:none}
+.emp-badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+.emp-badge.on{background:var(--green-soft);color:var(--green-dark)}
+.emp-badge.off{background:var(--danger-soft);color:var(--danger)}
+.pin-mask{font-family:monospace;letter-spacing:2px;color:var(--muted)}
+.pos-seller-filter{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.pos-seller-filter label{font-size:12.5px;font-weight:700;color:var(--muted)}
+.pos-operator-tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--green-dark);background:var(--green-soft);padding:6px 12px;border-radius:999px;margin-left:8px}
+.pos-share-link{width:100%;padding:9px 12px;border:1px dashed var(--line);border-radius:8px;background:#F9FAFB;font-size:12.5px;color:var(--muted);margin-top:8px}
+@media(max-width:640px){
+  .emp-table{font-size:12.5px}
+  .emp-table th,.emp-table td{padding:8px 8px}
+  .inv-logo{width:44px;height:44px;margin-right:8px}
+  .emp-topbar{padding:8px 10px;gap:6px}
+  .emp-topbar .t{font-size:13px}
+}
+
 .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
 .stat-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
 .stat-card .lbl{font-size:12.5px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:7px}
@@ -743,18 +824,34 @@ body.is-admin-view #sAiConfigSuperBlock{display:none !important}
    ocultos viven dentro del drawer). En desktop se muestran todos como antes. */
 @media(max-width:860px){
   .mobile-menu-btn{display:flex}
-  .store-header-inner{flex-wrap:nowrap;gap:8px;padding:10px 14px}
+.store-header-inner{flex-wrap:nowrap;gap:8px;padding:10px 14px}
   .store-header-inner .admin-link{display:none}
   .store-header-inner .back-to-selector{display:none}
   .search-wrap{order:0;max-width:none;flex:1;margin-left:0}
-  .brand{font-size:18px}
-  .brand .logo{width:36px;height:36px}
+  .brand{font-size:19px;gap:9px}
+  .brand .logo{width:48px;height:48px}
   .cart-btn{width:42px;height:42px}
 }
 @media(max-width:480px){
   .brand span#brandName{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
   .search-wrap svg{left:10px}
   .search-input{padding:10px 12px 10px 36px;font-size:13px}
+}
+/* Móvil: grilla y cabecera proporcionadas */
+@media (max-width:640px){
+  .product-grid{padding:10px 10px 96px;gap:10px;grid-template-columns:repeat(2,1fr)}
+  .p-card{border-radius:14px}
+  .p-body{padding:9px 10px 12px}
+  .p-name{font-size:13.5px}
+  .p-price{font-size:14.5px}
+  .p-foot{gap:6px}
+  .p-stock{top:6px;left:6px;font-size:10px;padding:3px 7px}
+  .add-btn{width:33px;height:33px}
+  .add-btn svg{width:16px;height:16px}
+  .p-img svg{width:54px;height:54px}
+  .toolbar{padding:8px 10px;gap:8px;flex-wrap:wrap}
+  .store-header-inner{gap:8px;padding:10px 12px}
+  .cart-btn,.mobile-menu-btn{width:40px;height:40px}
 }
 
 /* ============ ASISTENTE DE COMPRAS IA ============ */
@@ -1068,6 +1165,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 </head>
 <body>
 
+
 <!-- ================= SELECTOR DE NEGOCIOS (ESTILO TREINTA) =================
      Se muestra cuando la URL no trae "?tienda=slug" (o el slug no existe /
      está desactivado). Lista todos los negocios activos de la plataforma;
@@ -1141,6 +1239,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5 15.4 6.5M8.6 13.5 15.4 17.5"/></svg>
         <span>Compartir</span>
       </button>
+      <button class="admin-link emp-access-btn" id="storeEmpBtn" onclick="openEmployeeLogin()" title="Punto de venta para empleados">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 20v-6h8v6M2 10h20"/></svg>
+        <span>POS empleados</span>
+      </button>
       <button class="cart-btn" id="headerCartBtn" onclick="toggleCart(true)" title="Ver carrito">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/></svg>
         <span class="cart-badge" id="cartBadge" style="display:none">0</span>
@@ -1174,9 +1276,14 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         Compartir tienda
       </button>
       <div class="m-divider"></div>
-      <button class="m-item" onclick="toggleMobileMenu();location.href=location.pathname">
+<button class="m-item" onclick="toggleMobileMenu();location.href=location.pathname">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
         Ver otros negocios
+      </button>
+      <div class="m-divider"></div>
+      <button class="m-item" onclick="toggleMobileMenu();openEmployeeLogin()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 20v-6h8v6M2 10h20"/></svg>
+        POS empleados
       </button>
       <div class="m-divider"></div>
       <button class="m-item" onclick="toggleMobileMenu();openLogin()">
@@ -1369,8 +1476,24 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <h3>Clave de la tienda</h3>
       <p>Esta tienda tiene una clave adicional. Ingresala para entrar al panel.</p>
       <div class="f-group" style="text-align:left"><label>Clave de tienda</label><input class="f-input" type="password" id="storePass" name="storePass" autocomplete="off" placeholder="••••••••" onkeydown="if(event.key==='Enter')verifyStorePassword()"></div>
-      <button class="btn-primary" onclick="verifyStorePassword()">Verificar clave</button>
+<button class="btn-primary" onclick="verifyStorePassword()">Verificar clave</button>
       <p class="hint" style="margin-top:12px;cursor:pointer" onclick="cancelStorePasswordStep()">Cancelar e ingresar con otra cuenta</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL ACCESO EMPLEADO (POS) ================= -->
+<div class="modal" id="employeeLoginModal">
+  <div class="modal-bg" onclick="closeEmployeeLogin()"></div>
+  <div class="modal-card login-card">
+    <div class="modal-body" style="padding:30px 26px">
+      <div class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 20v-6h8v6M2 10h20"/></svg></div>
+      <h3>Punto de venta — Empleados</h3>
+      <p>Ingresá con el código y PIN que te dio el administrador del negocio.</p>
+      <div class="f-group" style="text-align:left"><label>Código de empleado</label><input class="f-input" type="text" id="empCode" autocomplete="off" placeholder="EMP-001" onkeydown="if(event.key==='Enter')document.getElementById('empPin').focus()"></div>
+      <div class="f-group" style="text-align:left"><label>PIN de acceso</label><input class="f-input" type="password" id="empPin" inputmode="numeric" autocomplete="off" placeholder="••••••" onkeydown="if(event.key==='Enter')doEmployeeLogin()"></div>
+      <button class="btn-primary" onclick="doEmployeeLogin()">Ingresar a la caja</button>
+      <p class="hint" style="margin-top:12px" id="empLoginHint">¿No tenés credenciales? Pedíselas al administrador.</p>
     </div>
   </div>
 </div>
@@ -1431,8 +1554,11 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <button class="adm-link" data-panel="pos" onclick="showPanel('pos',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 20v-6h8v6M2 10h20"/></svg><span>Punto de venta</span>
       </button>
-      <button class="adm-link" data-panel="finance" onclick="showPanel('finance',this)">
+<button class="adm-link" data-panel="finance" onclick="showPanel('finance',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Finanzas diarias</span>
+      </button>
+      <button class="adm-link" data-panel="employees" onclick="showPanel('employees',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Empleados</span>
       </button>
       <button class="adm-link" onclick="viewStore()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5M3 9v11h18V9M3 9h18M9 20v-7h6v7"/></svg><span>Ver tienda</span>
@@ -1957,8 +2083,13 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
     </section>
 
     <!-- PUNTO DE VENTA -->
-    <section class="panel" id="panel-pos">
-      <div class="adm-title">Punto de Venta</div>
+<section class="panel pos-contained" id="panel-pos">
+      <div class="emp-topbar" id="empTopbar">
+        <div class="t">🛒 <span id="empStoreName">Tienda</span></div>
+        <span class="chip" id="empOperatorName">Operador</span>
+        <button class="btn" onclick="employeeLogout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Salir de la caja</button>
+      </div>
+      <div class="adm-title">Punto de Venta<span class="pos-operator-tag" id="posOperatorLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span id="posOperatorName">Administrador</span></span></div>
       <div class="adm-sub">Ventas rápidas en tienda física. Afecta el inventario y se registra en finanzas diarias automáticamente.</div>
 
       <div class="pos-finanzas">
@@ -1968,14 +2099,17 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div class="pos-day-card"><div class="lbl">Unidades vendidas</div><div class="val" id="posUnitsToday">0</div></div>
       </div>
 
-      <div class="adm-toolbar" style="margin-bottom:14px">
+<div class="adm-toolbar" style="margin-bottom:14px">
         <div class="search-wrap" style="max-width:340px;flex:1;margin:0">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input class="search-input" id="posSearch" placeholder="Buscar producto…" oninput="renderPOSCatalog()">
+          <input class="search-input" id="posSearch" placeholder="Buscar por nombre, tag o código…" oninput="renderPOSCatalog()" onkeydown="if(event.key==='Enter')posSearchEnter()">
         </div>
         <select class="sort-select" id="posCatFilter" onchange="renderPOSCatalog()"><option value="">Todas las categorías</option></select>
-        <button class="btn-export" onclick="exportPOSPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9.5 14.5 12 17l2.5-2.5"/></svg>Exportar cierre</button>
+        <button class="btn-export" onclick="openScannerModal()" title="Leer QR o código de barras con la cámara para vender rápido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>📷 Scanner</button>
+        <button class="btn-export" id="posExportCierre" onclick="exportPOSPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9.5 14.5 12 17l2.5-2.5"/></svg>Exportar cierre</button>
+        <button class="btn-export" style="width:auto;font-size:12px" onclick="toggleLaserMode()" id="laserModeBtn">🔦 Láser</button>
       </div>
+      <div class="hint" style="margin-bottom:10px;font-size:12px;color:var(--muted)">⚡ <b>Caja rápida:</b> escaneá la etiqueta QR del producto (cámara o láser) y se agrega solo a la venta. Escribí el nombre y usá <b>Enter</b> para agregar el primer resultado.</div>
 
       <div class="pos-layout">
         <div>
@@ -1988,7 +2122,16 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <div class="pos-total-row"><span>Subtotal</span><span id="posSub">₡0</span></div>
           <div class="pos-total-row" id="posDiscountRow" style="display:none"><span>Descuento</span><span id="posDiscount">−₡0</span></div>
           <div class="pos-total-row"><span>IVA</span><span id="posIva">₡0</span></div>
-          <div class="pos-total-row grand"><span>TOTAL</span><span id="posTotal">₡0</span></div>
+<div class="pos-total-row grand"><span>TOTAL</span><span id="posTotal">₡0</span></div>
+          <div class="pos-paid-wrap">
+            <label>💵 Con cuánto paga</label>
+            <input id="posPaid" inputmode="numeric" min="0" step="100" placeholder="0" oninput="posCalcChange()">
+            <button type="button" class="pos-quick-chip" onclick="posSetPaid('exacto')">Exacto</button>
+            <button type="button" class="pos-quick-chip" onclick="posSetPaid(5000)">₡5.000</button>
+            <button type="button" class="pos-quick-chip" onclick="posSetPaid(10000)">₡10.000</button>
+            <button type="button" class="pos-quick-chip" onclick="posSetPaid(20000)">₡20.000</button>
+          </div>
+          <div class="pos-total-row" style="margin-top:6px"><span>Vuelto</span><span id="posChange" class="pos-change-box">₡0</span></div>
           <div class="pos-cobro-actions">
             <button class="btn-dark btn-pos-cobro" onclick="posChangeMethod('efectivo')">💵 Efectivo</button>
             <button class="btn-dark btn-pos-cobro" onclick="posChangeMethod('sinpe')">📱 SINPE</button>
@@ -1997,15 +2140,33 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           </div>
           <div class="pos-total-row" style="margin-top:10px;padding:8px 10px;background:var(--yellow-soft);border-radius:10px"><span>Método de pago</span><b id="posPaymentLabel">Efectivo</b></div>
           <button class="btn-primary" id="posCobrarBtn" style="width:100%;margin-top:10px" onclick="confirmPOSSale()">Cobrar venta</button>
+<button class="btn-ghost" id="posShareWaBtn" style="width:100%;margin-top:8px;display:none" onclick="shareLastPOSSaleWhatsApp()">📤 Enviar factura por WhatsApp</button>
         </div>
       </div>
 
-      <div style="margin-top:26px">
+      <div class="modal" id="scannerModal">
+        <div class="modal-card" style="max-width:420px">
+          <div class="modal-head"><h3>📷 Escanear producto</h3><button class="modal-x" onclick="closeScannerModal()">✕</button></div>
+          <div class="desc">Apuntá al <b>QR de la etiqueta</b> o al código de barras del producto. Al detectarlo se agrega automáticamente a la venta.</div>
+          <div class="qrscan-stage" id="scanStage"><div class="placeholder" id="scanPlaceholder">Iniciando cámara…</div><video id="scanVideo" autoplay playsinline muted style="display:none"></video></div>
+          <div id="scanStatus" style="font-size:13px;margin-top:10px;color:var(--muted);text-align:center"></div>
+          <div class="desc" id="scanFallback" style="display:none;margin-top:8px;color:#92400E;font-weight:700">⚠️ Tu navegador no soporta la detección automática de QR por cámara.<br>Usá la etiqueta con el <b>lector láser</b> (apuntá y escaneá) o escribí el nombre y presioná Enter.</div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn-ghost" style="flex:1" onclick="closeScannerModal()">Cerrar</button>
+          </div>
+        </div>
+      </div>
+
+<div style="margin-top:26px" id="posHistoryWrap">
         <h4 style="font-size:15px;margin-bottom:12px">Ventas del día</h4>
+        <div class="pos-seller-filter" id="posSellerFilterWrap">
+          <label>Vendedor:</label>
+          <select class="sort-select" id="posSellerFilter" onchange="renderPOSDashboard()"><option value="">Todos los vendedores</option></select>
+        </div>
         <div style="overflow-x:auto">
           <table class="inv-table-adm">
-            <thead><tr><th>Factura</th><th>Hora</th><th>Productos</th><th>Método</th><th>Total</th><th style="text-align:right">Acciones</th></tr></thead>
-            <tbody id="posHistoryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Aún no hay ventas hoy.</td></tr></tbody>
+<thead><tr><th>Factura</th><th>Hora</th><th>Productos</th><th>Método</th><th>Vendedor</th><th>Total</th><th style="text-align:right">Acciones</th></tr></thead>
+            <tbody id="posHistoryBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Aún no hay ventas hoy.</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -2049,7 +2210,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div id="finExpenseList" style="overflow-x:auto"><div style="color:var(--muted);padding:8px 0">Sin gastos hoy.</div></div>
       </div>
 
-      <div class="finance-card">
+<div class="finance-card">
         <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Resumen del día</h4>
         <div style="overflow-x:auto">
           <table class="mini-table" style="width:100%">
@@ -2059,7 +2220,52 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
       </div>
     </section>
+
+    <!-- EMPLEADOS DEL PUNTO DE VENTA -->
+    <section class="panel" id="panel-employees">
+      <div class="adm-title">Empleados</div>
+      <div class="adm-sub">Dale acceso al punto de venta a tu personal. Cada empleado entra con su código y PIN, vende y factura desde su propia caja. Acá ves el historial de ventas de cada vendedor.</div>
+
+      <div class="inv-actions" style="gap:8px;margin-bottom:18px">
+        <button class="btn-primary" style="width:auto" onclick="openEmployeeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:16px;height:16px"><path d="M12 5v14M5 12h14"/></svg>Agregar empleado
+        </button>
+        <button class="btn-export" style="width:auto" onclick="sharePOSLink()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5 15.4 6.5M8.6 13.5 15.4 17.5"/></svg>Compartir acceso POS
+        </button>
+      </div>
+
+      <div class="emp-table-wrap">
+        <table class="emp-table">
+          <thead><tr><th>Código</th><th>Nombre</th><th>PIN</th><th>Estado</th><th>Ventas</th><th>Total vendido</th><th style="text-align:right">Acciones</th></tr></thead>
+          <tbody id="empBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Cargando empleados…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="hint" style="margin-top:14px;font-size:12.5px;color:var(--muted)">💡 <b>Compartir acceso:</b> presioná "Compartir acceso POS" y enviá el enlace a tu personal. Cada empleado entra con su <b>código</b> y su <b>PIN</b>. Las ventas quedan registradas con el nombre del vendedor y podés filtrarlas en el punto de venta.</div>
+    </section>
   </main>
+</div>
+
+<!-- ================= MODAL EMPLEADO (ADMIN) ================= -->
+<div class="modal" id="employeeModal">
+  <div class="modal-bg" onclick="closeEmployeeModal()"></div>
+  <div class="modal-card" style="max-width:460px">
+    <div class="modal-head"><h3 id="emModalTitle">Nuevo empleado</h3>
+      <button class="close-x" onclick="closeEmployeeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="emId">
+      <div class="f-group"><label>Nombre del empleado</label><input class="f-input" id="emName" placeholder="Ej: María Pérez"></div>
+      <div class="f-group"><label>Código de empleado</label><input class="f-input" id="emCode" placeholder="EMP-001" onkeydown="if(event.key==='Enter')document.getElementById('emPin').focus()"></div>
+      <div class="f-group"><label>PIN de acceso</label><input class="f-input" id="emPin" type="password" inputmode="numeric" autocomplete="off" placeholder="Mínimo 4 dígitos" onkeydown="if(event.key==='Enter')saveEmployee()"></div>
+      <div class="hint" style="margin-top:-6px;font-size:12px">El empleado usa este PIN junto con su código para entrar al punto de venta. Guardalo y compartilo solo con él.</div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn-ghost" style="flex:1" onclick="closeEmployeeModal()">Cancelar</button>
+        <button class="btn-primary" style="flex:1" onclick="saveEmployee()">Guardar empleado</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ================= MODAL PRODUCTO (ADMIN) ================= -->
@@ -2088,8 +2294,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
               </button>
               <div class="hint" style="margin-top:6px">✨ El botón morado <b>"Fondo blanco"</b> sobre cada foto genera automáticamente una versión con fondo blanco usando IA (OpenRouter). Es exclusivo del <b>Plan Destacado</b> y requiere tener configurado un modelo de imagen en Configuraciones → Asistente de IA.</div>
             </div>
-            <div class="f-group"><label>Nombre del producto <span class="req">*</span></label><input class="f-input" id="pName" placeholder="Ej: Monstera Deliciosa"></div>
+<div class="f-group"><label>Nombre del producto <span class="req">*</span></label><input class="f-input" id="pName" placeholder="Ej: Monstera Deliciosa"></div>
             <div class="f-group"><label>Categoría</label><select class="f-input" id="pCat"></select></div>
+            <div class="f-group"><label>Etiqueta (tag) <span class="hint" style="display:inline">(corta, para etiquetar en el inventario — ej: NOVEDAD, OFERTA, BEST SELLER)</span></label><input class="f-input" id="pTag" placeholder="NOVEDAD"></div>
+            <div class="f-group"><label>Costo de compra (₡) <span class="hint" style="display:inline">(para calcular total de costo del inventario)</span></label><input class="f-input" id="pCost" type="number" min="0" step="100" placeholder="3500"></div>
             <div class="toggle-row">
               <div><b>Mostrar producto en catálogo</b><div class="hint" style="margin-top:2px">Este producto será visible para tus clientes</div></div>
               <label class="toggle-switch"><input type="checkbox" id="pActive" checked><span class="slider"></span></label>
@@ -4366,6 +4574,35 @@ function shareProductQR(id){
   document.getElementById('shareModal').classList.add('show');
   trackShare();
 }
+/* QR del POS: codifica el ID del producto para que la cámara o el láser
+   lo lean en el punto de venta y lo agreguen directo a la venta. */
+function posProductQRData(id){ return TENANT_ID + ':' + id; }
+function resolveScanCode(code){
+  const s = String(code||'').trim();
+  if(!s) return null;
+  let id = s;
+  const m = s.match(/[?&]p=([^&]+)/);
+  if(m) id = decodeURIComponent(m[1]);
+  else if(s.indexOf(':') > -1) id = s.split(':').pop();
+  return products.find(x=>x.id===id) || null;
+}
+/* Etiqueta imprimible por producto: QR + nombre + precio (para caja rápida). */
+function printProductLabel(id){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  const data = posProductQRData(id);
+  const qr = 'https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=' + encodeURIComponent(data);
+  const label = '<div class="qr-label">' +
+    '<div style="font-weight:800;font-size:18px;color:#111">' + esc(settings.storeName || '') + '</div>' +
+    '<img src="' + qr + '" alt="QR">' +
+    '<div class="nm">' + esc(p.name) + '</div>' +
+    (p.tag ? '<div class="prod-tag" style="color:#5B21B6;background:#F5E9FB;margin-top:6px">' + esc(p.tag) + '</div>' : '') +
+    '<div class="pr">' + displayPrice(p) + '</div>' +
+    '</div>';
+  document.getElementById('printArea').innerHTML = label;
+  window.print();
+  document.getElementById('printArea').innerHTML = '';
+}
 function pvSelectThumb(i){
   pvShowMedia(pvCurrentMedia, i);
   document.querySelectorAll('#pvThumbs .th').forEach(el=>el.classList.toggle('active', +el.dataset.i===i));
@@ -4709,7 +4946,8 @@ function invoiceHTML(order){
     const prodImg = it.image ? '<img src="' + esc(it.image) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;vertical-align:middle;margin-right:8px">' : '';
     return '<tr><td>' + prodImg + esc(it.name) + '</td><td class="c">' + it.qty + '</td><td class="r">' + fmt(it.price) + '</td><td class="r">' + fmt(it.price*it.qty) + '</td></tr>';
   }).join('');
-  return '<div class="inv-head">' +
+return '<div class="inv-head">' +
+      (settings.logoUrl ? '<img class="inv-logo" src="' + esc(settings.logoUrl) + '" alt="Logo">' : '') +
       '<div><div class="store">' + esc(settings.storeName) + '</div><div class="meta">' + esc(settings.tagline) + '</div></div>' +
       '<div class="inv-num"><b>FACTURA ' + order.number + '</b><span>' + fecha + '</span></div>' +
     '</div>' +
@@ -4835,11 +5073,217 @@ async function doLogout(){
   document.body.classList.remove('in-admin');
   toast('Sesión cerrada');
 }
+
+/* ================= PUNTO DE VENTA PARA EMPLEADOS =================
+   Cada empleado vive en tenants/{slug}/employees/{codigo}. El PIN se
+   guarda con hash (igual que la clave de tienda) y el administrador lo
+   administra desde el panel Empleados. El empleado entra con su código
+   y PIN, vende y factura, y cada venta queda marcada con su nombre. */
+let employees = [];
+let employeeSession = null;
+
+function employeeCol(){ return tenantCol('employees'); }
+function hashEmployeePin(code, pin){
+  return sha256Hex('emp:' + (TENANT_ID||'') + ':' + String(code).trim().toUpperCase() + ':' + pin);
+}
+function listenEmployees(){
+  employeeCol().onSnapshot(snap=>{
+    employees = snap.docs.map(d=>Object.assign({ id: d.id }, d.data()));
+    if(document.body.classList.contains('in-admin') && !employeeSession){
+      renderEmployees();
+      populatePOSSellerFilter();
+    }
+  }, err=>{ console.error(err); });
+}
+/* ---------- Sesiom: acceso de empleado ---------- */
+function openEmployeeLogin(){
+  if(employeeSession){ enterEmployeePOS(); return; }
+  document.getElementById('empCode').value = '';
+  document.getElementById('empPin').value = '';
+  document.getElementById('employeeLoginModal').classList.add('show');
+  setTimeout(()=>document.getElementById('empCode').focus(), 100);
+}
+function closeEmployeeLogin(){
+  document.getElementById('employeeLoginModal').classList.remove('show');
+}
+async function doEmployeeLogin(){
+  const code = document.getElementById('empCode').value.trim().toUpperCase();
+  const pin = document.getElementById('empPin').value;
+  if(!code || !pin){ toast('Ingresá tu código y PIN', 'err'); return; }
+  const emp = employees.find(e => String(e.code||'').toUpperCase() === code);
+  if(!emp || emp.enabled === false){
+    toast('Empleado no encontrado o desactivado. Consultá al administrador.', 'err');
+    return;
+  }
+  const hash = await hashEmployeePin(code, pin);
+  if(hash !== emp.pinHash){
+    toast('PIN incorrecto', 'err');
+    return;
+  }
+  employeeSession = emp;
+  closeEmployeeLogin();
+  enterEmployeePOS();
+  toast('Bienvenido/a, ' + emp.name, 'ok');
+}
+function updateEmployeeTopbar(){
+  const s = document.getElementById('empStoreName');
+  if(s) s.textContent = settings.storeName || TENANT_DATA.nombre || 'Tienda';
+  const op = document.getElementById('empOperatorName');
+  if(op) op.textContent = (employeeSession ? employeeSession.name : 'Administrador');
+  const po = document.getElementById('posOperatorName');
+  if(po) po.textContent = employeeSession ? employeeSession.name : (auth.currentUser ? auth.currentUser.email : 'Administrador');
+}
+function enterEmployeePOS(){
+  employeeSession = employeeSession || { name:'Cajero' };
+  document.body.classList.add('in-admin');
+  document.body.classList.remove('is-admin-view');
+  document.body.classList.add('employee-view');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.adm-link[data-panel]').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-pos').classList.add('active');
+  updateEmployeeTopbar();
+  renderHeader();
+  renderPOSCatalog(); renderPOSCart();
+  document.getElementById('posSellerFilter') && (document.getElementById('posSellerFilter').value = '');
+  toast('Caja lista. Vende escaneando, buscando o tocando un producto.', 'ok');
+}
+function employeeLogout(){
+  employeeSession = null;
+  document.body.classList.remove('employee-view','in-admin');
+  toast('Sesión de caja cerrada');
+  renderHeader();
+}
+/* ---------- Panel Empleados (CRUD del administrador) ---------- */
+function employeesRef(){ return employeeCol(); }
+function genEmpCode(){
+  let n = 1;
+  const used = new Set(employees.map(e=>e.code));
+  while(used.has('EMP-' + String(n).padStart(3,'0'))) n++;
+  return 'EMP-' + String(n).padStart(3,'0');
+}
+function openEmployeeModal(id){
+  const em = id ? employees.find(e=>e.id===id) : null;
+  document.getElementById('emModalTitle').textContent = em ? 'Editar empleado' : 'Nuevo empleado';
+  document.getElementById('emId').value = (em && em.id) || '';
+  document.getElementById('emName').value = (em && em.name) || '';
+  document.getElementById('emCode').value = (em && em.code) || (id ? '' : genEmpCode());
+  document.getElementById('emCode').disabled = !!em;
+  document.getElementById('emPin').value = '';
+  document.getElementById('emPin').placeholder = em ? 'Dejalo vacío para no cambiarlo' : 'Mínimo 4 dígitos';
+  document.getElementById('employeeModal').classList.add('show');
+  setTimeout(()=>document.getElementById('emName').focus(), 100);
+}
+function closeEmployeeModal(){
+  document.getElementById('employeeModal').classList.remove('show');
+}
+async function saveEmployee(){
+  const id = document.getElementById('emId').value;
+  const name = document.getElementById('emName').value.trim();
+  const code = (document.getElementById('emCode').value.trim().toUpperCase() || genEmpCode());
+  const pin = document.getElementById('emPin').value;
+  if(!name){ toast('Poné el nombre del empleado', 'err'); return; }
+  if(!id && !code){ toast('Falta el código del empleado', 'err'); return; }
+  if(employees.some(e => e.id !== id && String(e.code||'').toUpperCase() === code)){
+    toast('Ya existe un empleado con el código ' + code, 'err');
+    return;
+  }
+  if(!id && String(pin).length < 4){
+    toast('El PIN debe tener al menos 4 caracteres', 'err');
+    return;
+  }
+  const payload = { name, code, enabled: true };
+  if(pin) payload.pinHash = await hashEmployeePin(code, pin);
+  const docRef = id ? employeesRef().doc(id) : employeesRef().doc(code);
+  await docRef.set(payload, { merge: true });
+  closeEmployeeModal();
+  toast(id ? 'Empleado actualizado' : 'Empleado creado. Compartí su código y PIN con él.', 'ok');
+}
+async function deleteEmployee(id){
+  const em = employees.find(e=>e.id===id);
+  if(!em) return;
+  if(!confirm('¿Eliminar a "' + em.name + '" del punto de venta? Podrás volver a crearlo después.')) return;
+  await employeeCol().doc(id).delete();
+  toast(em.name + ' eliminado', 'ok');
+}
+async function toggleEmployee(id){
+  const em = employees.find(e=>e.id===id);
+  if(!em) return;
+  const next = em.enabled === false;
+  await employeeCol().doc(id).set({ enabled: next }, { merge: true });
+  toast((next ? 'Empleado activado' : 'Empleado desactivado') + ' — ' + em.name, 'ok');
+}
+function resetEmployeePin(id){
+  const em = employees.find(e=>e.id===id);
+  if(!em) return;
+  openEmployeeModal(id);
+  document.getElementById('emModalTitle').textContent = 'Cambiar PIN — ' + em.name;
+  toast('Escribí el nuevo PIN para ' + em.name, 'ok');
+}
+function renderEmployees(){
+  const body = document.getElementById('empBody');
+  if(!body) return;
+  if(!employees.length){
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Todavía no hay empleados. Creá el primero con "Agregar empleado".</td></tr>';
+    return;
+  }
+  body.innerHTML = employees.map(em => {
+    const sales = posSales.filter(s => (s.sellerId||'') === em.code);
+    const total = sales.reduce((s,x)=>s+(x.total||0),0);
+    const on = em.enabled !== false;
+    return '<tr>' +
+      '<td><b>' + esc(em.code||'') + '</b></td>' +
+      '<td>' + esc(em.name) + '</td>' +
+      '<td class="pin-mask">••••••</td>' +
+      '<td><span class="emp-badge ' + (on?'on':'off') + '">' + (on?'Activo':'Inactivo') + '</span></td>' +
+      '<td>' + sales.length + '</td>' +
+      '<td><b>' + fmt(total) + '</b></td>' +
+      '<td style="text-align:right;white-space:nowrap">' +
+        '<button class="icon-btn" title="Ver ventas de ' + esc(em.name) + '" onclick="showSellerSales(\'' + esc(em.code) + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
+        '<button class="icon-btn" title="Cambiar PIN" onclick="resetEmployeePin(\'' + esc(em.id) + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/><path d="M12 12v4"/></svg></button>' +
+        '<button class="icon-btn" title="' + (on?'Desactivar':'Activar') + '" onclick="toggleEmployee(\'' + esc(em.id) + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></button>' +
+        '<button class="icon-btn danger" title="Eliminar" onclick="deleteEmployee(\'' + esc(em.id) + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
+      '</td></tr>';
+  }).join('');
+}
+/* Ver las ventas de un vendedor: abre POS y filtra el historial del día */
+function showSellerSales(code){
+  switchPanel('pos');
+  const sel = document.getElementById('posSellerFilter');
+  if(sel){ sel.value = code; }
+  renderPOSDashboard();
+  toast('Mostrando ventas del vendedor ' + code, 'ok');
+}
+function populatePOSSellerFilter(){
+  const sel = document.getElementById('posSellerFilter');
+  if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Todos los vendedores</option>' +
+    (employeeSession ? '<option value="' + esc(employeeSession.code||'') + '">' + esc(employeeSession.name) + '</option>' : '') +
+    employees.map(e => '<option value="' + esc(e.code) + '">' + esc(e.name) + '</option>').join('');
+  sel.value = cur;
+}
+/* Compartir la ventana del POS con el personal (link + WhatsApp) */
+function sharePOSLink(){
+  if(!TENANT_ID){ toast('Falta el identificador del negocio', 'err'); return; }
+  const url = location.origin + location.pathname + '?tienda=' + TENANT_ID + '&pos=1';
+  const msg = 'Hola 👋 Te comparto el acceso al PUNTO DE VENTA de ' + (settings.storeName || TENANT_ID) + '.\n\nAbrí este enlace e ingresá con tu código y PIN de empleado:\n' + url;
+  const copyDone = () => { toast('Enlace copiado. Envialo a tu personal por WhatsApp.', 'ok'); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(copyDone).catch(copyDone);
+  } else { copyDone(); }
+  if(settings.whatsapp){
+    window.open('https://wa.me/' + waDigits(settings.whatsapp) + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  }
+}
 function enterAdmin(){
+  document.body.classList.remove('employee-view');
+  employeeSession = null;
   document.body.classList.add('in-admin');
   renderHeader(); listenOrdersIfAdmin(); renderInventory(); loadSettingsForm();
   listenPOSIfAdmin(); listenFinanceIfAdmin();
   loadAnalytics();
+  populatePOSSellerFilter();
+  updateEmployeeTopbar();
   // Verificar expiración completa: recordatorio 24h, suspensión y revertir plan
   checkMembershipExpiry().then(()=>{
     checkAndRevertExpiredPlan().then(()=>{ updatePlanLockBanner(); });
@@ -4899,7 +5343,7 @@ function refreshAdminSession(){
   isAdminSession = emailOk && (!needsStorePass || storePasswordVerified);
   // Marca el body: admin de tienda (no superadmin) → oculta la config avanzada de IA por CSS
   document.body.classList.toggle('is-admin-view', !superAdmin);
-  if(!isAdminSession && document.body.classList.contains('in-admin')){
+  if(!isAdminSession && !employeeSession && document.body.classList.contains('in-admin')){
     document.body.classList.remove('in-admin');
   }
 }
@@ -4915,17 +5359,23 @@ function showPanel(name, btn){
     showPlanWall(featureKey);
     return; // bloquear navegación
   }
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   document.querySelectorAll('.adm-link[data-panel]').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  if(name!=='pos' && laserModeOn && typeof toggleLaserMode === 'function'){
+    laserModeOn = false; laserBuf = '';
+    const b = document.getElementById('laserModeBtn');
+    if(b){ b.textContent = '🔦 Láser'; b.style.background = ''; b.style.color = ''; }
+  }
   if(name==='stats'){ renderStats(); loadAnalytics(); }
   if(name==='inventory') renderInventory();
   if(name==='orders') renderOrders();
   if(name==='settings') loadSettingsForm();
   if(name==='membership') loadMembershipPanel();
-  if(name==='pos'){ renderPOSCatalog(); renderPOSCart(); renderPOSDashboard(); listenFinanceIfAdmin(); }
+if(name==='pos'){ renderPOSCatalog(); renderPOSCart(); renderPOSDashboard(); listenFinanceIfAdmin(); }
   if(name==='finance'){ listenFinanceIfAdmin(); renderFinancePanel(); }
+  if(name==='employees') renderEmployees();
 }
 /* Helper para cambiar panel desde código (sin botón) */
 function switchPanel(panelId){
@@ -5200,11 +5650,40 @@ async function exportCategoriesPDF(){
 }
 
 /* ---------- inventario ---------- */
+function inventoryTotals(){
+  let value = 0, cost = 0, units = 0;
+  for(const p of products){
+    if(p.active === false) continue;
+    if(p.hasVariants){
+      const av = activeVariants(p) || [];
+      for(const v of av){
+        const q = +(v.stock||0);
+        units += q;
+        value += (+(v.price!=null?v.price:p.price)||0) * q;
+        cost += (+(v.cost!=null?v.cost:p.cost)||0) * q;
+      }
+    } else {
+      if(p.unlimited) continue;
+      const q = +(p.stock||0);
+      units += q;
+      value += (+(p.price)||0) * q;
+      cost += (+(p.cost)||0) * q;
+    }
+  }
+  return { value, cost, units };
+}
 function renderInventory(){
   const q = (document.getElementById('invSearch').value||'').toLowerCase().trim();
-  const list = products.filter(p => !q || p.name.toLowerCase().includes(q));
-  document.getElementById('invSummary').textContent =
-    products.length + ' referencias · ' + products.filter(p=>{const c=stockInfo(p).cls; return c==='low'||c==='out';}).length + ' con stock bajo o agotado';
+  const list = products.filter(p => !q || p.name.toLowerCase().includes(q) || (p.tag||'').toLowerCase().includes(q) || (p.cat||'').toLowerCase().includes(q));
+  const invTot = inventoryTotals();
+  const lowCount = products.filter(p=>{const c=stockInfo(p).cls; return c==='low'||c==='out';}).length;
+  document.getElementById('invSummary').innerHTML =
+    '<div>' + products.length + ' referencias · ' + lowCount + ' con stock bajo o agotado</div>' +
+    '<div class="inv-totals-line">' +
+      '<span>Valor de venta: <b id="invTotalValue">' + fmt(invTot.value) + '</b></span>' +
+      '<span>Costo total: <b id="invTotalCost">' + fmt(invTot.cost) + '</b></span>' +
+      '<span>Ganancia potencial: <b id="invTotalMargin" style="color:var(--green)">' + fmt(invTot.value - invTot.cost) + '</b></span>' +
+    '</div>';
   document.getElementById('invBody').innerHTML = list.map(p => {
     const st = stockInfo(p);
     const g = gradFor(p.id);
@@ -5217,12 +5696,13 @@ function renderInventory(){
     const statusSel = '<select class="prod-status-sel st-' + manual + '" title="Estado del producto" onchange="setProductStatus(\'' + p.id + '\', this.value)">' +
       Object.keys(PROD_STATUS).map(k=>'<option value="'+k+'"'+(manual===k?' selected':'')+'>'+PROD_STATUS[k].lbl+'</option>').join('') +
       '</select>';
-    return '<tr>' +
-      '<td><div class="tbl-prod">' + thumb + '<span>' + esc(p.name) + '<div class="tbl-cat">' + esc(p.cat) + (p.hasVariants ? ' · ' + activeVariants(p).length + ' ' + esc((p.variantGroupName||'variantes').toLowerCase()) : '') + '</div></span></div></td>' +
+return '<tr>' +
+      '<td><div class="tbl-prod">' + thumb + '<span>' + esc(p.name) + (p.tag ? ' <span class="prod-tag">' + esc(p.tag) + '</span>' : '') + '<div class="tbl-cat">' + esc(p.cat) + (p.hasVariants ? ' · ' + activeVariants(p).length + ' ' + esc((p.variantGroupName||'variantes').toLowerCase()) : '') + '</div></span></div></td>' +
       '<td><b>' + displayPrice(p) + '</b></td>' +
       '<td>' + (p.unlimited ? '<span class="pill blue">Servicio</span>' : totalStock) + '</td>' +
       '<td>' + statusSel + (st.cls==='low' ? '<div class="tbl-cat" style="margin-top:4px;color:#B45309">Pocas unidades</div>' : '') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
+        '<button class="icon-btn" title="Etiqueta con QR (imprimir)" onclick="printProductLabel(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6"/><rect x="4" y="2" width="16" height="20" rx="2"/></svg></button>' +
         '<button class="icon-btn" title="Compartir QR" onclick="shareProductQR(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM21 14v7M14 21h1"/></svg></button>' +
         '<button class="icon-btn" title="Editar" onclick="openProductModal(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>' +
         '<button class="icon-btn danger" title="Eliminar" onclick="deleteProduct(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
@@ -5475,9 +5955,11 @@ function openProductModal(id){
     if(!p) return;
     document.getElementById('pmTitle').textContent = 'Editar producto';
     document.getElementById('pId').value = p.id;
-    document.getElementById('pName').value = p.name;
+document.getElementById('pName').value = p.name;
     document.getElementById('pDesc').value = p.desc||'';
     document.getElementById('pPrice').value = p.price;
+    document.getElementById('pTag').value = p.tag||'';
+    document.getElementById('pCost').value = p.cost || '';
     document.getElementById('pStock').value = p.unlimited ? '' : p.stock;
     catSel.value = p.cat;
     document.getElementById('pIcon').value = p.icon||'leaf';
@@ -5495,8 +5977,8 @@ function openProductModal(id){
     document.getElementById('pDealHours').value = '';
     pmReviews = (p.reviews && p.reviews.length) ? p.reviews.map(r=>Object.assign({},r)) : [];
   } else {
-    document.getElementById('pmTitle').textContent = 'Crear producto';
-    ['pId','pName','pDesc','pPrice','pStock','pVideoUrl','pVideoLink','pTiktokUrl'].forEach(i=>document.getElementById(i).value='');
+document.getElementById('pmTitle').textContent = 'Crear producto';
+    ['pId','pName','pDesc','pPrice','pTag','pCost','pStock','pVideoUrl','pVideoLink','pTiktokUrl'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('pIcon').value = 'leaf';
     document.getElementById('pUnlimited').checked = false;
     document.getElementById('pActive').checked = true;
@@ -5570,8 +6052,10 @@ async function saveProduct(){
   // acelerador de carga.
   const thumbs = images.length ? await buildThumbsFor(images) : [];
 
-  const data = {
+const data = {
     name, desc:document.getElementById('pDesc').value.trim(), price,
+    tag:(document.getElementById('pTag').value||'').trim(),
+    cost:Math.max(0, parseFloat(document.getElementById('pCost').value)||0),
     stock, unlimited, cat:document.getElementById('pCat').value,
     icon:document.getElementById('pIcon').value, active:document.getElementById('pActive').checked,
     images, thumbs,
@@ -5629,7 +6113,7 @@ function renderOrders(){
         Object.keys(STATUS).map(k=>'<option value="'+k+'"'+(o.status===k?' selected':'')+'>'+STATUS[k].lbl+'</option>').join('') +
       '</select></td>' +
       '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="icon-btn" title="Ver detalle" onclick="viewOrder(\'' + o.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
+        '<button class="icon-btn" title="Ver factura" onclick="viewOrder(\'' + o.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
         '<a class="icon-btn" title="WhatsApp del cliente" target="_blank" href="https://wa.me/' + waDigits(o.customer.phone) + '?text=' + encodeURIComponent('Hola ' + o.customer.name + ', te contactamos de ' + settings.storeName + ' por tu pedido ' + o.number + '.') + '"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg></a>' +
         '<button class="icon-btn danger" title="Eliminar" onclick="deleteOrder(\'' + o.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
       '</td></tr>';
@@ -5667,15 +6151,19 @@ function viewOrder(num){
       (o.status!=='entregado' ? '<button class="btn-primary" style="width:auto;padding:9px 16px" onclick="setOrderStatus(\'' + o.number + '\',\'entregado\')">Marcar como entregado</button>' : '') +
       (o.status==='recibido' ? '<button class="btn-ghost" style="width:auto;padding:9px 16px" onclick="setOrderStatus(\'' + o.number + '\',\'confirmado\')">Confirmar pago</button>' : '') +
     '</div>';
-  document.getElementById('orderDetail').innerHTML =
+document.getElementById('orderDetail').innerHTML =
     '<div style="margin-bottom:12px"><span class="pill ' + st.cls + '">' + st.lbl + '</span></div>' +
-    '<div class="uber-track-admin">' + orderStepsHTML(o) + '</div>' +
-    quickBtns +
-    '<div class="invoice">' + invoiceHTML(o) + '</div>' +
+    '<div class="invoice" id="orderDetailInvoice">' + invoiceHTML(o) + '</div>' +
     '<div class="inv-actions" style="padding:16px 0 0">' +
       '<button class="btn-ghost" onclick="printInvoice()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir factura</button>' +
-    '</div>';
+    '</div>' +
+    quickBtns +
+    '<div class="uber-track-admin">' + orderStepsHTML(o) + '</div>';
   document.getElementById('orderModal').classList.add('show');
+  setTimeout(()=>{
+    const inv = document.getElementById('orderDetailInvoice');
+    if(inv){ inv.scrollIntoView({behavior:'smooth', block:'center'}); }
+  }, 80);
 }
 
 /* ---------- PUNTO DE VENTA (POS) ----------
@@ -5684,6 +6172,7 @@ function viewOrder(num){
    documento diario de "finance" (tenants/{slug}/finance/YYYY-MM-DD). */
 let posCart = {};          // clave = cartKey(id, variantId); valor = {qty}
 let posPaymentMethod = 'efectivo';
+let lastPOSSale = null;    // última venta de POS (para compartir factura por WhatsApp)
 let posSales = [];
 let financeToday = null;   // doc diario de finanzas (caché)
 let unsubPosSales = null;
@@ -5798,7 +6287,14 @@ function posQty(key, delta){
   renderPOSCart();
 }
 function posRemove(key){ delete posCart[key]; renderPOSCart(); }
-function posClearCart(){ posCart = {}; renderPOSCart(); toast('Venta limpiada'); }
+function posClearCart(){
+  posCart = {};
+  document.getElementById('posPaid') && (document.getElementById('posPaid').value='');
+  document.getElementById('posChange') && (document.getElementById('posChange').textContent = fmt(0));
+  const sh = document.getElementById('posShareWaBtn'); if(sh) sh.style.display = 'none';
+  renderPOSCart();
+  toast('Venta limpiada');
+}
 function posChangeMethod(m){
   posPaymentMethod = m;
   document.getElementById('posPaymentLabel').textContent = m[0].toUpperCase() + m.slice(1);
@@ -5826,9 +6322,118 @@ function renderPOSCart(){
       '<div class="pos-qty">' +
         '<button onclick="posQty(\'' + key + '\',-1)">−</button><span>' + qty + '</span><button onclick="posQty(\'' + key + '\',1)">+</button>' +
       '</div>' +
-      '<button class="pos-rm" onclick="posRemove(\'' + key + '\')" title="Quitar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' +
+'<button class="pos-rm" onclick="posRemove(\'' + key + '\')" title="Quitar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' +
       '</div>';
   }).join('');
+  posCalcChange();
+}
+/* ---------- POS: con cuánto paga / vuelto (caja rápida) ---------- */
+function posCalcChange(){
+  const chEl = document.getElementById('posChange');
+  const paidEl = document.getElementById('posPaid');
+  if(!chEl) return;
+  const t = posTotals();
+  const paid = paidEl ? (parseFloat(paidEl.value)||0) : 0;
+  const change = Math.round(paid - t.total);
+  chEl.textContent = change < 0 ? 'Faltan ' + fmt(-change) : fmt(change);
+  chEl.classList.toggle('bad', change < 0);
+}
+function posSetPaid(v){
+  const el = document.getElementById('posPaid');
+  const t = posTotals();
+  el.value = v === 'exacto' ? Math.round(t.total) : v;
+  posCalcChange();
+}
+/* Búsqueda rápida: Enter agrega el primer resultado que coincida */
+function posSearchEnter(){
+  const q = (document.getElementById('posSearch').value||'').trim().toLowerCase();
+  if(!q) return;
+  const matches = products.filter(p => p.active !== false && (p.id===q || p.name.toLowerCase().includes(q) || (p.tag||'').toLowerCase().includes(q)));
+  if(matches.length === 1){
+    posPickProduct(matches[0].id);
+    document.getElementById('posSearch').value = '';
+    renderPOSCatalog();
+  } else if(!matches.length){
+    toast('Sin resultados para "' + q + '"', 'err');
+  }
+}
+/* Agrega producto leído por cámara o láser: no repite si ya está en la venta */
+function posAddByScan(code){
+  const p = resolveScanCode(code);
+  if(!p){ toast('No encontré el producto del código leído', 'err'); return; }
+  posPickProduct(p.id);
+}
+/* ---------- lector láser (wedge de teclado): apunta, escanea, Enter ---------- */
+let laserModeOn = false, laserBuf = '';
+function toggleLaserMode(){
+  laserModeOn = !laserModeOn;
+  laserBuf = '';
+  const b = document.getElementById('laserModeBtn');
+  if(laserModeOn){
+    b.textContent = '🔦 Láser: ON';
+    b.style.background = 'var(--green)';
+    b.style.color = '#fff';
+    toast('Modo láser ON: apuntá con el lector y escaneá la etiqueta', 'ok');
+  } else {
+    b.textContent = '🔦 Láser';
+    b.style.background = '';
+    b.style.color = '';
+    toast('Modo láser OFF', 'ok');
+  }
+}
+window.addEventListener('keydown', function(e){
+  if(!laserModeOn) return;
+  if(e.key.length === 1 && !e.ctrlKey && !e.metaKey){
+    e.preventDefault(); laserBuf += e.key;
+  } else if(e.key === 'Enter'){
+    e.preventDefault();
+    if(laserBuf){ const code = laserBuf; laserBuf = ''; posAddByScan(code); }
+  }
+});
+/* ---------- scanner con cámara (BarcodeDetector) ---------- */
+let scanStream = null;
+async function openScannerModal(){
+  document.getElementById('scannerModal').classList.add('show');
+  const video = document.getElementById('scanVideo');
+  const ph = document.getElementById('scanPlaceholder');
+  const st = document.getElementById('scanStatus');
+  const fb = document.getElementById('scanFallback');
+  video.style.display = 'block'; ph.style.display = 'none';
+  st.textContent = 'Arrancando cámara…';
+  try{
+    scanStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    video.srcObject = scanStream;
+    await video.play();
+    st.textContent = 'Apuntá al código QR o de barras…';
+    if(!('BarcodeDetector' in window)){
+      fb.style.display = 'block';
+      st.textContent = '';
+      return;
+    }
+    const detector = new BarcodeDetector({ formats:['qr_code','ean_13','ean_8','code_128','code_39','code_93','upc_a','upc_e','itf','codabar'] });
+    const tick = async () => {
+      if(!document.getElementById('scannerModal').classList.contains('show')) return;
+      if(!video.videoWidth){ setTimeout(tick, 200); return; }
+      try{
+        const codes = await detector.detect(video);
+        if(codes && codes.length){
+          st.textContent = '¡Producto detectado!';
+          closeScannerModal();
+          posAddByScan(codes[0].rawValue);
+          return;
+        }
+      }catch(e){}
+      setTimeout(tick, 220);
+    };
+    tick();
+  }catch(e){
+    st.textContent = 'No se pudo abrir la cámara: ' + (e && e.message ? e.message : 'permiso denegado');
+    fb.style.display = 'block';
+  }
+}
+function closeScannerModal(){
+  document.getElementById('scannerModal').classList.remove('show');
+  if(scanStream){ try{ scanStream.getTracks().forEach(t=>t.stop()); }catch(e){} scanStream = null; }
 }
 function showPOSVariantModal(title, rows){
   document.getElementById('posVariantTitle').textContent = title;
@@ -5851,9 +6456,11 @@ async function confirmPOSSale(){
     const info = cartLineInfo(key);
     return info ? { id:parts[0], variantId: parts[1] || '', name: info.label, price: info.unitPrice, qty: posCart[key].qty, image: (p && p.images && p.images[0]) || '' } : null;
   }).filter(Boolean);
-  const sale = {
+const sale = {
     number, date: now.toISOString(), createdAtMs: now.getTime(), day,
     method: posPaymentMethod,
+    sellerId: employeeSession ? (employeeSession.code || 'emp') : 'admin',
+    seller: employeeSession ? employeeSession.name : 'Administrador',
     items, subtotal: t.sub, discountAmt: t.discountAmt, iva: t.iva, total: t.total, qtyTotal: t.count
   };
   const batch = db.batch();
@@ -5884,15 +6491,46 @@ async function confirmPOSSale(){
     console.error(e);
     return;
   }
-  posCart = {};
+posCart = {};
+  lastPOSSale = sale;
+  const shBtn = document.getElementById('posShareWaBtn');
+  if(shBtn) shBtn.style.display = '';
+  const paidEl = document.getElementById('posPaid'); if(paidEl) paidEl.value = '';
   renderPOSCart(); renderPOSCatalog();
   toast('Venta ' + number + ' registrada', 'ok');
   if(settings.facturaDigital && canEmitInvoice()){
     setTimeout(()=> printPOSSale(sale), 600);
   }
 }
+
+/* Comparte la última factura de POS por WhatsApp al cliente */
+function shareLastPOSSaleWhatsApp(){
+  const sale = lastPOSSale;
+  if(!sale){ toast('No hay una venta reciente para compartir', 'err'); return; }
+  const wa = settings.whatsapp;
+  if(!wa){ toast('Configurá primero el WhatsApp de la tienda en los datos del negocio', 'err'); return; }
+  const methodLabel = sale.method ? sale.method[0].toUpperCase() + sale.method.slice(1) : '';
+  const lines = (sale.items||[]).map(i =>
+    '• ' + i.name + (i.variantId ? ' (' + i.variantId + ')' : '') + ' x' + i.qty + ' = ' + fmt(i.price * i.qty)
+  ).join('\n');
+  const msg =
+    '🧾 *FACTURA ' + sale.number + '*\n' +
+    '*' + (settings.storeName || '') + '*\n' +
+    new Date(sale.createdAtMs || Date.now()).toLocaleString('es-CR') + '\n\n' +
+    lines + '\n\n' +
+    'Subtotal: ' + fmt(sale.subtotal) +
+    (sale.discountAmt ? '\nDescuento: −' + fmt(sale.discountAmt) : '') +
+    '\nIVA: ' + fmt(sale.iva) +
+    '\n*TOTAL: ' + fmt(sale.total) + '*' +
+    '\nMétodo: ' + methodLabel +
+    '\n\n¡Gracias por tu compra! 💚';
+  window.open('https://wa.me/' + waDigits(wa) + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+}
 function renderPOSDashboard(){
-  const todaySales = posSales.filter(s => s.day === posDayKey());
+  populatePOSSellerFilter();
+  const sellerF = document.getElementById('posSellerFilter') ? document.getElementById('posSellerFilter').value : '';
+  let todaySales = posSales.filter(s => s.day === posDayKey());
+  if(sellerF) todaySales = todaySales.filter(s => (s.sellerId||'') === sellerF);
   const amount = todaySales.reduce((s,x)=>s+x.total,0);
   document.getElementById('posSalesToday').textContent = fmt(amount);
   document.getElementById('posOrdersToday').textContent = todaySales.length;
@@ -5905,7 +6543,8 @@ function renderPOSDashboard(){
       '<td><b>' + s.number + '</b></td>' +
       '<td>' + d.toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'}) + '</td>' +
       '<td><div class="order-items-list" title="'+esc(itemsTxt)+'">'+esc(itemsTxt.length>70?itemsTxt.slice(0,70)+'…':itemsTxt)+'</div></td>' +
-      '<td>' + (s.method||'efectivo') + '</td>' +
+'<td>' + (s.method||'efectivo') + '</td>' +
+      '<td>' + esc(s.seller || 'Administrador') + '</td>' +
       '<td><b>' + fmt(s.total) + '</b></td>' +
       '<td style="text-align:right">' +
         '<button class="icon-btn" title="Crear factura en TicoFactura (copia los datos de la venta)" onclick="ticoFacturaForSale(\'' + s.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 21h14"/><path d="M7 7h10l-1.5 9h-7z"/></svg></button>' +
@@ -5989,14 +6628,15 @@ function posInvoiceHTML(sale){
   const dir = [settings.facturaDistrito, settings.facturaCanton, settings.facturaProvincia].filter(Boolean).join(', ');
   if(dir) emisor.push('Domicilio fiscal: ' + esc(dir));
   const fiscalBlock = settings.facturaCedula ? '<div class="inv-fiscal"><b>Emisor:</b> ' + emisor.join(' · ') + '</div>' : '';
-  return '<div class="inv-head">' +
+return '<div class="inv-head">' +
+      (settings.logoUrl ? '<img class="inv-logo" src="' + esc(settings.logoUrl) + '" alt="Logo">' : '') +
       '<div><div class="store">' + esc(settings.storeName) + '</div><div class="meta">' + esc(settings.facturaRazon || settings.tagline) + '</div></div>' +
       '<div class="inv-num"><b>FACTURA ' + sale.number + '</b><span>' + fecha + '</span></div>' +
     '</div>' +
     '<div class="inv-body">' +
       fiscalBlock +
       '<div class="inv-client"><b>Venta en tienda</b> — Método: ' + esc(MET[sale.method] || sale.method) + '<br>' +
-      '<b>Operador:</b> ' + esc((auth.currentUser && auth.currentUser.email) || '—') + '</div>' +
+      '<b>Operador:</b> ' + esc(sale.seller || (auth.currentUser && auth.currentUser.email) || '—') + '</div>' +
       '<table class="inv-table"><thead><tr><th>Producto</th><th class="c">Cant.</th><th class="r">Precio</th><th class="r">Importe</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<div class="inv-totals">' +
         '<div class="row"><span>Subtotal</span><span>' + fmt(sale.subtotal) + '</span></div>' +
@@ -9074,8 +9714,13 @@ async function bootPlatform(){
     if(isAdminSession && new URLSearchParams(location.search).get('panel') === 'admin'){
       enterAdmin();
     }
-    listenSettings();
+listenSettings();
     listenProducts();
+    listenEmployees();
+    /* La vista compartida del POS (?pos=1): abre el acceso de empleados */
+    if(new URLSearchParams(location.search).get('pos') === '1'){
+      setTimeout(openEmployeeLogin, 600);
+    }
     /* Abrir directo un producto si llegamos por QR/enlace compartido (?p=ID) */
     const dlPid = new URLSearchParams(location.search).get('p');
     if(dlPid) scheduleProductDeepLink(dlPid);
