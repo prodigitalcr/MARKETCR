@@ -617,6 +617,9 @@ body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float{disp
 .order-items-list{font-size:12.5px;color:var(--muted);max-width:260px}
 
 .settings-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px;max-width:760px}
+/* Un admin de tienda (no superadmin) NUNCA ve proveedor/claves/modelos de IA,
+   ni siquiera si algún script intenta mostrarlos de nuevo. */
+body.is-admin-view #sAiConfigSuperBlock{display:none !important}
 .settings-card h4{font-size:15px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
 .settings-card h4 svg{width:18px;height:18px;color:var(--green)}
 .settings-card .desc{font-size:12.5px;color:var(--muted);margin-bottom:16px}
@@ -1737,13 +1740,15 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div class="f-group"><label>Enlace del video 4 (exclusivo Plan Destacado)</label><input class="f-input" id="sStoryVideoUrl4" placeholder="Cuarto video flotante"></div>
       </div>
 
-      <div class="settings-card">
-        <h4>✨ Asistente de compras con IA</h4>
+<div class="settings-card">
+        <h4>✨ Asistente de compras con IA <span id="sAiVersionBadge" style="font-size:11px;color:var(--muted);font-weight:600;margin-left:6px"></span></h4>
         <div class="desc">Un chat flotante que recomienda productos a tus clientes.</div>
 <div class="desc" id="sAiLockNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El Asistente de IA (chat + generador de fotos con fondo blanco) es exclusivo del <b>Plan Destacado</b>. Podés dejar los datos guardados, pero no se activará para tus clientes hasta que subas de plan.</div>
         <div class="desc" id="sAiAdminOnlyNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El proveedor, las claves de API y los modelos del asistente de IA solo los configura el <b>superadministrador de la plataforma</b>.<br>Como administradora de esta tienda podés entrenar a tu agente (instrucciones), cambiar su nombre, el mensaje de bienvenida y activarlo para los clientes.</div>
 
-<div class="f-group" id="sAiProviderGroup"><label>Proveedor del modelo de IA</label>
+        <!-- Config avanzada de IA (proveedor + claves + modelos): SOLO superadmin -->
+        <div id="sAiConfigSuperBlock">
+        <div class="f-group" id="sAiProviderGroup"><label>Proveedor del modelo de IA</label>
           <select class="sort-select" id="sAiProvider" style="width:100%" onchange="onAiProviderChange()">
             <option value="gemini">Google Gemini (clave propia de aistudio.google.com)</option>
             <option value="openrouter">OpenRouter (modelos gratuitos via openrouter.ai)</option>
@@ -1811,8 +1816,9 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
             <div class="hint" style="margin-top:4px">La app hará POST a <code>{URL base}/chat/completions</code>. Sirve para LMStudio local, Ollama, Together AI, etc.</div>
           </div>
           <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;margin-top:6px" onclick="testExternalConnection()">🧪 Probar conexión</button>
-          <div id="sAiExternalStatus" style="font-size:12.5px;margin-top:6px"></div>
+<div id="sAiExternalStatus" style="font-size:12.5px;margin-top:6px"></div>
         </div><!-- /sAiExternalBlock -->
+        </div><!-- /sAiConfigSuperBlock -->
 
 <div class="f-row">
           <div class="f-group"><label>Nombre del asistente</label><input class="f-input" id="sAiName" placeholder="Ej: Cana"></div>
@@ -1845,11 +1851,37 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
       </div>
 
-      <div class="settings-card" id="migrationCard" style="display:none">
+<div class="settings-card" id="migrationCard">
         <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>Herramientas de la plataforma</h4>
-        <div class="desc">Detectamos datos de esta tienda guardados en el formato anterior (antes de que la plataforma tuviera varios negocios). Podés copiarlos una sola vez hacia el espacio de esta tienda dentro de la plataforma. No borra nada del formato anterior.</div>
-        <button type="button" class="btn-dark" style="width:auto;padding:10px 18px" id="migrationBtn" onclick="runLegacyMigration()">Migrar datos antiguos de esta tienda</button>
-        <div class="hint" id="migrationStatus" style="display:none"></div>
+        <div class="desc">Acá podés migrar datos del formato anterior de tu tienda, crear copias de seguridad de configuración e inventario, y exportar o importar todo en un archivo JSON.</div>
+
+        <div id="migrationLegacyWrap" style="display:none">
+          <div class="desc" style="margin-top:8px">Detectamos datos de esta tienda guardados en el formato anterior (antes de que la plataforma tuviera varios negocios). Podés copiarlos una sola vez hacia el espacio de esta tienda. <b>Antes de migrar se guarda una copia instantánea</b> para que puedas revertir si algo sale mal.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+            <button type="button" class="btn-dark" style="width:auto;padding:10px 18px" id="migrationBtn" onclick="runLegacyMigration()">Migrar datos antiguos de esta tienda</button>
+            <button type="button" class="btn-ghost" style="width:auto;padding:10px 18px;color:var(--danger)" onclick="revertLegacyMigration()">↩️ Revertir migración</button>
+          </div>
+          <div class="hint" id="migrationStatus" style="display:none"></div>
+        </div>
+
+        <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+          <div class="desc"><b>💾 Copia de seguridad (nube)</b> — guarda la configuración y el inventario de esta tienda en una subcolección <b>backups</b> de la plataforma. Podés crear todas las que quieras en distintos momentos.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;align-items:center">
+            <button type="button" class="btn-dark" style="width:auto;padding:10px 18px" onclick="createTenantBackup()">💾 Crear copia de seguridad</button>
+            <div class="hint" id="backupStatus" style="display:none;margin:0"></div>
+            <div id="backupList" style="display:none;width:100%"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+          <div class="desc"><b>⬇️ Exportar / ⬆️ Importar</b> — descargá un archivo <b>JSON</b> con la configuración y el inventario de esta tienda, o restaurá desde un archivo exportado. La importación actualiza o agrega los productos sin borrar los que no están en el archivo.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;align-items:center">
+            <button type="button" class="btn-dark" style="width:auto;padding:10px 18px" onclick="exportTenantData()">⬇️ Exportar JSON</button>
+            <button type="button" class="btn-ghost" style="width:auto;padding:10px 18px" onclick="document.getElementById('importTenantFile').click()">⬆️ Importar JSON</button>
+            <input type="file" id="importTenantFile" accept=".json,application/json" style="display:none" onchange="onImportTenantFileChosen(this)">
+            <div class="hint" id="importStatus" style="display:none;margin:0"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Plan patrocinado -->
@@ -4865,6 +4897,8 @@ function refreshAdminSession(){
   const emailOk = !!(user && (ADMIN_EMAILS.includes(user.email) || superAdmin));
   const needsStorePass = !!(TENANT_DATA && TENANT_DATA.adminPasswordHash) && !superAdmin;
   isAdminSession = emailOk && (!needsStorePass || storePasswordVerified);
+  // Marca el body: admin de tienda (no superadmin) → oculta la config avanzada de IA por CSS
+  document.body.classList.toggle('is-admin-view', !superAdmin);
   if(!isAdminSession && document.body.classList.contains('in-admin')){
     document.body.classList.remove('in-admin');
   }
@@ -6328,10 +6362,13 @@ document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
   const _aiSessUser = auth.currentUser;
   const _isAdminOnlyView = !_aiSessUser || !isSuperAdminUser(_aiSessUser);
   const _saAiNotice = document.getElementById('sAiAdminOnlyNotice');
-  const _saAiProvGroup = document.getElementById('sAiProviderGroup');
-  const _saAiBlocks = ['sAiGeminiBlock','sAiOpenrouterBlock','sAiExternalBlock'];
+  const _saAiSuper = document.getElementById('sAiConfigSuperBlock');
+  const _saBadge = document.getElementById('sAiVersionBadge');
+  if(_saBadge) _saBadge.textContent = 'v2026.08.19-05';
   if(_saAiNotice) _saAiNotice.style.display = _isAdminOnlyView ? '' : 'none';
-  if(_saAiProvGroup) _saAiProvGroup.style.display = _isAdminOnlyView ? 'none' : '';
+  // proveedor + claves + modelos: SOLO visibles para el superadministrador
+  if(_saAiSuper) _saAiSuper.style.display = _isAdminOnlyView ? 'none' : '';
+  console.log('[IA-ADMIN] email=' + (_aiSessUser ? _aiSessUser.email : 'null') + ' superadmin=' + _isAdminOnlyView + ' → superBlock.display=' + (_saAiSuper ? _saAiSuper.style.display : 'N/A'));
   if(!_isAdminOnlyView) refreshMaskedAiKeys(); // solo el superadmin ve claves (enmascaradas) y las ingresa
   const geminiModelEl = document.getElementById('sAiGeminiModel');
   if(geminiModelEl) geminiModelEl.value = settings.aiGeminiModel || 'gemini-2.0-flash';
@@ -6353,13 +6390,9 @@ const extProvEl = document.getElementById('sAiExternalProvider');
   if(extBaseEl) extBaseEl.value = settings.aiExternalBaseUrl || '';
 onExternalProviderChange();
   onAiProviderChange();
-  // Forzar ocultación de bloques de proveedor/claves/modelos para admins de tienda (no superadmin)
+  // Re-forzar por seguridad: el contenedor de config avanzada queda oculto para admins de tienda
   if(_isAdminOnlyView){
-    _saAiBlocks.forEach(function(_bid){
-      const _bel = document.getElementById(_bid);
-      if(_bel) _bel.style.display = 'none';
-    });
-    if(_saAiProvGroup) _saAiProvGroup.style.display = 'none';
+    if(_saAiSuper) _saAiSuper.style.display = 'none';
     if(_saAiNotice) _saAiNotice.style.display = '';
   }
   const aiLockEl = document.getElementById('sAiLockNotice');
@@ -6373,8 +6406,9 @@ onExternalProviderChange();
   document.getElementById('sBingoIconPreview').innerHTML = settings.bingoIcon ? '<img src="' + esc(settings.bingoIcon) + '" alt="Icono">' : '';
   bizImages = (settings.landingImages && settings.landingImages.length) ? settings.landingImages.slice() : [];
   while(bizImages.length < 3) bizImages.push('');
-  renderBizImageGrid();
+renderBizImageGrid();
   checkLegacyMigration();
+  renderBackupList();
   refreshStorePasswordStatus();
   showPermDebugHint();
   // Plan destacado / profesional / emprendedor
@@ -6465,7 +6499,8 @@ async function checkLegacyMigration(){
     const legacySettings = await db.collection('settings').doc('store').get();
     const legacyProducts = await db.collection('products').limit(1).get();
     if(legacySettings.exists || !legacyProducts.empty){
-      document.getElementById('migrationCard').style.display = '';
+      const wrap = document.getElementById('migrationLegacyWrap');
+      if(wrap) wrap.style.display = '';
     }
   }catch(e){
     /* sin datos viejos o sin permisos sobre la ruta anterior: no mostrar nada */
@@ -6476,9 +6511,36 @@ async function runLegacyMigration(){
   const btn = document.getElementById('migrationBtn');
   const status = document.getElementById('migrationStatus');
   status.style.display = 'block';
-  btn.disabled = true;
+btn.disabled = true;
   status.textContent = 'Migrando…';
   try{
+    /* Respaldar el estado ACTUAL de la tienda antes de migrar, para poder
+       revertir la migración si algo sale mal. Se guarda en backups/undo*. */
+    await clearUndoBackup();
+    const undoMeta = { at: firebase.firestore.FieldValue.serverTimestamp(), type:'legacyMigration', settings:false, products:0, orders:0 };
+    const curSettingsSnap = await settingsRef.get();
+    if(curSettingsSnap.exists){
+      await tenantCol('backups').doc('undoSettings').set(curSettingsSnap.data());
+      undoMeta.settings = true;
+    }
+    const curProductsSnap = await productsCol.get();
+    let undoBatch = db.batch(), undoCount = 0;
+    for(const d of curProductsSnap.docs){
+      undoBatch.set(tenantCol('backups').doc('undoProducts').collection('items').doc(d.id), d.data());
+      undoMeta.products++; undoCount++;
+      if(undoCount >= 400){ await undoBatch.commit(); undoBatch = db.batch(); undoCount = 0; }
+    }
+    if(undoCount > 0) await undoBatch.commit();
+    const curOrdersSnap = await ordersCol.get();
+    undoBatch = db.batch(); undoCount = 0;
+    for(const d of curOrdersSnap.docs){
+      undoBatch.set(tenantCol('backups').doc('undoOrders').collection('items').doc(d.id), d.data());
+      undoMeta.orders++; undoCount++;
+      if(undoCount >= 400){ await undoBatch.commit(); undoBatch = db.batch(); undoCount = 0; }
+    }
+    if(undoCount > 0) await undoBatch.commit();
+    await tenantCol('backups').doc('undoMeta').set(undoMeta);
+
     const migrated = { settings:false, products:0, orders:0 };
 
 const legacySettingsSnap = await db.collection('settings').doc('store').get();
@@ -6526,9 +6588,246 @@ const legacySettingsSnap = await db.collection('settings').doc('store').get();
     console.error(e);
     status.textContent = 'Ocurrió un error durante la migración. Revisá la consola o los permisos de Firestore.';
     toast('No se pudo migrar', 'err');
-  }finally{
+}finally{
     btn.disabled = false;
   }
+}
+
+/* ---------- revertir la migración (usa el respaldo undo creado antes de migrar) ---------- */
+async function clearUndoBackup(){
+  try{
+    const metaSnap = await tenantCol('backups').doc('undoMeta').get();
+    if(!metaSnap.exists) return;
+    const meta = metaSnap.data() || {};
+    const del = [tenantCol('backups').doc('undoMeta'), tenantCol('backups').doc('undoSettings')];
+    if(meta.products){
+      const items = await tenantCol('backups').doc('undoProducts').collection('items').get();
+      let b = db.batch(), c = 0;
+      for(const d of items.docs){ b.delete(d.ref); c++; if(c>=400){ await b.commit(); b = db.batch(); c = 0; } }
+      if(c>0) await b.commit();
+      del.push(tenantCol('backups').doc('undoProducts'));
+    }
+    if(meta.orders){
+      const items = await tenantCol('backups').doc('undoOrders').collection('items').get();
+      let b = db.batch(), c = 0;
+      for(const d of items.docs){ b.delete(d.ref); c++; if(c>=400){ await b.commit(); b = db.batch(); c = 0; } }
+      if(c>0) await b.commit();
+      del.push(tenantCol('backups').doc('undoOrders'));
+    }
+    const batch = db.batch();
+    del.forEach(r => { if(r) batch.delete(r); });
+    await batch.commit();
+  }catch(e){
+    console.warn('clearUndoBackup:', e && e.message);
+  }
+}
+
+async function revertLegacyMigration(){
+  const status = document.getElementById('migrationStatus');
+  status.style.display = 'block';
+  try{
+    const metaSnap = await tenantCol('backups').doc('undoMeta').get();
+    if(!metaSnap.exists || (metaSnap.data()||{}).type !== 'legacyMigration'){
+      status.textContent = 'No encontré una migración reciente para revertir (falta el respaldo undo).';
+      status.style.color = 'var(--danger)';
+      return;
+    }
+    if(!confirm('Se revertirá la migración: se restaurará la configuración y se eliminarán los productos/pedidos que trajo la migración. ¿Continuar?')) return;
+    const meta = metaSnap.data() || {};
+    status.textContent = 'Revertiendo…';
+    status.style.color = 'var(--muted)';
+
+    // configuración: restaurar el estado previo (o borrar si no existía)
+    const undoSetSnap = await tenantCol('backups').doc('undoSettings').get();
+    if(meta.settings && undoSetSnap.exists){
+      await settingsRef.set(undoSetSnap.data());
+    } else if(undoSetSnap.exists){
+      await settingsRef.delete();
+    }
+
+    // productos: restaurar los que existían y borrar los agregados por la migración
+    const bkItems = await tenantCol('backups').doc('undoProducts').collection('items').get();
+    const bkIds = new Set(bkItems.docs.map(d => d.id));
+    const curProductsSnap = await productsCol.get();
+    let batch = db.batch(), count = 0, restored = 0, removed = 0;
+    for(const d of curProductsSnap.docs){
+      if(bkIds.has(d.id)){
+        const old = bkItems.docs.find(x => x.id === d.id);
+        if(old){ batch.set(productsCol.doc(d.id), old.data()); restored++; }
+      } else {
+        batch.delete(productsCol.doc(d.id)); removed++;
+      }
+      count++;
+      if(count >= 400){ await batch.commit(); batch = db.batch(); count = 0; }
+    }
+    if(count > 0) await batch.commit();
+
+    // pedidos: igual que productos
+    const bkOrd = await tenantCol('backups').doc('undoOrders').collection('items').get();
+    const bkOrdIds = new Set(bkOrd.docs.map(d => d.id));
+    const curOrdersSnap = await ordersCol.get();
+    batch = db.batch(); count = 0; let ordRestored = 0, ordRemoved = 0;
+    for(const d of curOrdersSnap.docs){
+      if(bkOrdIds.has(d.id)){
+        const old = bkOrd.docs.find(x => x.id === d.id);
+        if(old){ batch.set(ordersCol.doc(d.id), old.data()); ordRestored++; }
+      } else {
+        batch.delete(ordersCol.doc(d.id)); ordRemoved++;
+      }
+      count++;
+      if(count >= 400){ await batch.commit(); batch = db.batch(); count = 0; }
+    }
+    if(count > 0) await batch.commit();
+
+    await clearUndoBackup();
+    status.textContent = 'Migración revertida: ' + restored + ' producto(s)/' + ordRestored + ' pedido(s) restaurados, ' + removed + ' producto(s)/' + ordRemoved + ' pedido(s) eliminados.';
+    status.style.color = 'var(--ok,#1B7A43)';
+    toast('Migración revertida', 'ok');
+  }catch(e){
+    console.error(e);
+    status.style.color = 'var(--danger)';
+    status.textContent = 'No se pudo revertir: ' + (e && e.message ? e.message : 'error');
+    toast('No se pudo revertir', 'err');
+  }
+}
+
+/* ---------- copia de seguridad de configuración + inventario en la nube ---------- */
+async function createTenantBackup(){
+  const status = document.getElementById('backupStatus');
+  status.style.display = 'block';
+  status.style.color = 'var(--muted)';
+  status.textContent = 'Creando copia de seguridad…';
+  try{
+    const stamp = Math.floor(Date.now()/1000);
+    const setSnap = await settingsRef.get();
+    const prodSnap = await productsCol.get();
+    let batch = db.batch(), count = 0, products = 0;
+    if(setSnap.exists) batch.set(tenantCol('backups').doc('bk_' + stamp + '_settings'), setSnap.data());
+    for(const d of prodSnap.docs){
+      batch.set(tenantCol('backups').doc('bk_' + stamp + '_products').collection('items').doc(d.id), d.data());
+      products++; count++;
+      if(count >= 400){ await batch.commit(); batch = db.batch(); count = 0; }
+    }
+    if(count > 0) await batch.commit();
+    await tenantCol('backups').doc('bk_' + stamp + '_meta').set({
+      at: firebase.firestore.FieldValue.serverTimestamp(),
+      type:'manual',
+      products: products,
+      hasSettings: !!setSnap.exists
+    });
+    status.style.color = 'var(--ok,#1B7A43)';
+    status.textContent = '✔ Copia de seguridad creada (bk_' + stamp + '): ' + (setSnap.exists ? 'configuración + ' : '') + products + ' producto(s).';
+    toast('Copia de seguridad creada', 'ok');
+    renderBackupList();
+  }catch(e){
+    console.error(e);
+    status.style.color = 'var(--danger)';
+    status.textContent = 'No se pudo crear la copia: ' + (e && e.message ? e.message : 'error');
+    toast('No se pudo crear la copia', 'err');
+  }
+}
+
+/* listar copias de seguridad existentes (útiles para que el admin las conozca) */
+async function renderBackupList(){
+  try{
+    const metas = await tenantCol('backups').limit(100).get();
+    const list = document.getElementById('backupList');
+    if(!list) return;
+    const items = metas.docs
+      .filter(d => /_meta$/.test(d.id) && (d.data()||{}).type === 'manual')
+      .map(d => ({ id: d.id.replace(/_meta$/,''), at: (d.data().at && d.data().at.toDate) ? d.data().at.toDate() : null }))
+      .sort((a,b) => (b.at ? b.at.getTime() : 0) - (a.at ? a.at.getTime() : 0))
+      .slice(0,20);
+    if(!items.length){ list.innerHTML = ''; return; }
+    list.style.display = 'block';
+    list.innerHTML = '<div style="margin-top:8px;font-size:12.5px">Copias guardadas:</div>' + items.map(m =>
+      '<div style="font-size:12px;color:var(--muted)">• <code>' + esc(m.id) + '</code> — ' + esc(m.at ? m.at.toLocaleString() : 'reciente') + '</div>'
+    ).join('');
+  }catch(e){ /* sin permisos o sin copias: silencioso */ }
+}
+
+/* ---------- exportar configuración + inventario a un archivo JSON ---------- */
+async function exportTenantData(){
+  try{
+    const exportBtnMsg = document.getElementById('importStatus');
+    exportBtnMsg.style.display = 'block';
+    exportBtnMsg.textContent = 'Exportando…';
+    const setSnap = await settingsRef.get();
+    const settings = setSnap.exists ? setSnap.data() : {};
+    const prodSnap = await productsCol.get();
+    const products = prodSnap.docs.map(d => ({ id: d.id, data: d.data() }));
+    const payload = {
+      app: 'MARKETCR',
+      kind: 'backup-config-inventario',
+      tenant: TENANT_ID,
+      exportedAt: new Date().toISOString(),
+      settings: settings,
+      products: products
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'backup_' + TENANT_ID + '_' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    exportBtnMsg.textContent = '✔ Archivo descargado: ' + a.download;
+    exportBtnMsg.style.color = 'var(--ok,#1B7A43)';
+    toast('Exportación lista', 'ok');
+  }catch(e){
+    console.error(e);
+    const m = document.getElementById('importStatus');
+    if(m){ m.style.display='block'; m.style.color='var(--danger)'; m.textContent = 'No se pudo exportar: ' + (e && e.message ? e.message : 'error'); }
+    toast('No se pudo exportar', 'err');
+  }
+}
+
+/* ---------- importar configuración + inventario desde un archivo JSON ---------- */
+function onImportTenantFileChosen(input){
+  const file = input && input.files && input.files[0];
+  input.value = '';
+  if(!file) return;
+  const status = document.getElementById('importStatus');
+  status.style.display = 'block';
+  status.style.color = 'var(--muted)';
+  status.textContent = 'Leyendo archivo…';
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try{
+      let payload;
+      try{ payload = JSON.parse(reader.result); }
+      catch(_e){ throw new Error('El archivo no es un JSON válido'); }
+      if(!payload || (payload.kind !== 'backup-config-inventario') || !payload.settings || !Array.isArray(payload.products)){
+        throw new Error('El archivo no parece una copia exportada de esta plataforma (falta app/kind/settings/products).');
+      }
+      if(!confirm('Se importarán la configuración y ' + payload.products.length + ' producto(s) en la tienda "' + TENANT_ID + '". Los productos se actualizan/agregan sin borrar otros. ¿Continuar?')) return;
+      status.textContent = 'Importando…';
+      await settingsRef.set(payload.settings, { merge:true });
+      let batch = db.batch(), count = 0;
+      for(const p of payload.products){
+        if(!p || !p.id) continue;
+        batch.set(productsCol.doc(String(p.id)), p.data || {}, { merge:true });
+        count++;
+        if(count >= 400){ await batch.commit(); batch = db.batch(); count = 0; }
+      }
+      if(count > 0) await batch.commit();
+      status.style.color = 'var(--ok,#1B7A43)';
+      status.textContent = '✔ Importación lista: ' + payload.products.length + ' producto(s) procesados.';
+      toast('Importación completada', 'ok');
+    }catch(e){
+      console.error(e);
+      status.style.color = 'var(--danger)';
+      status.textContent = 'No se pudo importar: ' + (e && e.message ? e.message : 'error');
+      toast('No se pudo importar', 'err');
+    }
+  };
+  reader.onerror = () => {
+    status.style.color = 'var(--danger)';
+    status.textContent = 'No se pudo leer el archivo.';
+  };
+  reader.readAsText(file);
 }
 
 /* ---------- subida de logo (comprimido a base64, sin Firebase Storage) ---------- */
