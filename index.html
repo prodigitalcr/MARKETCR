@@ -1027,6 +1027,12 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 .sv-legal-card{display:none;background:#fff;max-width:560px;border-radius:18px;padding:28px 26px;color:#1F2937;max-height:78vh;overflow:auto}
 .sv-legal-card h3{margin:0 0 12px;color:#17202A}
 .sv-legal-card p{font-size:14.5px;line-height:1.65;color:#4B5563;margin:0}
+/* Aviso de EJEMPLO en la vista del admin */
+.sv-demo-banner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:80;max-width:min(94vw,760px);background:#17202A;color:#fff;border-radius:16px;padding:12px 16px;font-size:13.5px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.sv-demo-banner b{color:#FFD100}
+.site-demo-btn{border:none;background:var(--site-p);color:#fff;font-weight:800;font-size:12.5px;border-radius:10px;padding:8px 14px;cursor:pointer}
+.site-demo-btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff}
+.site-demo-btn:hover{opacity:.9}
 /* ----- responsive ----- */
 @media(max-width:1000px){
   .sv-b4{grid-template-columns:repeat(2,1fr)}
@@ -1828,7 +1834,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Configuraciones</span>
       </button>
       <button class="adm-link" data-panel="site" onclick="showPanel('site',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14.5 14.5 0 0 1 0 18M12 3a14.5 14.5 0 0 0 0 18"/></svg><span>Sitio web</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14.5 14.5 0 0 1 0 18M12 3a14.5 14.5 0 0 0 0 18"/></svg><span>Landing page</span>
       </button>
       <button class="adm-link" data-panel="membership" onclick="showPanel('membership',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Membresía</span>
@@ -2311,21 +2317,33 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </div>
 </section>
 
-    <!-- SITIO WEB PROFESIONAL -->
+    <!-- LANDING PAGE PROFESIONAL -->
     <section class="panel" id="panel-site">
-      <div class="adm-title">Sitio web profesional</div>
-      <div class="adm-sub">Diseñá y publicá la página web oficial de tu negocio. Todo se guarda por negocio y el público la ve en tu enlace (<code>?web=1</code>). El mismo esquema sirve para cualquier comercio de MARKET CR.</div>
+      <div class="adm-title">Landing page de mi negocio</div>
+      <div class="adm-sub">Una página de una sola vista que presenta tu negocio y convierte visitantes en pedidos. La plataforma la crea automáticamente con la <b>información real de tu tienda</b> (nombre, logo, WhatsApp, categorías, productos y precios) y vos podés editarla acá. Se publica en <code>?web=1</code> o <code>?landing=1</code>.</div>
+      <div class="site-ai-bar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:linear-gradient(135deg,#E7F5EC,#FFF6CC);border:1px solid #C9E7D6;border-radius:16px;padding:16px 18px;margin-bottom:18px;max-width:920px">
+        <button class="btn-dark" style="flex:0 1 auto" onclick="buildLandingFromBusiness()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M12 3v12M6 9l6-6 6 6"/><path d="M4 21h16"/></svg>Crear con mi negocio
+        </button>
+        <button class="btn-export" style="flex:0 1 auto" onclick="generateSiteWithAI()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>Crear con IA
+        </button>
+        <button class="btn-ghost" style="flex:0 1 auto" onclick="viewSiteDemo()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Ver ejemplo terminado
+        </button>
+        <span class="hint" id="siteGenMsg" style="flex:1 1 220px;margin:0;color:#334155"></span>
+      </div>
       <div class="site-ed-scroll">
         <div class="site-tabs" id="siteTabs"></div>
         <div id="siteEditorRoot"><div style="text-align:center;color:var(--muted);padding:40px">Cargando editor…</div></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 30px">
           <button class="btn-dark" onclick="saveSite()">Guardar cambios</button>
           <button class="btn-primary" onclick="openSitePublic()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Ver sitio publicado
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Ver mi landing publicada
           </button>
           <button class="btn-ghost" onclick="loadSiteEditor()">Descartar</button>
           <button class="btn-ghost" style="width:auto" onclick="shareSite()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M12 3v13M7 8l5-5 5 5"/></svg>Compartir enlace del sitio
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M12 3v13M7 8l5-5 5 5"/></svg>Compartir enlace
           </button>
         </div>
       </div>
@@ -10206,7 +10224,7 @@ async function checkMembershipExpiry(){
    Referencias a MARKET CR: botones "Ver catálogo"/categorías/CTA llevan al
    catálogo real de la tienda (siteStoreUrl()).
    ========================================================================== */
-let siteConfig = null, siteUnsub = null, siteSectionTab = 'negocio';
+let siteConfig = null, siteUnsub = null, siteSectionTab = 'negocio', siteViewOverride = null, siteDemoActive = false;
 
 const SITE_DEFAULTS = {
   active: false,
@@ -10287,6 +10305,88 @@ const SITE_DEFAULTS = {
     notice: 'Comercio asociado a MARKET CR'
   }
 };
+/* Ejemplo terminado: un negocio distinto (café + plantas) para que el admin
+   vea "cómo se ve" la landing y pueda usarlo como punto de partida. */
+const SITE_DEMO = {
+  active: true,
+  businessName: 'El Jardín Café y Plantas', tagline: 'Café de especialidad y plantas vivas en un mismo lugar',
+  logoUrl: '', primaryColor: '#2E7D46', secondaryColor: '#1D4F2B', accentColor: '#F5B301',
+  seoTitle: 'El Jardín Café y Plantas — Café de especialidad y plantas en Heredia',
+  seoDesc: 'Café de especialidad, repostería y plantas vivas. Pedí por WhatsApp con entrega a domicilio en el GAM.',
+  hero: {
+    badge: 'Café de especialidad · Plantas · MARKET CR',
+    title: 'Un respiro verde y una taza perfecta, en tu casa',
+    sub: 'Vendemos café de especialidad tostado localmente y plantas que llenan de vida tu espacio. Pedís por WhatsApp y te lo llevamos hasta la puerta.',
+    image: 'https://picsum.photos/seed/demo-hero/900/720'
+  },
+  benefits: [
+    { icon: 'leaf', title: 'Productos de calidad', desc: 'Tueste local y plantas seleccionadas a mano cada semana.' },
+    { icon: 'heart', title: 'Trato cercano', desc: 'Te recomendamos con honestidad, como a un vecino de confianza.' },
+    { icon: 'truck', title: 'Entrega a domicilio', desc: 'Llegamos al GAM en el día con tu pedido en perfecto estado.' },
+    { icon: 'cart', title: 'Pedido en 2 minutos', desc: 'Escribís por WhatsApp, confirmás y listo. Simple y seguro.' }
+  ],
+  categories: [
+    { name: 'Café de especialidad', desc: 'Orígenes locales, molido a tu medida.', image: 'https://picsum.photos/seed/demo-c1/640/480', tag: '' },
+    { name: 'Repostería artesanal', desc: 'Bien hecha, sin preservantes.', image: 'https://picsum.photos/seed/demo-c2/640/480', tag: '' },
+    { name: 'Plantas de interior', desc: 'Las mejores especias para tu hogar.', image: 'https://picsum.photos/seed/demo-c3/640/480', tag: '' },
+    { name: 'Suculentas', desc: 'Fáciles de cuidar y decorativas.', image: 'https://picsum.photos/seed/demo-c4/640/480', tag: '' },
+    { name: 'Macetas y accesorios', desc: 'Cerámica artesanal para tus plantas.', image: 'https://picsum.photos/seed/demo-c5/640/480', tag: '' },
+    { name: 'Regalos', desc: 'Cajas armadas para sorprender.', image: 'https://picsum.photos/seed/demo-c6/640/480', tag: '' }
+  ],
+  featured: [
+    { name: 'Café Tarrazú 1 kg', desc: 'Tueste medio, notas a chocolate y caramelo.', price: '¢15.000', old: '¢18.000', image: 'https://picsum.photos/seed/demo-p1/800/800', tag: '-17%', productId: '' },
+    { name: 'Set Café + Taza', desc: 'Café de origen + taza cerámica pintada a mano.', price: '¢22.500', old: '', image: 'https://picsum.photos/seed/demo-p2/800/800', tag: 'Popular', productId: '' },
+    { name: 'Ficus Lyrata', desc: 'Planta viva de 1.2 m para interiores luminosos.', price: '¢24.000', old: '', image: 'https://picsum.photos/seed/demo-p3/800/800', tag: '', productId: '' },
+    { name: 'Suculenta en maceta', desc: 'Pequeña, resistente y perfecta para escritorios.', price: '¢6.500', old: '¢8.000', image: 'https://picsum.photos/seed/demo-p4/800/800', tag: '-19%', productId: '' },
+    { name: 'Box cheescake', desc: 'Cheesecake artesanal de 6 porciones.', price: '¢12.000', old: '', image: 'https://picsum.photos/seed/demo-p5/800/800', tag: 'Nuevo', productId: '' },
+    { name: 'Set plantas + maceta', desc: '3 suculentas con maceta de cerámica.', price: '¢14.500', old: '¢17.000', image: 'https://picsum.photos/seed/demo-p6/800/800', tag: '-15%', productId: '' }
+  ],
+  offer: {
+    name: 'Combo Desayuno del Jardín', percent: '-20%', old: '¢10.000', price: '¢8.000',
+    message: 'Café de especialidad + pan artesanal + planta de regalo. Válido por tiempo limitado.',
+    image: 'https://picsum.photos/seed/demo-oferta/800/600', ends: 'Válido hasta agotar existencias.'
+  },
+  about: {
+    title: 'Café con alma y plantas que cuentan historias',
+    text: 'El Jardín nació de un sueño sencillo: juntar lo que más nos apasiona: un buen café de especialidad y plantas que dan vida a los espacios. Hoy armamos cada pedido con el mismo cuidado del primer día.',
+    mission: 'Que cada taza y cada planta lleguen a tu casa con la frescura y el detalle del primer día.',
+    values: ['Calidad local', 'Trato cercano', 'Envíos en el día'],
+    experience: '6',
+    image: 'https://picsum.photos/seed/demo-about/800/620'
+  },
+  whyUs: [
+    { icon: 'leaf', title: 'Tueste local', desc: 'Café tostado en Costa Rica, fresco cada semana.' },
+    { icon: 'heart', title: 'Atención de cerca', desc: 'Te asesoramos por WhatsApp para elegir bien.' },
+    { icon: 'tag', title: 'Precios honestos', desc: 'Buen producto a precio justo.' },
+    { icon: 'award', title: 'Calidad garantizada', desc: 'Todo lo que llega lo probamos y revisamos antes.' },
+    { icon: 'truck', title: 'Entrega en el día', desc: 'En el GAM llegamos el mismo día de tu pedido.' },
+    { icon: 'cart', title: 'Pedido fácil', desc: 'Escribís, confirmás y listo.' }
+  ],
+  testimonials: [
+    { name: 'Lucía Mora', photo: '', comment: 'El café es otro nivel y las plantas llegaron en perfecto estado. ¡La entrega fue el mismo día!', stars: 5 },
+    { name: 'Fabián Rojas', photo: '', comment: 'Pedí un regalo sorpresa y armaron una caja hermosa. Atención de 10, totalmente recomendados.', stars: 5 },
+    { name: 'Amanda Prado', photo: '', comment: 'Me ayudaron a elegir las plantas para mi oficina y quedó preciosa. Muy buen precio.', stars: 5 }
+  ],
+  gallery: [
+    'https://picsum.photos/seed/demo-g1/700/700', 'https://picsum.photos/seed/demo-g2/700/700',
+    'https://picsum.photos/seed/demo-g3/700/700', 'https://picsum.photos/seed/demo-g4/700/700',
+    'https://picsum.photos/seed/demo-g5/700/700', 'https://picsum.photos/seed/demo-g6/700/700',
+    'https://picsum.photos/seed/demo-g7/700/700', 'https://picsum.photos/seed/demo-g8/700/700'
+  ],
+  cta: {
+    title: '¿Se te antojó algo?',
+    sub: 'Estamos listos para atenderte. Escribinos por WhatsApp y armamos tu pedido en minutos.'
+  },
+  contact: {
+    whatsapp: '', phone: '', email: 'hola@eljardincr.com', address: 'Heredia, Costa Rica',
+    hours: 'Martes a Domingo · 9:00 am - 6:00 pm', mapQuery: 'Heredia, Costa Rica',
+    facebook: '', instagram: '', tiktok: ''
+  },
+  footer: {
+    about: 'Café de especialidad, repostería y plantas vivas. Hecho con amor en Costa Rica.',
+    notice: 'Comercio asociado a MARKET CR'
+  }
+};
 function deepMerge(base, over){
   const o = {};
   Object.keys(base).forEach(k => {
@@ -10303,11 +10403,12 @@ function siteSetPath(o, path, value){
   for(let i=0;i<parts.length-1;i++){ if(!cur[parts[i]] || typeof cur[parts[i]]!=='object') cur[parts[i]] = {}; cur = cur[parts[i]]; }
   cur[parts[parts.length-1]] = value;
 }
-function siteCurrent(){ let out = deepMerge({}, SITE_DEFAULTS); if(siteConfig) out = deepMerge(out, siteConfig); return out; }
-function siteName(){ return (siteConfig && siteConfig.businessName && String(siteConfig.businessName).trim()) ? String(siteConfig.businessName).trim() : (settings && settings.storeName ? settings.storeName : 'Mi negocio'); }
-function siteTag(){ return (siteConfig && siteConfig.tagline && String(siteConfig.tagline).trim()) ? String(siteConfig.tagline).trim() : (settings && settings.tagline ? settings.tagline : (TENANT_DATA && TENANT_DATA.tagline) || ''); }
-function siteLogo(){ const u = siteConfig && siteConfig.logoUrl ? siteConfig.logoUrl : (TENANT_DATA && TENANT_DATA.logoUrl) || (settings && settings.logoUrl) || ''; return String(u||'').trim(); }
-function siteWa(){ const w = siteConfig && siteConfig.contact.whatsapp ? siteConfig.contact.whatsapp : (settings && settings.whatsapp) || ''; return String(w||'').trim(); }
+function siteDeep(v){ return JSON.parse(JSON.stringify(v)); }
+function siteCurrent(){ return deepMerge(siteDeep(SITE_DEFAULTS), siteViewOverride || siteConfig || {}); }
+function siteName(){ const sc = siteViewOverride || siteConfig || {}; return (sc.businessName && String(sc.businessName).trim()) ? String(sc.businessName).trim() : (settings && settings.storeName ? settings.storeName : 'Mi negocio'); }
+function siteTag(){ const sc = siteViewOverride || siteConfig || {}; return (sc.tagline && String(sc.tagline).trim()) ? String(sc.tagline).trim() : (settings && settings.tagline ? settings.tagline : (TENANT_DATA && TENANT_DATA.tagline) || ''); }
+function siteLogo(){ const u = (siteViewOverride && siteViewOverride.logoUrl) || (siteConfig && siteConfig.logoUrl) || (TENANT_DATA && TENANT_DATA.logoUrl) || (settings && settings.logoUrl) || ''; return String(u||'').trim(); }
+function siteWa(){ const sc = siteViewOverride || siteConfig || {}; const w = (sc.contact && sc.contact.whatsapp) ? sc.contact.whatsapp : (settings && settings.whatsapp) || ''; return String(w||'').trim(); }
 function waSite(msg){ return 'https://wa.me/' + waDigits(siteWa()) + '?text=' + encodeURIComponent(msg); }
 function siteStoreUrl(){ return location.origin + location.pathname + '?tienda=' + encodeURIComponent(TENANT_ID); }
 function sitePublicUrl(){ return siteStoreUrl() + '&web=1'; }
@@ -10363,13 +10464,23 @@ async function saveSite(){
     const cfg = readSiteEditor();
     await siteDoc.set(JSON.parse(JSON.stringify(cfg)), { merge:true });
     siteConfig = cfg;
-    toast('Sitio web guardado', 'ok');
+    toast('Landing page guardada', 'ok');
   }catch(e){ console.error(e); toast('No se pudo guardar: ' + (e && e.message ? e.message : 'error'), 'err'); }
 }
 /* ------------------------- vista pública ------------------------- */
 function openSitePublic(){
   closeSiteLightbox();
+  if(siteDemoActive) siteViewOverride = null;
   document.body.classList.add('site-mode');
+  renderSiteFull();
+  const back = document.getElementById('siteBackBtn');
+  if(back) back.style.display = document.body.classList.contains('in-admin') ? 'flex' : 'none';
+}
+function viewSiteDemo(){
+  siteDemoActive = true;
+  siteViewOverride = siteDeep(SITE_DEMO);
+  document.body.classList.add('site-mode');
+  closeSiteLightbox();
   renderSiteFull();
   const back = document.getElementById('siteBackBtn');
   if(back) back.style.display = document.body.classList.contains('in-admin') ? 'flex' : 'none';
@@ -10545,10 +10656,45 @@ function renderSiteFull(){
   root.innerHTML = html;
   applySiteSEO(c);
   siteHeaderScroll();
+  renderSiteDemoBanner();
   if(document.body.classList.contains('in-admin')){
     const back = document.getElementById('siteBackBtn');
     if(back && back.style.display !== 'flex') back.style.display = 'flex';
   }
+}
+function renderSiteDemoBanner(){
+  const root = document.getElementById('siteView');
+  if(!root) return;
+  let b = document.getElementById('svDemoBanner');
+  if(!siteDemoActive){ if(b) b.remove(); return; }
+  if(b){ root.appendChild(b); return; }
+  b = document.createElement('div');
+  b.id = 'svDemoBanner';
+  b.className = 'sv-demo-banner';
+  b.innerHTML = '✨ Estás viendo un <b>ejemplo de landing page</b> (aún no es tu página). '
+    + '&nbsp;<button class="site-demo-btn" onclick="loadSiteDemo()">Usar este ejemplo en mi negocio</button>'
+    + '&nbsp;<button class="site-demo-btn ghost" onclick="closeSiteDemo()">Cerrar</button>';
+  root.appendChild(b);
+}
+function closeSiteDemo(){
+  siteDemoActive = false;
+  siteViewOverride = null;
+  renderSiteDemoBanner();
+  if(document.body.classList.contains('site-mode') && document.body.classList.contains('in-admin')){
+    document.body.classList.remove('site-mode');
+    const btn = document.querySelector('.adm-link[data-panel="site"]');
+    if(btn) showPanel('site', btn);
+  }
+}
+function loadSiteDemo(){
+  siteDemoActive = false;
+  siteViewOverride = null;
+  siteConfig = siteDeep(SITE_DEMO);
+  renderSiteDemoBanner();
+  document.body.classList.remove('site-mode');
+  toast('Ejemplo cargado en el editor. Guardalo cuando quieras publicar.', 'ok');
+  const btn = document.querySelector('.adm-link[data-panel="site"]');
+  if(btn) showPanel('site', btn);
 }
 function siteFeaturedCard(p){
   const buy = p.productId ? '<a class="sv-btn sv-btn-dark" href="' + esc(siteStoreUrl() + '&p=' + encodeURIComponent(p.productId)) + '">Comprar</a>'
@@ -10775,7 +10921,7 @@ function renderSiteUrlRows(urls){
 }
 function readSiteEditor(){
   if(!siteConfig) siteConfig = {};
-  const c = deepMerge({}, SITE_DEFAULTS);
+  const c = siteDeep(SITE_DEFAULTS);
   SITE_EDITOR_SIMPLE.forEach(function(grp){
     grp.f.forEach(function(f){
       const id = 'sf_' + f.k.replace(/\./g,'__');
@@ -10829,7 +10975,200 @@ function shareSite(){
   const input = document.createElement('textarea'); input.value = url; document.body.appendChild(input); input.select();
   try{ document.execCommand('copy'); toast('Enlace copiado', 'ok'); }catch(e){}
   input.remove();
-  if(siteWa()) window.open('https://wa.me/' + waDigits(siteWa()) + '?text=' + encodeURIComponent('Mirá el sitio web de ' + siteName() + ': ' + url), '_blank');
+  if(siteWa()) window.open('https://wa.me/' + waDigits(siteWa()) + '?text=' + encodeURIComponent('Mirá la landing page de ' + siteName() + ': ' + url), '_blank');
+}
+/* ---------- CREACIÓN AUTOMÁTICA DE LA LANDING ----------
+   La plataforma arma la landing con la INFORMACIÓN REAL de la tienda:
+   nombre, eslogan, logo, WhatsApp, categorías, productos y precios. */
+function fillLandingImages(c){
+  const seed = (TENANT_ID || 'neg') + Math.random().toString(36).slice(2, 6);
+  if(!c.hero || !c.hero.image) c.hero.image = 'https://picsum.photos/seed/lhero-' + seed + '/900/720';
+  c.categories = (c.categories || []).map(function(x, i){ if(!x.image) x.image = 'https://picsum.photos/seed/lcat-' + seed + i + '/640/480'; return x; });
+  c.featured = (c.featured || []).map(function(x, i){ if(!x.image) x.image = 'https://picsum.photos/seed/lprod-' + seed + i + '/800/800'; return x; });
+  if(c.offer && !c.offer.image) c.offer.image = 'https://picsum.photos/seed/lofer-' + seed + '/800/600';
+  if(c.about && !c.about.image) c.about.image = 'https://picsum.photos/seed/lab-' + seed + '/800/620';
+  if(!c.gallery || !c.gallery.length) c.gallery = (SITE_DEFAULTS.gallery || []).slice();
+  c.testimonials = (c.testimonials || []).map(function(t){ t.photo = t.photo || ''; return t; });
+  return c;
+}
+function buildLandingData(){
+  const c = siteDeep(SITE_DEFAULTS);
+  const name = (settings && settings.storeName) || '';
+  const tag = (settings && settings.tagline) || (TENANT_DATA && TENANT_DATA.tagline) || '';
+  const cat = (settings && settings.categoria) || '';
+  c.businessName = name;
+  c.tagline = tag;
+  c.logoUrl = siteLogo();
+  c.active = true;
+  c.seoTitle = (name ? name + ' — ' : '') + (tag || 'Productos y servicios de calidad');
+  c.seoDesc = (tag || 'Visitá ' + (name || 'nuestro negocio')) + ' · Comprá fácil por WhatsApp con entrega a domicilio.';
+  c.hero.badge = 'Catálogo y venta directa · MARKET CR';
+  c.hero.title = 'Tu mejor opción en ' + (cat ? cat.toLowerCase() : 'productos y servicios') + (name ? ' · ' + name : '');
+  c.hero.sub = 'Pedís por WhatsApp y en minutos te enviamos lo que necesitás. Atención personalizada, calidad garantizada y precios competitivos.';
+  const sets = (settings && settings.categories) || [];
+  const cats = sets.filter(Boolean).map(function(nm, i){ return { name: nm, desc: 'Todo lo que buscás en ' + String(nm).toLowerCase() + ', con entrega y calidad garantizada.', image: 'https://picsum.photos/seed/lcat-' + TENANT_ID + i + '/640/480', tag: '' }; });
+  if(cats.length >= 2) c.categories = cats.slice(0, 8);
+  c.contact.whatsapp = siteWa();
+  c.contact.hours = (settings && settings.hours) || '';
+  if(settings && settings.shipping) c.cta.sub = 'Estamos listos para atenderte. Pedís por WhatsApp y te lo llevamos a domicilio (' + settings.shipping + ').';
+  const feats = (products || []).filter(function(p){ return !p.removed && p.active !== false && (p.unlimited || (Number(p.stock) || 0) > 0); })
+    .map(function(p){
+      const img = (Array.isArray(p.images) && p.images[0]) || p.image || 'https://picsum.photos/seed/lprod-' + p.id + '/800/800';
+      let price = fmt(p.price);
+      if(p.hasVariants){
+        const av = (p.variants || []).filter(function(v){ return !v.removed; });
+        if(av.length) price = 'Desde ' + fmt(av[0].price);
+      }
+      let old = '';
+      if(p.compareAtPrice && Number(p.compareAtPrice) > Number(p.price || 0)) old = fmt(p.compareAtPrice);
+      let tagTxt = p.tag || '';
+      if(!tagTxt && p.status === 'descuento') tagTxt = 'Oferta';
+      return { name: p.name, desc: String(p.desc || '').slice(0, 80), price: price, old: old, image: img, tag: tagTxt, productId: p.id };
+    });
+  if(feats.length >= 3) c.featured = feats.slice(0, 9);
+  const deal = (products || []).find(function(p){ return !p.removed && p.compareAtPrice && Number(p.compareAtPrice) > Number(p.price || 0); });
+  if(deal){
+    const pct = Math.max(5, Math.round(100 - (Number(deal.price || 0) / Number(deal.compareAtPrice || 1)) * 100));
+    c.offer.name = deal.name;
+    c.offer.percent = '-' + pct + '%';
+    c.offer.old = fmt(deal.compareAtPrice);
+    c.offer.price = fmt(deal.price);
+    c.offer.image = (Array.isArray(deal.images) && deal.images[0]) || deal.image || 'https://picsum.photos/seed/lofer-' + deal.id + '/800/600';
+    c.offer.ends = 'Oferta válida por tiempo limitado.';
+  }
+  const ts = [];
+  (products || []).forEach(function(p){ (Array.isArray(p.reviews) ? p.reviews : []).forEach(function(r){ if(r && r.name && r.comment) ts.push({ name: r.name, photo: '', comment: String(r.comment).slice(0, 140), stars: Math.min(5, Number(r.stars) || 5) }); }); });
+  if(ts.length >= 2) c.testimonials = ts.slice(0, 4);
+  const gl = [];
+  (products || []).forEach(function(p){ (Array.isArray(p.images) ? p.images : []).forEach(function(im){ if(gl.length < 8 && im) gl.push(im); }); });
+  if(gl.length >= 4) c.gallery = gl.slice(0, 8);
+  c.about.title = 'Conocé ' + (name || 'nuestro negocio');
+  c.about.text = tag ? tag + '. Trabajamos todos los días para ofrecerte lo mejor, con atención cercana y entregas a tiempo.' : c.about.text;
+  c.about.mission = 'Ofrecer productos y servicios de calidad con un trato cercano y honesto a precios justos.';
+  c.footer.about = tag || ('Visitá ' + (name || 'nuestro negocio') + ' y pedí por WhatsApp. Entrega a domicilio y atención personalizada.');
+  fillLandingImages(c);
+  return c;
+}
+function buildLandingFromBusiness(){
+  const setMsg = document.getElementById('siteGenMsg');
+  const setm = function(t){ if(setMsg) setMsg.textContent = t; };
+  const c = buildLandingData();
+  siteConfig = c;
+  loadSiteEditor();
+  setm('✓ Landing creada con la información de tu negocio. Revisala en las pestañas y presioná "Guardar cambios" para publicarla.');
+  toast('Landing creada con tu negocio', 'ok');
+}
+/* ---------- CREACIÓN CON IA (usa el backend aiChat + datos reales) ---------- */
+function siteAiReady(){
+  const provider = settings.aiProvider || 'gemini';
+  const hasCreds = (settings.aiConfigured !== undefined)
+    ? !!settings.aiConfigured
+    : provider === 'openrouter'
+      ? !!(settings.aiOpenrouterKey && settings.aiModel)
+      : provider === 'external'
+        ? !!(settings.aiExternalKey && settings.aiExternalModel)
+        : !!settings.aiApiKey;
+  return !!(settings.aiEnabled && hasCreds);
+}
+/* La IA escribe SOLO los textos (brief), los productos/categorías/contacto
+   siempre salen de los datos reales del negocio; así la respuesta es corta,
+   no se corta a la mitad y la landing conserva la información del admin. */
+function buildSiteGenPrompt(){
+  const facts = [];
+  facts.push('Negocio: ' + siteName());
+  if(settings && settings.tagline) facts.push('Eslogan: ' + settings.tagline);
+  if(settings && settings.categoria) facts.push('Giro: ' + settings.categoria);
+  if(settings && Array.isArray(settings.categories) && settings.categories.length) facts.push('Categorías: ' + settings.categories.join(', '));
+  const prods = (products || []).filter(function(p){ return !p.removed && p.active !== false; }).slice(0, 8)
+    .map(function(p){ return p.name + (p.hasVariants ? ' (variantes)' : '') + ' - ' + fmt(p.price); });
+  if(prods.length) facts.push('Productos destacados: ' + prods.join(' | '));
+  if(settings && settings.shipping) facts.push('Envío: ' + settings.shipping);
+  if(settings && settings.hours) facts.push('Horario: ' + settings.hours);
+  const schema = '{"hero":{"badge":"","title":"","sub":""},"benefits":[{"icon":"leaf|truck|chat|cart|heart|tag","title":"","desc":""}],"offer":{"name":"","message":""},"about":{"title":"","text":"","mission":"","values":[""],"experience":""},"whyUs":[{"icon":"","title":"","desc":""}],"testimonials":[{"name":"","comment":"","stars":5}],"cta":{"title":"","sub":""},"footer":{"about":""}}';
+  return 'Sos un redactor publicitario experto en español costarricense. Generá SOLO los TEXTOS de la landing page profesional de este negocio. No generes productos, categorías, precios ni contacto: eso ya viene de los datos reales.\n' +
+    'Datos reales del negocio:\n- ' + facts.join('\n- ') + '\n\n' +
+    'Reglas:\n' +
+    '1. Respondé SOLO en JSON válido, sin markdown y sin texto antes ni después.\n' +
+    '2. Beneficios: exactamente 4. WhyUs: exactamente 4. Testimonios: exactamente 3. Cada texto entre 8 y 25 palabras.\n' +
+    '3. Hero: badge corto, título con gancho (máx 12 palabras), sub (máx 22 palabras).\n' +
+    '4. Offer: usá el nombre del producto en oferta enviado o dejá un producto genérico del negocio, y un mensaje de urgencia breve.\n' +
+    '5. About: título (máx 10 palabras), texto (máx 45 palabras), misión y 3 valores. experience: un número.\n' +
+    '6. Evitá "Bienvenido", "ofrecemos", frases plantilla. Sonido auténtico de negocio local costarricense.\n' +
+    '7. Mantené exactamente las claves del schema. Usá SOLO campos de texto, sin emojis:\n' + schema;
+}
+function tryParseJsonLoose(raw){
+  raw = String(raw || '').trim();
+  if(raw.indexOf('```') === 0) raw = raw.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/, '').trim();
+  if(!raw) return null;
+  const tryP = function(s){ try{ const o = JSON.parse(s); return (o && typeof o === 'object') ? o : undefined; }catch(e){ return undefined; } };
+  const first = raw.indexOf('{'), last = raw.lastIndexOf('}');
+  if(first >= 0){
+    if(tryP(raw)) return tryP(raw);
+    if(last > first){
+      let cut = last;
+      while(cut > first){
+        const o = tryP(raw.slice(first, cut + 1));
+        if(o) return o;
+        cut = raw.lastIndexOf('}', cut - 1);
+      }
+    }
+    const openB = (raw.match(/\{/g) || []).length, closeB = (raw.match(/\}/g) || []).length;
+    const openA = (raw.match(/\[/g) || []).length, closeA = (raw.match(/\]/g) || []).length;
+    let s = raw.replace(/,(\s*)$/, ' ');
+    for(let i = 0; i < openA - closeA; i++) s += ']';
+    for(let i = 0; i < openB - closeB; i++) s += '}';
+    const o2 = tryP(s);
+    if(o2) return o2;
+    for(let cut = raw.length - 1; cut > first; cut--){
+      if(raw[cut] === ',' || raw[cut] === ']'){
+        const o3 = tryP(raw.slice(first, cut));
+        if(o3) return o3;
+      }
+    }
+  }
+  return null;
+}
+async function generateSiteWithAI(){
+  const setMsg = document.getElementById('siteGenMsg');
+  const setm = function(t){ if(setMsg) setMsg.textContent = t; };
+  if(!siteAiReady()){
+    setm('Para crear con IA primero activala en Configuraciones → Asistente IA (clave y modelo). Mientras tanto podés usar "Crear con mi negocio".');
+    toast('La IA no está configurada aún', 'err');
+    return;
+  }
+  setm('Creando tu landing con IA… puede tardar unos segundos.');
+  try{
+    const base = buildLandingData();
+    const prompt = buildSiteGenPrompt();
+    const data = await cloudCall('aiChat', { slug: TENANT_ID, text: 'Generá solo los textos de la landing.', system: prompt, history: [], maxTokens: 1600 });
+    let raw = (data && data.reply) || '';
+    raw = String(raw).trim();
+    let obj = tryParseJsonLoose(raw);
+    if(!obj){
+      setm('La IA cortó la respuesta… reintentando.');
+      try{
+        const data2 = await cloudCall('aiChat', { slug: TENANT_ID, text: 'Continuá generando SOLO el objeto JSON (mismo schema), breve, sin markdown ni explicaciones.', system: prompt, history: [], maxTokens: 1400 });
+        obj = tryParseJsonLoose((data2 && data2.reply) || '');
+      }catch(e2){ console.error(e2); }
+    }
+    if(obj){
+      const merged = deepMerge(base, obj);
+      fillLandingImages(merged);
+      siteConfig = merged;
+      loadSiteEditor();
+      setm('✓ Landing generada con IA (sobre tus productos reales). Revisala y presioná "Guardar cambios".');
+      toast('Landing generada con IA', 'ok');
+    }else{
+      siteConfig = base;
+      loadSiteEditor();
+      setm('La IA respondió incompleto, así que usamos los textos estándar con tus productos reales. Revisá y guardá.');
+      toast('IA incompleta: se usaron textos estándar', 'warn');
+    }
+  }catch(e){
+    console.error(e);
+    setm('No se pudo generar con IA (' + (e && e.message ? e.message : 'error') + '). Probá "Crear con mi negocio".');
+    toast('No se pudo generar con IA', 'err');
+  }
 }
 /* Ajuste en el render: cerrar el editor antes de la vista pública si hay cambios sin guardar */
 async function bootPlatform(){
@@ -10888,8 +11227,8 @@ listenSettings();
     listenProducts();
     listenEmployees();
     listenSite();
-    /* El sitio web profesional (?web=1): se muestra en pantalla completa. */
-    if(new URLSearchParams(location.search).get('web') === '1'){
+    /* El sitio web profesional (?web=1 o ?landing=1): se muestra en pantalla completa. */
+    if(new URLSearchParams(location.search).get('web') === '1' || new URLSearchParams(location.search).get('landing') === '1'){
       setTimeout(openSitePublic, 400);
     }
     /* La vista compartida del POS (?pos=1): abre el acceso de empleados */
