@@ -436,6 +436,18 @@ textarea.f-input{resize:vertical;min-height:70px}
 .pv-left{display:flex;gap:10px}
 .pv-left .pv-thumbs{display:flex;flex-direction:column;gap:8px;width:64px;flex-shrink:0;max-height:440px;overflow-y:auto;margin-top:0}
 .pv-left .pv-media{flex:1;min-width:0}
+.pv-media-wrap{position:relative;flex:1;min-width:0}
+.pv-media-wrap .pv-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:6;width:40px;height:40px;border-radius:50%;background:rgba(17,24,39,.6);color:#fff;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s}
+.pv-media-wrap .pv-nav svg{width:22px;height:22px}
+.pv-media-wrap:hover .pv-nav{opacity:1}
+.pv-media-wrap .pv-nav:active{transform:translateY(-50%) scale(.92)}
+.pv-media-wrap .pv-nav.prev{left:8px}
+.pv-media-wrap .pv-nav.next{right:8px}
+.pv-count{position:absolute;bottom:8px;right:8px;z-index:6;background:rgba(17,24,39,.6);color:#fff;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;display:none}
+@media (hover:none){
+  .pv-media-wrap .pv-nav{opacity:.9}
+  .pv-media-wrap .pv-nav{width:34px;height:34px}
+}
 .pv-right{min-width:0}
 .pv-title{font-size:19px;font-weight:800;line-height:1.32;margin-bottom:8px}
 .pv-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:12px}
@@ -2830,10 +2842,15 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <button class="close-x" onclick="closeProductView()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body">
-      <div class="pv-layout">
+<div class="pv-layout">
         <div class="pv-left">
           <div class="pv-thumbs" id="pvThumbs"></div>
-          <div class="pv-media" id="pvMedia"></div>
+          <div class="pv-media-wrap">
+            <div class="pv-media" id="pvMedia"></div>
+            <button type="button" class="pv-nav prev" onclick="pvMediaNav(-1)" aria-label="Foto anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m15 18-6-6 6-6"/></svg></button>
+            <button type="button" class="pv-nav next" onclick="pvMediaNav(1)" aria-label="Siguiente foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="pv-count" id="pvCount"></div>
+          </div>
         </div>
         <div class="pv-right">
           <h2 class="pv-title" id="pvName">Producto</h2>
@@ -3550,12 +3567,14 @@ function listenProducts(){
 /* Deep link directo a un producto (?p=ID), usado por los QR que se comparten.
    Espera a que el catálogo esté listo y abre la ficha del producto. */
 let _deepLinkPid = '';
-function scheduleProductDeepLink(pid){ _deepLinkPid = pid; }
+let _deepLinkVi = '';
+function scheduleProductDeepLink(pid, vi){ _deepLinkPid = pid; _deepLinkVi = vi || ''; }
 function maybeOpenProductDeepLink(){
   if(!_deepLinkPid) return;
-  const pid = _deepLinkPid; _deepLinkPid = '';
+  const pid = _deepLinkPid; const vi = _deepLinkVi;
+  _deepLinkPid = ''; _deepLinkVi = '';
   const p = products.find(x=>x.id===pid && x.active !== false);
-  if(p) openProductView(p.id);
+  if(p) openProductView(p.id, vi);
 }
 
 /* los pedidos completos (listado) solo los puede leer el admin, según las
@@ -4758,12 +4777,14 @@ document.getElementById('productGrid').addEventListener('click', function(e){
 let pvCurrentId = null;
 let pvSelectedVariantId = null;
 let pvQty = 1;
-function openProductView(id){
+let pvBaseMedia = [];
+function openProductView(id, preselectVi){
   const p = products.find(x=>x.id===id);
   if(!p) return;
   pvCurrentId = id;
   pvSelectedVariantId = null;
   pvQty = 1;
+  if(preselectVi && (p.variants||[]).some(x=>x.id===preselectVi && !x.removed)) pvSelectedVariantId = preselectVi;
   document.getElementById('pvQty').textContent = 1;
   document.getElementById('pvName').textContent = p.name;
   document.getElementById('pvDesc').textContent = p.desc || '';
@@ -4776,19 +4797,17 @@ function openProductView(id){
   if(ytEmbed) media.push({type:'youtube', url:ytEmbed});
   if(p.tiktokUrl) media.push({type:'tiktok', url:p.tiktokUrl});
   if(!media.length) media.push({type:'icon', url:p.icon});
-  pvShowMedia(media, 0);
-  document.getElementById('pvThumbs').innerHTML = media.map((m,i) => {
-    if(m.type==='image') return '<div class="th' + (i===0?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')"><img src="' + m.url + '"></div>';
-    if(m.type==='video'||m.type==='youtube'||m.type==='tiktok') return '<div class="th vid' + (i===0?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>';
-    return '<div class="th' + (i===0?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')" style="display:flex;align-items:center;justify-content:center;background:var(--green-soft)">' + svgIcon(m.url,30) + '</div>';
-  }).join('');
+  pvBaseMedia = media;
   pvCurrentMedia = media;
+  pvShowMedia(media, 0);
+  renderPvThumbs(media, 0);
 
   const wrap = document.getElementById('pvVariantWrap');
   if(p.hasVariants){
     document.getElementById('pvVariantLabel').textContent = p.variantGroupName || 'Tamaños';
     renderPvVariants(p);
     wrap.style.display = 'block';
+    if(pvSelectedVariantId) selectPvVariant(pvSelectedVariantId);
   } else {
     wrap.style.display = 'none';
   }
@@ -4830,20 +4849,21 @@ function selectPvVariant(vid){
   pvQty = 1;
   document.getElementById('pvQty').textContent = 1;
   renderPvVariants(p);
-  const v = activeVariants(p).find(x=>x.id===vid);
-  applyVariantImage(v);
+const v = activeVariants(p).find(x=>x.id===vid);
+  applyVariantMedia(v);
   updatePvTotal(p);
   updatePvAddBtn(p);
 }
-/* Si la opción elegida (ej. tamaño) tiene su propia foto, se muestra esa foto;
-   si no, se vuelve a la portada general del producto. */
-function applyVariantImage(v){
-  if(v && v.image){
-    const box = document.getElementById('pvMedia');
-    box.classList.remove('is-story');
-    box.innerHTML = '<img src="' + v.image + '" alt="">';
-  }
-  else if(pvCurrentMedia.length){ pvShowMedia(pvCurrentMedia, 0); }
+/* Las fotos de la variante seleccionada se muestran todas (hasta 5), pasándolas
+   con la flecha ◀ ▶; si la variante no trae fotos propias se vuelven a mostrar
+   las fotos generales del producto. */
+function applyVariantMedia(v){
+  const imgs = (v && Array.isArray(v.images) ? v.images : (v && v.image ? [v.image] : [])).filter(Boolean).slice(0,5);
+  let media = imgs.map(url => ({type:'image', url}));
+  if(!media.length) media = pvBaseMedia && pvBaseMedia.length ? pvBaseMedia.slice() : [];
+  pvCurrentMedia = media;
+  pvMediaIndex = 0;
+  if(media.length){ pvShowMedia(media, 0); renderPvThumbs(media, 0); }
 }
 function pvUnit(p){
   if(p.hasVariants){
@@ -4916,7 +4936,32 @@ function pvShowMedia(media, i){
       if(linkEl) linkEl.addEventListener('click', () => openBusiness(m.url));
     }
   }
-  else box.innerHTML = svgIcon(m.url, 120);
+else box.innerHTML = svgIcon(m.url, 120);
+  pvUpdateNav(media, i);
+}
+function pvUpdateNav(media, i){
+  const multi = media.length > 1;
+  const prev = document.querySelector('.pv-nav.prev'), next = document.querySelector('.pv-nav.next');
+  const count = document.getElementById('pvCount');
+  if(prev) prev.style.display = multi ? 'flex' : 'none';
+  if(next) next.style.display = multi ? 'flex' : 'none';
+  if(count){
+    if(multi){ count.textContent = (i+1) + ' / ' + media.length; count.style.display = 'block'; }
+    else count.style.display = 'none';
+  }
+}
+function pvMediaNav(delta){
+  if(!pvCurrentMedia.length) return;
+  const n = pvCurrentMedia.length;
+  pvShowMedia(pvCurrentMedia, ((pvMediaIndex + delta) % n + n) % n);
+  renderPvThumbs(pvCurrentMedia, pvMediaIndex);
+}
+function renderPvThumbs(media, idx){
+  document.getElementById('pvThumbs').innerHTML = media.map((m,i) => {
+    if(m.type==='image') return '<div class="th' + (i===idx?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')"><img src="' + m.url + '"></div>';
+    if(m.type==='video'||m.type==='youtube'||m.type==='tiktok') return '<div class="th vid' + (i===idx?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>';
+return '<div class="th' + (i===idx?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')" style="display:flex;align-items:center;justify-content:center;background:var(--green-soft)">' + svgIcon(m.url,30) + '</div>';
+  }).join('');
 }
 /* ---------- visor de fotos a pantalla completa ---------- */
 function openLightbox(i){
@@ -5006,13 +5051,17 @@ function shareProductQR(id){
   document.getElementById('shareModal').classList.add('show');
   trackShare();
 }
-/* QR del POS: codifica el producto Y la presentación (medida y precio) para
-   que la cámara o el láser lo lean en el punto de venta. "Cada código cambia
-   según el precio y los detalles": a distinta medida/precio, distinto QR. */
+/* QR de la etiqueta: enlaza a la ficha del producto Y a la presentación elegida
+   (medida/precio), para que escanearla abra ese producto con esa variante ya
+   seleccionada. A distinta medida/precio, distinto QR. El POS también lo lee. */
 function labelQRData(pid, variant){
-  const p = products.find(x=>x.id===pid) || null;
-  const pr = variant ? (Number(variant.price)||0) : (p ? (Number(p.price)||0) : 0);
-  return JSON.stringify({ v:1, p: pid, vi: variant ? variant.id : '', pr: pr, m: variant ? (variant.name||'') : '', n: p ? p.name : '' });
+  const vi = variant ? variant.id : '';
+  const base = (location.href.split('#')[0].split('?')[0]) || '';
+  return base +
+    (base.indexOf('?') > -1 ? '&' : '?') +
+    'tienda=' + encodeURIComponent(TENANT_ID) +
+    '&p=' + encodeURIComponent(pid) +
+    (vi ? '&vi=' + encodeURIComponent(vi) : '');
 }
 function qrImgUrl(pid, variant, size){
   const data = labelQRData(pid, variant);
@@ -5033,6 +5082,8 @@ function resolveScanCode(code){
     const m = s.match(/[?&]p=([^&]+)/);
     if(m) id = decodeURIComponent(m[1]);
     else if(s.indexOf(':') > -1) id = s.split(':').pop();
+    const vm = s.match(/[?&]vi=([^&]+)/);
+    if(vm) variantId = decodeURIComponent(vm[1]) || null;
   }
   const p = products.find(x=>x.id===id) || null;
   if(!p) return null;
@@ -5178,7 +5229,7 @@ function saveLabelPreviewPNG(){
 }
 function pvSelectThumb(i){
   pvShowMedia(pvCurrentMedia, i);
-  document.querySelectorAll('#pvThumbs .th').forEach(el=>el.classList.toggle('active', +el.dataset.i===i));
+  renderPvThumbs(pvCurrentMedia, i);
 }
 function renderPvMeta(p){
   const box = document.getElementById('pvMetaRow');
@@ -11435,9 +11486,10 @@ listenSettings();
     if(new URLSearchParams(location.search).get('pos') === '1'){
       setTimeout(openEmployeeLogin, 600);
     }
-    /* Abrir directo un producto si llegamos por QR/enlace compartido (?p=ID) */
+    /* Abrir directo un producto si llegamos por QR/enlace compartido (?p=ID y variante &vi=) */
     const dlPid = new URLSearchParams(location.search).get('p');
-    if(dlPid) scheduleProductDeepLink(dlPid);
+    const dlVi = new URLSearchParams(location.search).get('vi');
+    if(dlPid) scheduleProductDeepLink(dlPid, dlVi || '');
     /* Registrar visita a esta tienda (con fuente de tráfico) */
     setTimeout(trackPageVisit, 1200);
   }catch(e){
