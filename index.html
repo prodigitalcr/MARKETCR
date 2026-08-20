@@ -3572,9 +3572,12 @@ function scheduleProductDeepLink(pid, vi){ _deepLinkPid = pid; _deepLinkVi = vi 
 function maybeOpenProductDeepLink(){
   if(!_deepLinkPid) return;
   const pid = _deepLinkPid; const vi = _deepLinkVi;
-  _deepLinkPid = ''; _deepLinkVi = '';
   const p = products.find(x=>x.id===pid && x.active !== false);
-  if(p) openProductView(p.id, vi);
+  /* Si el catálogo aún no trajo ese producto (primer snapshot vacío), NO se
+     descarta el pendiente: se reintenta en el próximo snapshot del catálogo. */
+  if(!p) return;
+  _deepLinkPid = ''; _deepLinkVi = '';
+  openProductView(p.id, vi);
 }
 
 /* los pedidos completos (listado) solo los puede leer el admin, según las
@@ -5025,11 +5028,22 @@ async function toggleLike(id){
     await productsCol.doc(id).update({ likes: firebase.firestore.FieldValue.increment(delta) });
   }catch(e){ console.error('like error:', e); }
 }
+/* URL pública de un producto (siempre con la tienda para que el QR funcione
+   al escanearlo desde cualquier dispositivo: producto + variante opcional). */
+function storeProductUrl(id, vi){
+  const base = location.href.split('#')[0].split('?')[0] || '';
+  const q = [];
+  if(TENANT_ID) q.push('tienda=' + encodeURIComponent(TENANT_ID));
+  q.push('p=' + encodeURIComponent(id));
+  if(vi) q.push('vi=' + encodeURIComponent(vi));
+  return base + '?' + q.join('&');
+}
 function shareProduct(id){
   const p = products.find(x=>x.id===id);
   if(!p) return;
-  const url = location.href.split('#')[0].split('?')[0] + '?p=' + id;
-  const text = p.name + ' — ' + (settings.storeName||'Mi Tienda');
+  const vi = (id === pvCurrentId && pvSelectedVariantId) ? pvSelectedVariantId : '';
+  const url = storeProductUrl(id, vi);
+  const text = p.name + (vi && p.variants ? (' (' + esc(p.variants.find(x=>x.id===vi) ? p.variants.find(x=>x.id===vi).name : '') + ')') : '') + ' — ' + (settings.storeName||'Mi Tienda');
   if(navigator.share){
     navigator.share({ title:p.name, text, url }).catch(()=>{});
   } else if(navigator.clipboard){
@@ -5042,7 +5056,8 @@ function shareProduct(id){
 function shareProductQR(id){
   const p = products.find(x=>x.id===id);
   if(!p) return;
-  const url = location.href.split('#')[0].split('?')[0] + '?p=' + id;
+  const vi = (id === pvCurrentId && pvSelectedVariantId) ? pvSelectedVariantId : '';
+  const url = storeProductUrl(id, vi);
   document.getElementById('shareQR').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(url);
   const logoEl = document.getElementById('shareLogo');
   if(settings.logoUrl){ logoEl.src = settings.logoUrl; logoEl.style.display = 'block'; }
@@ -5055,13 +5070,7 @@ function shareProductQR(id){
    (medida/precio), para que escanearla abra ese producto con esa variante ya
    seleccionada. A distinta medida/precio, distinto QR. El POS también lo lee. */
 function labelQRData(pid, variant){
-  const vi = variant ? variant.id : '';
-  const base = (location.href.split('#')[0].split('?')[0]) || '';
-  return base +
-    (base.indexOf('?') > -1 ? '&' : '?') +
-    'tienda=' + encodeURIComponent(TENANT_ID) +
-    '&p=' + encodeURIComponent(pid) +
-    (vi ? '&vi=' + encodeURIComponent(vi) : '');
+  return storeProductUrl(pid, variant ? variant.id : '');
 }
 function qrImgUrl(pid, variant, size){
   const data = labelQRData(pid, variant);
@@ -5303,8 +5312,8 @@ function renderPvRelated(p){
 function closeProductView(){ document.getElementById('productViewModal').classList.remove('show'); }
 /* Hook adicional: rastrear vista de producto */
 const _origOpenProductView = openProductView;
-openProductView = function(id){
-  _origOpenProductView(id);
+openProductView = function(id, preselectVi){
+  _origOpenProductView(id, preselectVi);
   trackProductView();
 };
 </script>
@@ -11489,7 +11498,12 @@ listenSettings();
     /* Abrir directo un producto si llegamos por QR/enlace compartido (?p=ID y variante &vi=) */
     const dlPid = new URLSearchParams(location.search).get('p');
     const dlVi = new URLSearchParams(location.search).get('vi');
-    if(dlPid) scheduleProductDeepLink(dlPid, dlVi || '');
+    if(dlPid){
+      scheduleProductDeepLink(dlPid, dlVi || '');
+      /* Red de seguridad: si por algún motivo el catálogo no vuelve a emitir un
+         snapshot (ej. ya estaba cargado), reintentamos el deep link. */
+      setTimeout(maybeOpenProductDeepLink, 9000);
+    }
     /* Registrar visita a esta tienda (con fuente de tráfico) */
     setTimeout(trackPageVisit, 1200);
   }catch(e){
