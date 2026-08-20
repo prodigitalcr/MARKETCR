@@ -66,35 +66,44 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 .qrscan-stage video{width:100%;height:100%;object-fit:cover}
 .qrscan-stage .placeholder{color:#8a94a6;font-size:13px;text-align:center;padding:20px}
 /* ===================== ETIQUETA IMPRIMIBLE QR ===================== */
-.qr-label{text-align:center;font-family:var(--font);padding:14px;page-break-after:inside}
-.qr-label img{width:150px;height:150px;border:1px solid #ddd;border-radius:8px;padding:4px;background:#fff}
-.qr-label .nm{font-weight:800;font-size:15px;color:#111}
-.qr-label .pr{font-weight:700;font-size:13px;color:#555;margin-top:2px}
+.qr-label{text-align:center;font-family:var(--font);padding:18px;border:2px solid #0F5A30;border-radius:16px;max-width:430px;margin:0 auto;background:#fff;page-break-after:inside}
+.qr-label .ql-store{font-weight:800;font-size:15px;letter-spacing:1.2px;color:#0F5A30;text-transform:uppercase}
+.qr-label img{width:170px;height:170px;margin:12px auto;border:1px solid #ddd;border-radius:10px;padding:6px;background:#fff;display:block}
+.qr-label .nm{font-weight:800;font-size:17px;color:#111;line-height:1.3}
+.qr-label .pr{font-weight:900;font-size:22px;color:#0F5A30;margin-top:8px}
+.qr-label .ql-foot{font-size:11.5px;color:#64748B;margin-top:10px}
 /* Etiqueta horizontal (vista previa + impresión) */
-.hlabel{display:flex;align-items:center;gap:18px;background:#fff;border:2px solid #0F5A30;border-radius:16px;padding:18px;max-width:520px;margin:0 auto}
-.hl-qr-wrap{width:112px;height:112px;flex-shrink:0;border:1px solid #ddd;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.hl-qr-wrap img{width:100%;height:100%;object-fit:contain}
-.hl-body{flex:1;min-width:0}
-.hl-store{font-weight:800;font-size:14px;color:#0F5A30;letter-spacing:.5px;text-transform:uppercase}
-.hl-name{font-weight:800;font-size:19px;color:#111;line-height:1.2;margin:2px 0}
-.hl-measure{font-weight:700;font-size:14px;color:#555;margin:2px 0}
-.hl-price{font-weight:900;font-size:26px;color:#0F5A30;margin-top:4px}
+.hlabel{display:flex;align-items:stretch;background:#fff;border:2px solid #0F5A30;border-radius:18px;box-shadow:0 12px 28px rgba(15,90,48,.14);max-width:580px;margin:0 auto;overflow:hidden}
+.hl-top{display:flex;align-items:center;gap:7px;background:#0F5A30;color:#fff;font-weight:800;font-size:13px;letter-spacing:.9px;text-transform:uppercase;padding:11px 14px}
+.hl-top svg{width:16px;height:16px}
+.hl-body{flex:1;min-width:0;padding:16px 6px 14px 18px;display:flex;flex-direction:column;gap:4px}
+.hl-name{font-weight:800;font-size:19px;color:#111;line-height:1.25}
+.hl-measure{display:flex;align-items:center;gap:7px;font-weight:700;font-size:13.5px;color:#B45309}
+.hl-measure svg{width:15px;height:15px}
+.hl-price{font-weight:900;font-size:28px;color:#0F5A30;letter-spacing:.3px;margin-top:2px}
+.hl-foot{font-size:11.5px;color:#94A3B8;font-weight:600}
+.hl-qr-wrap{width:124px;height:124px;flex-shrink:0;margin:18px 18px 18px 0;border:1.5px solid #E2E8F0;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hl-qr-wrap img{width:106px;height:106px;object-fit:contain}
 /* Hoja de etiquetas: cada etiqueta mide 4 cm x 3 cm real al imprimir, listas
    para recortar y pegar. Se repiten en orden 1..N (hasta 5 por fila). */
-.label-sheet{display:flex;flex-wrap:wrap;gap:2px;background:#fff;width:100%}
-.sheet-label{width:4cm;height:3cm;box-sizing:border-box;border:0.5px solid #E2E8F0;border-radius:0.06cm;display:flex;align-items:center;gap:0.12cm;padding:0.1cm;position:relative;overflow:hidden;background:#fff;page-break-inside:avoid}
-.sl-qr{width:1.5cm;height:1.5cm;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.sl-qr img{width:100%;height:100%;object-fit:contain}
-.sl-body{flex:1;min-width:0;line-height:1.15;padding-right:0.2cm}
-.sl-store{font-size:0.13cm;font-weight:800;color:#0F5A30;text-transform:uppercase;letter-spacing:0.01cm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sl-name{font-size:0.21cm;font-weight:800;color:#111;line-height:1.1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.sl-measure{font-size:0.15cm;font-weight:700;color:#555;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;margin-top:0.02cm}
-.sl-price{font-size:0.26cm;font-weight:900;color:#0F5A30;margin-top:0.04cm}
-.sl-n{position:absolute;top:0.02cm;right:0.05cm;font-size:0.11cm;color:#94A3B8;font-weight:700}
+.label-sheet{display:flex;flex-wrap:wrap;gap:3px;background:#fff;width:100%}
+.sheet-label{width:4cm;height:3cm;box-sizing:border-box;border:0.4px solid #CBD5E1;border-left:0.14cm solid #0F5A30;border-radius:0.12cm;background:#fff;padding:0.05cm;position:relative;page-break-inside:avoid}
+.sl-wrap{width:100%;height:100%;display:flex;align-items:stretch;gap:0.1cm;box-sizing:border-box}
+.sl-qr{width:1.4cm;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-right:0.02cm solid #E2E8F0;padding:0.14cm 0.08cm 0.04cm 0.06cm}
+.sl-qr img{width:1.2cm;height:1.2cm;object-fit:contain}
+.sl-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;line-height:1.14;padding:0.02cm 0.1cm 0.08cm 0.12cm}
+.sl-store{font-size:0.12cm;font-weight:800;color:#0F5A30;text-transform:uppercase;letter-spacing:0.01cm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl-name{font-size:0.19cm;font-weight:800;color:#111;line-height:1.1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sl-measure{font-size:0.13cm;font-weight:700;color:#B45309;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sl-price{font-size:0.22cm;font-weight:900;color:#0F5A30}
+.sl-foot{font-size:0.1cm;color:#94A3B8;font-weight:600}
+.sl-n{position:absolute;top:0.02cm;right:0.05cm;font-size:0.1cm;color:#CBD5E1;font-weight:700}
+.sl-tag{position:absolute;top:0.05cm;right:0.05cm;width:0.24cm;height:0.24cm;border-radius:0.03cm;background:#0F5A30}
 @media print{
   .qr-label{page-break-inside:avoid}
-  @page{margin:0.5cm}
-  .sheet-label{border:0.02cm dashed #999}
+  @page{margin:0.3cm}
+  .sheet-label{border:0.02cm solid #CBD5E1}
+  .sl-body{padding-top:0.02cm}
 }
 button{font-family:var(--font);cursor:pointer;border:none;background:none}
 input,select,textarea{font-family:var(--font);font-size:14px}
@@ -388,14 +397,20 @@ textarea.f-input{resize:vertical;min-height:70px}
 .variant-row .vr-icon svg{width:16px;height:16px}
 /* hasta 5 fotos por opción (en fila horizontal compacta) */
 .vr-imgs{display:flex;flex-wrap:wrap;gap:5px;flex-shrink:0}
-.vr-slot{width:38px;height:38px;border-radius:9px;border:1px dashed var(--line);background:#FBFDFB;color:var(--green);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;transition:.15s}
+.vr-slot{width:52px;height:52px;border-radius:10px;border:1.5px dashed var(--line);background:#FBFDFB;color:var(--green);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;transition:.15s}
 .vr-slot:hover{border-color:var(--green);background:var(--green-soft)}
-.vr-slot svg{width:15px;height:15px}
-.vr-slot img{width:100%;height:100%;object-fit:cover}
+.vr-slot svg{width:17px;height:17px}
+.vr-slot img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
 .vr-slot.has{border-style:solid;background:#fff}
-.vr-slot .rm{position:absolute;top:1px;right:1px;width:15px;height:15px;border-radius:50%;background:rgba(220,38,38,.92);color:#fff;display:flex;align-items:center;justify-content:center;font-size:8.5px;line-height:1;padding:0}
+.vr-slot .rm{position:absolute;top:1px;right:1px;width:17px;height:17px;border-radius:50%;background:rgba(220,38,38,.92);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9.5px;line-height:1;padding:0}
 .vr-slot .rm:hover{background:var(--danger)}
 .vr-slot .tag{position:absolute;left:2px;bottom:2px;width:auto;height:auto;padding:1px 5px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:8px;font-weight:800;line-height:1.4}
+.vr-slot .vr-cam{position:absolute;top:1px;left:1px;width:17px;height:17px;border-radius:50%;background:rgba(15,90,48,.88);color:#fff;display:flex;align-items:center;justify-content:center}
+.vr-slot .vr-cam svg{width:9px;height:9px}
+.vr-slot .vr-cam:hover{background:#0F5A30}
+.vr-slot .vr-ai{position:absolute;bottom:1px;right:2px;width:17px;height:17px;border-radius:50%;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent));color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(124,58,237,.5)}
+.vr-slot .vr-ai svg{width:9px;height:9px}
+.vr-slot .vr-ai:disabled{opacity:.6;cursor:wait}
 .vr-fields{flex:1;display:grid;grid-template-columns:1fr 1fr 0.8fr;gap:8px;min-width:220px}
 .vr-fields input{padding:8px 10px;font-size:13px}
 .variant-row .vr-del{width:30px;height:30px;border-radius:8px;background:var(--danger-soft);color:var(--danger);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -424,17 +439,19 @@ textarea.f-input{resize:vertical;min-height:70px}
 .pv-tiktok-link svg{width:40px;height:40px;color:#fff}
 .pv-tiktok-link span{font-size:13.5px;font-weight:700}
 .pv-thumbs{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:2px}
-.pv-thumbs .th{width:64px;height:64px;flex-shrink:0;border-radius:10px;overflow:hidden;border:2px solid transparent;cursor:pointer;background:#F3F4F6}
+.pv-thumbs .th{width:80px;height:80px;flex-shrink:0;border-radius:12px;overflow:hidden;border:2px solid transparent;cursor:pointer;background:#F3F4F6}
 .pv-thumbs .th.active{border-color:var(--green)}
 .pv-thumbs .th img,.pv-thumbs .th video{width:100%;height:100%;object-fit:cover}
 .pv-thumbs .th.vid{display:flex;align-items:center;justify-content:center;color:#fff;background:#111827}
-.pv-desc{margin:16px 0;font-size:14px;color:var(--muted);line-height:1.5}
+.pv-desc{margin:16px 0;font-size:14.5px;color:var(--muted);line-height:1.65}
+.pv-desc p{margin:0 0 12px}
+.pv-desc p:last-child{margin-bottom:0}
 .pv-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;border-top:1px solid var(--line);padding-top:16px}
 
 /* --- layout dos columnas estilo Temu --- */
 .pv-layout{display:grid;grid-template-columns:1.05fr 1fr;gap:26px;align-items:start}
 .pv-left{display:flex;gap:10px}
-.pv-left .pv-thumbs{display:flex;flex-direction:column;gap:8px;width:64px;flex-shrink:0;max-height:440px;overflow-y:auto;margin-top:0}
+.pv-left .pv-thumbs{display:flex;flex-direction:column;gap:8px;width:80px;flex-shrink:0;max-height:480px;overflow-y:auto;margin-top:0}
 .pv-left .pv-media{flex:1;min-width:0}
 .pv-media-wrap{position:relative;flex:1;min-width:0}
 .pv-media-wrap .pv-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:6;width:40px;height:40px;border-radius:50%;background:rgba(17,24,39,.6);color:#fff;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s}
@@ -554,7 +571,7 @@ textarea.f-input{resize:vertical;min-height:70px}
 .pv-media.zoomable{cursor:zoom-in}
 .lightbox{position:fixed;inset:0;background:rgba(10,12,16,.94);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .lightbox.show{display:flex}
-.lightbox img{max-width:100%;max-height:88vh;object-fit:contain;border-radius:8px;-webkit-user-drag:none}
+.lightbox img{max-width:min(96vw,1100px);max-height:92vh;width:auto;height:auto;object-fit:contain;border-radius:8px;-webkit-user-drag:none}
 .lightbox-close{position:absolute;top:18px;right:18px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center}
 .lightbox-close svg{width:20px;height:20px}
 .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center}
@@ -562,6 +579,13 @@ textarea.f-input{resize:vertical;min-height:70px}
 .lightbox-nav.prev{left:16px}
 .lightbox-nav.next{right:16px}
 .lightbox-count{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:12.5px;background:rgba(255,255,255,.14);padding:5px 12px;border-radius:999px}
+/* Visor de fotos a pantalla completa en el editor (productos y variantes).
+   Aparece por encima del modal de producto (z-index:250). */
+.admin-viewer{position:fixed;inset:0;background:rgba(8,10,14,.96);z-index:1400;display:none;align-items:center;justify-content:center;padding:20px}
+.admin-viewer.show{display:flex}
+.admin-viewer img{max-width:96vw;max-height:92vh;object-fit:contain;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.admin-viewer-close{position:absolute;top:16px;right:16px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center}
+.admin-viewer-close svg{width:20px;height:20px}
 
 /* --- reseña del cliente --- */
 .review-cta{margin-top:14px;padding:14px;border:1.5px dashed var(--line);border-radius:14px;text-align:center}
@@ -2903,7 +2927,11 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
   <button class="lightbox-nav prev" id="lightboxPrev" onclick="lightboxNav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg></button>
   <img id="lightboxImg" src="" alt="">
   <button class="lightbox-nav next" id="lightboxNext" onclick="lightboxNav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 18 6-6-6-6"/></svg></button>
-  <span class="lightbox-count" id="lightboxCount"></span>
+<span class="lightbox-count" id="lightboxCount"></span>
+</div>
+<div class="admin-viewer" id="adminViewer" onclick="if(event.target===this)closeAdminViewer()">
+  <button class="admin-viewer-close" onclick="closeAdminViewer()" title="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  <img id="adminViewerImg" src="" alt="Vista previa en alta resolución">
 </div>
 
 <!-- ================= RESEÑA DEL CLIENTE ================= -->
@@ -3662,6 +3690,14 @@ async function setProductStatus(id, status){
 /* ---------- helpers ---------- */
 function fmt(n){ return '₡' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u2009'); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+/* Convierte la descripción del producto en párrafos: cada renglón/espacio en
+   blanco ingresado en el editor pasa a ser un párrafo separado en la ficha. */
+function descParagraphs(t){
+  return String(t||'').split(/\n+/).map(p => {
+    const s = p.trim();
+    return s ? '<p>' + esc(s) + '</p>' : '';
+  }).join('');
+}
 function toast(msg, type){
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'show ' + (type||'');
@@ -3699,10 +3735,39 @@ function compressImageFile(file, maxDim, quality){
       };
       img.src = reader.result;
     };
-    reader.readAsDataURL(file);
+reader.readAsDataURL(file);
   });
 }
 
+/* Comprime una foto de VARIANTE a un cuadrado exacto de size×size px: recorta
+   el centro de la imagen, la escala a un único tamaño estandarizado y la guarda
+   en base64. Así todas las fotos de los tamaños se abren a 1280×1280 en la
+   tienda (nítidas, con la misma proporción que las miniaturas y el visor). */
+function compressSquareImageFile(file, size, quality){
+  return new Promise((resolve, reject) => {
+    if(!file || !file.type.startsWith('image/')){ reject(new Error('Archivo no es una imagen')); return; }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('No se pudo cargar la imagen'));
+      img.onload = () => {
+        const s = Math.round(size) || 1280;
+        const side = Math.min(img.width, img.height);
+        const sx = Math.max(0, Math.round((img.width - side) / 2));
+        const sy = Math.max(0, Math.round((img.height - side) / 2));
+        const canvas = document.createElement('canvas');
+        canvas.width = s; canvas.height = s;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, s, s);
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, s, s);
+        resolve(canvas.toDataURL('image/jpeg', quality || 0.86));
+      };
+      img.src = reader.result;
+    };
+reader.readAsDataURL(file);
+  });
+}
 /* Igual que compressImageFile, pero parte de una foto que YA está en memoria
    como base64 (no un archivo nuevo) y la reduce más todavía. Se usa para
    generar la miniatura liviana ("thumb") de cada foto de producto en el
@@ -3740,15 +3805,58 @@ async function buildThumbsFor(images){
   }
   return out;
 }
+/* Presupuesto de tamaño para TODAS las fotos base64 de un producto (portada
+   + fotos + variantes) dentro del documento de Firestore (límite 1 MiB). Se
+   usa solo como red de seguridad: mientras el total quepa, las fotos se
+   guardan a 1600 px en su tamaño completo para que el cliente las vea
+   nítidas y grandes. Solo si el documento quedaría muy pesado se bajan en
+   pasos (empezando por las menos importantes) para que el guardado nunca
+   falle. */
+const PRODUCT_MEDIA_BUDGET = 900000; // caracteres base64 (~675 KB) con margen
+
+function imageCharSize(u){ return u ? u.length : 0; }
+
+/* Reduce una foto (que ya está en memoria como base64) hasta que su versión
+   JPEG quepa dentro de capChars, bajando el lado mayor en pasos. Devuelve la
+   foto ajustada; si ya cabe, la devuelve tal cual. */
+async function fitImageChars(url, capChars, minDim){
+  if(imageCharSize(url) <= capChars) return url;
+  const img = await new Promise((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => rej(new Error('No se pudo leer la imagen para ajustar el tamaño'));
+    i.src = url;
+  });
+  const min = minDim || 360;
+  let w = img.naturalWidth || 800, h = img.naturalHeight || 800;
+  let step = 0;
+  while(step < 16){
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    const out = canvas.toDataURL('image/jpeg', 0.82);
+    if(out.length <= capChars || w <= min) return out;
+    w = Math.max(min, Math.round(w * 0.82));
+    h = Math.max(min, Math.round(h * 0.82));
+    step++;
+  }
+  return url;
+}
 /* Botón "Optimizar fotos" del Inventario: genera miniaturas livianas para
    los productos que se crearon ANTES de este acelerador (o que se subieron
    con fotos pero nunca se volvieron a guardar), sin que el admin tenga que
    editar producto por producto. Es opcional: la tienda ya funciona sin
    esto, pero el catálogo pintará más rápido después de correrlo. */
 let optimizingThumbs = false;
+function productNeedsThumbs(p){
+  if(p.images && p.images.length && (!p.thumbs || p.thumbs.length < p.images.length)) return true;
+  return (p.variants||[]).some(v => !v.removed && (v.images||[]).filter(Boolean).length && (!v.thumbs || v.thumbs.length < (v.images||[]).filter(Boolean).length));
+}
 async function optimizeCatalogThumbs(){
   if(optimizingThumbs) return;
-  const pending = products.filter(p => p.images && p.images.length && (!p.thumbs || p.thumbs.length < p.images.length));
+  const pending = products.filter(productNeedsThumbs);
   if(!pending.length){ toast('Todas las fotos del catálogo ya están optimizadas ✨', 'ok'); return; }
   optimizingThumbs = true;
   const btn = document.getElementById('btnOptimizeThumbs');
@@ -3757,8 +3865,19 @@ async function optimizeCatalogThumbs(){
   if(btn){ btn.disabled = true; btn.innerHTML = 'Optimizando 0/' + pending.length + '…'; }
   for(const p of pending){
     try{
-      const thumbs = await buildThumbsFor(p.images);
-      await productsCol.doc(p.id).set({ thumbs }, { merge:true });
+      const patch = {};
+      if(p.images && p.images.length && (!p.thumbs || p.thumbs.length < p.images.length)) patch.thumbs = await buildThumbsFor(p.images);
+      const variants = (p.variants||[]);
+      const newVariants = [];
+      let vChanged = false;
+      for(const v of variants){
+        const imgs = (v.images||[]).filter(Boolean);
+        const need = !v.removed && imgs.length && (!v.thumbs || v.thumbs.length < imgs.length);
+        if(need){ newVariants.push(Object.assign({}, v, { thumbs: await buildThumbsFor(imgs) })); vChanged = true; }
+        else newVariants.push(v);
+      }
+      if(vChanged) patch.variants = newVariants;
+      await productsCol.doc(p.id).set(patch, { merge:true });
     }catch(e){ console.error('No se pudo optimizar', p.id, e); }
     done++;
     if(btn) btn.innerHTML = 'Optimizando ' + done + '/' + pending.length + '…';
@@ -3766,44 +3885,56 @@ async function optimizeCatalogThumbs(){
   optimizingThumbs = false;
   if(btn){ btn.disabled = false; btn.innerHTML = originalHTML; }
   syncThumbButtons();
-  toast('Fotos optimizadas: ' + done + ' producto(s). El catálogo cargará más rápido de ahora en más.', 'ok');
+  toast('Fotos optimizadas: ' + done + ' producto(s), incluidas las de variantes. El catálogo cargará más rápido de ahora en más.', 'ok');
 }
 /* Muestra u oculta el botón "Restaurar fotos originales" según si hay
-   productos con miniaturas generadas (thumbs). Se llama tras optimizar,
-   tras restaurar y cada vez que se vuelve a pintar el inventario. */
+   productos con miniaturas generadas (thumbs de producto o de variantes).
+   Se llama tras optimizar, tras restaurar y cada vez que se pinta el inventario. */
+function productHasThumbs(p){
+  if(p.thumbs && p.thumbs.length) return true;
+  if(p.optimizedPhotos) return true;
+  return (p.variants||[]).some(v => v.thumbs && v.thumbs.length);
+}
 function syncThumbButtons(){
-  const hasThumbs = products.some(p => (p.thumbs && p.thumbs.length) || (p.optimizedPhotos));
+  const hasThumbs = products.some(productHasThumbs);
   const restoreBtn = document.getElementById('btnRestoreThumbs');
   const optimizeBtn = document.getElementById('btnOptimizeThumbs');
   if(restoreBtn) restoreBtn.style.display = hasThumbs ? '' : 'none';
-  if(optimizeBtn){
-    const pending = products.some(p => p.images && p.images.length && (!p.thumbs || p.thumbs.length < p.images.length));
-    optimizeBtn.style.display = pending ? '' : 'none';
-  }
+  if(optimizeBtn) optimizeBtn.style.display = products.some(productNeedsThumbs) ? '' : 'none';
 }
 /* Revierte el botón "Optimizar fotos": borra las miniaturas livianas (thumbs)
-   de todos los productos con fotos, de modo que las páginas vuelvan a usar
+   de los productos Y de sus variantes, de modo que las páginas vuelvan a usar
    las fotos ORIGINALES que el admin subió. Es la operación inversa exacta:
    los thumbs son datos derivados que se regeneran automáticamente al guardar
-   el producto de nuevo, así que renunciar a ellos no pierde información.
+   de nuevo, así que renunciar a ellos no pierde información.
    Pide confirmación por si fue un toque accidental. */
 async function restoreOriginalThumbs(){
-  const affected = products.filter(p => (p.thumbs && p.thumbs.length) || p.optimizedPhotos);
+  const affected = products.filter(productHasThumbs);
   if(!affected.length){ toast('No hay fotos optimizadas para restaurar.', 'warn'); return; }
-  if(!window.confirm('Restaurar las fotos originales de ' + affected.length + ' producto(s)? Se quitarán las miniaturas livianas y el catálogo volverá a usar las fotos completas. Podés volver a optimizar en cualquier momento.')) return;
+  if(!window.confirm('Restaurar las fotos originales de ' + affected.length + ' producto(s)? Se quitarán las miniaturas livianas (incluidas las de las variantes) y se usarán las fotos completas. Podés volver a optimizar en cualquier momento.')) return;
   const btn = document.getElementById('btnRestoreThumbs');
   const originalHTML = btn ? btn.innerHTML : '';
   let done = 0;
   if(btn){ btn.disabled = true; btn.innerHTML = 'Restaurando…'; }
   for(const p of affected){
     try{
-      await productsCol.doc(p.id).set({ thumbs:[] }, { merge:true });
+      const patch = {};
+      if(p.thumbs && p.thumbs.length || p.optimizedPhotos) patch.thumbs = [];
+      const variants = (p.variants||[]);
+      const newVariants = [];
+      let vChanged = false;
+      for(const v of variants){
+        if(v.thumbs && v.thumbs.length){ newVariants.push(Object.assign({}, v, { thumbs: [] })); vChanged = true; }
+        else newVariants.push(v);
+      }
+      if(vChanged) patch.variants = newVariants;
+      await productsCol.doc(p.id).set(patch, { merge:true });
     }catch(e){ console.error('No se pudo restaurar', p.id, e); }
     done++;
   }
   if(btn){ btn.disabled = false; btn.innerHTML = originalHTML; }
   syncThumbButtons();
-  toast('Fotos restauradas: ' + done + ' producto(s). Se usan de nuevo las fotos originales.', 'ok');
+  toast('Fotos restauradas: ' + done + ' producto(s), incluidas las de variantes. Se usan de nuevo las fotos originales.', 'ok');
 }
 
 /* Convierte enlaces de YouTube (watch, youtu.be, shorts) a una URL de embed. Devuelve null si no aplica. */
@@ -4790,11 +4921,11 @@ function openProductView(id, preselectVi){
   if(preselectVi && (p.variants||[]).some(x=>x.id===preselectVi && !x.removed)) pvSelectedVariantId = preselectVi;
   document.getElementById('pvQty').textContent = 1;
   document.getElementById('pvName').textContent = p.name;
-  document.getElementById('pvDesc').textContent = p.desc || '';
+  document.getElementById('pvDesc').innerHTML = descParagraphs(p.desc);
   document.getElementById('pvShipTxt').textContent = settings.shipping || 'Envío disponible';
   renderPvMeta(p);
   const media = [];
-  (p.images||[]).forEach(url => media.push({type:'image', url}));
+  (p.images||[]).forEach((url, i) => media.push({type:'image', url, thumb: (p.thumbs && p.thumbs[i]) || ''}));
   if(p.videoUrl) media.push({type:'video', url:p.videoUrl});
   const ytEmbed = youtubeEmbedUrl(p.videoLink);
   if(ytEmbed) media.push({type:'youtube', url:ytEmbed});
@@ -4862,7 +4993,8 @@ const v = activeVariants(p).find(x=>x.id===vid);
    las fotos generales del producto. */
 function applyVariantMedia(v){
   const imgs = (v && Array.isArray(v.images) ? v.images : (v && v.image ? [v.image] : [])).filter(Boolean).slice(0,5);
-  let media = imgs.map(url => ({type:'image', url}));
+  const vThumbs = (v && Array.isArray(v.thumbs)) ? v.thumbs : [];
+  let media = imgs.map((url, idx) => ({type:'image', url, thumb: vThumbs[idx] || ''}));
   if(!media.length) media = pvBaseMedia && pvBaseMedia.length ? pvBaseMedia.slice() : [];
   pvCurrentMedia = media;
   pvMediaIndex = 0;
@@ -4961,7 +5093,7 @@ function pvMediaNav(delta){
 }
 function renderPvThumbs(media, idx){
   document.getElementById('pvThumbs').innerHTML = media.map((m,i) => {
-    if(m.type==='image') return '<div class="th' + (i===idx?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')"><img src="' + m.url + '"></div>';
+    if(m.type==='image') return '<div class="th' + (i===idx?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')"><img src="' + (m.thumb || m.url) + '"></div>';
     if(m.type==='video'||m.type==='youtube'||m.type==='tiktok') return '<div class="th vid' + (i===idx?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>';
 return '<div class="th' + (i===idx?' active':'') + '" data-i="' + i + '" onclick="pvSelectThumb(' + i + ')" style="display:flex;align-items:center;justify-content:center;background:var(--green-soft)">' + svgIcon(m.url,30) + '</div>';
   }).join('');
@@ -5108,11 +5240,12 @@ function printProductLabel(id){
   if(!p) return;
   const qr = qrImgUrl(id, null, 480);
   const label = '<div class="qr-label">' +
-    '<div style="font-weight:800;font-size:18px;color:#111">' + esc(settings.storeName || '') + '</div>' +
+    '<div class="ql-store">' + esc(settings.storeName || '') + '</div>' +
     '<img src="' + qr + '" alt="QR">' +
     '<div class="nm">' + esc(p.name) + '</div>' +
     (p.tag ? '<div class="prod-tag" style="color:#5B21B6;background:#F5E9FB;margin-top:6px">' + esc(p.tag) + '</div>' : '') +
     '<div class="pr">' + displayPrice(p) + '</div>' +
+    '<div class="ql-foot">Escaneá y llevá este producto</div>' +
     '</div>';
   document.getElementById('printArea').innerHTML = label;
   window.print();
@@ -5120,6 +5253,7 @@ function printProductLabel(id){
 }
 /* ---------- Vista previa de etiqueta (QR · nombre · medida · precio) ---------- */
 let labelPreviewPid = null;
+let labelFromInventory = false;
 function labelPreviewInfo(){
   let p = products.find(x=>x.id===labelPreviewPid);
   const existing = !!p;
@@ -5128,8 +5262,11 @@ function labelPreviewInfo(){
     const price = parseFloat(document.getElementById('pPrice').value)||0;
     p = { id: labelPreviewPid, name: name || 'Producto', price };
   }
-  const idx = parseInt(document.getElementById('labelMeasureSel').value) || -1;
-  const vActs = (pmVariants||[]).filter(v=>!v.removed);
+  const idxRaw = parseInt(document.getElementById('labelMeasureSel').value, 10);
+  const idx = isNaN(idxRaw) ? -1 : idxRaw;
+  const vActs = existing && labelFromInventory && p.hasVariants
+    ? activeVariants(p)
+    : (pmVariants||[]).filter(v=>!v.removed);
   let medida = '', price = Number(p.price)||0;
   const variant = (idx>=0 && vActs[idx]) ? vActs[idx] : null;
   if(variant){ medida = (variant.name||'').trim(); price = Number(variant.price)||0; }
@@ -5138,18 +5275,36 @@ function labelPreviewInfo(){
 }
 function hlabelHTML(info){
   return '<div class="hlabel">' +
-    '<div class="hl-qr-wrap"><img src="' + esc(info.qrUrl) + '" alt="QR"></div>' +
+    '<div class="hl-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M8 7V5h8v2"/><path d="m15 3-1 4M17 6l-1.5 4.5"/></svg>' + esc(settings.storeName || '') + '</div>' +
     '<div class="hl-body">' +
-      '<div class="hl-store">' + esc(settings.storeName || '') + '</div>' +
       '<div class="hl-name">' + esc(info.p.name) + '</div>' +
-      (info.medida ? '<div class="hl-measure">Medida: ' + esc(info.medida) + '</div>' : '') +
+      (info.medida ? '<div class="hl-measure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h14M7 5v14M3 19h14M13 12h7M17 9l3 3-3 3"/></svg>' + esc(info.medida) + '</div>' : '') +
       '<div class="hl-price">' + fmt(info.price) + '</div>' +
+      '<div class="hl-foot">Escaneá y llevá este producto</div>' +
     '</div>' +
+    '<div class="hl-qr-wrap"><img src="' + esc(info.qrUrl) + '" alt="QR"></div>' +
   '</div>';
+}
+function openInventoryLabel(pid){
+  const p = products.find(x=>x.id===pid);
+  if(!p) return;
+  labelPreviewPid = pid;
+  labelFromInventory = true;
+  const vActs = p.hasVariants ? activeVariants(p) : [];
+  const sel = document.getElementById('labelMeasureSel');
+  sel.innerHTML = '<option value="-1">Sin medida</option>' +
+    vActs.map((v,i)=>'<option value="'+i+'">' + esc(v.name||('Opción '+(i+1))) + ' — ' + fmt(v.price) + '</option>').join('');
+  sel.value = (vActs.length ? '0' : '-1');
+  renderLabelPreview();
+  document.getElementById('labelPreviewHint').textContent = p.hasVariants
+    ? 'Elegí la medida/presentación: cada QR lleva al producto y a esa variante exacta.'
+    : 'Etiqueta lista en 4 cm × 3 cm. El QR lleva a esta ficha de producto.';
+  document.getElementById('labelPreviewModal').classList.add('show');
 }
 function openLabelPreview(){
   const pid = document.getElementById('pId').value.trim();
   labelPreviewPid = pid || ('TMP' + Date.now().toString(36).toUpperCase());
+  labelFromInventory = false;
   const existing = !!pid;
   const vActs = (pmVariants||[]).filter(v=>!v.removed);
   const sel = document.getElementById('labelMeasureSel');
@@ -5171,14 +5326,16 @@ function renderLabelPreview(){
   document.getElementById('labelPreviewBox').innerHTML = hlabelHTML(info);
 }
 function sheetLabelHTML(info, n){
-  return '<div class="sl-qr"><img src="' + esc(info.qrUrl) + '" alt="QR"></div>' +
+  return '<div class="sl-wrap"><div class="sl-qr"><img src="' + esc(info.qrUrl) + '" alt="QR"></div>' +
     '<div class="sl-body">' +
       '<div class="sl-store">' + esc(settings.storeName || '') + '</div>' +
       '<div class="sl-name">' + esc(info.p.name) + '</div>' +
       (info.medida ? '<div class="sl-measure">' + esc(info.medida) + '</div>' : '') +
       '<div class="sl-price">' + fmt(info.price) + '</div>' +
+      '<div class="sl-foot">Escaneá y llevá</div>' +
     '</div>' +
-    '<span class="sl-n">' + n + '</span>';
+    '<span class="sl-n">' + n + '</span>' +
+    '<span class="sl-tag"></span></div>';
 }
 function printProductLabelPreview(){
   const info = labelPreviewInfo();
@@ -6342,7 +6499,7 @@ return '<tr>' +
       '<td>' + (p.unlimited ? '<span class="pill blue">Servicio</span>' : totalStock) + '</td>' +
       '<td>' + statusSel + (st.cls==='low' ? '<div class="tbl-cat" style="margin-top:4px;color:#B45309">Pocas unidades</div>' : '') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="icon-btn" title="Etiqueta con QR (imprimir)" onclick="printProductLabel(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6"/><rect x="4" y="2" width="16" height="20" rx="2"/></svg></button>' +
+        '<button class="icon-btn" title="Ver etiqueta con QR (trae al producto y a su variante)" onclick="openInventoryLabel(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6"/><rect x="4" y="2" width="16" height="20" rx="2"/></svg></button>' +
         '<button class="icon-btn" title="Compartir QR" onclick="shareProductQR(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM21 14v7M14 21h1"/></svg></button>' +
         '<button class="icon-btn" title="Editar" onclick="openProductModal(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>' +
         '<button class="icon-btn danger" title="Eliminar" onclick="deleteProduct(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
@@ -6373,7 +6530,9 @@ function onImageFileChosen(input){
   const file = input.files && input.files[0];
   const slot = imgFileSlot;
   if(!file || slot===null){ input.value=''; return; }
-  compressImageFile(file, 1280, 0.82).then(dataUrl => {
+  /* Alta resolución igual que las fotos de variantes (1600 px): el cliente
+     ve la portada nítida y grande cuando la amplía en la ficha. */
+  compressImageFile(file, 1600, 0.86).then(dataUrl => {
     pmImages[slot] = dataUrl;
     renderImageGrid();
   }).catch(()=> toast('No se pudo procesar esa foto', 'err'));
@@ -6417,6 +6576,64 @@ async function generateWhiteBackgroundImage(slot){
     // renderImageGrid() ya reconstruye el botón; esto solo cubre el caso de error donde no se re-renderiza
     const btn2 = document.getElementById('aiBgBtn' + slot);
     if(btn2){ btn2.disabled = false; btn2.textContent = 'Fondo blanco'; }
+  }
+}
+
+/* Visor de fotos a pantalla completa del editor: muestra la foto en su
+   resolución real (la que se va a guardar), para verificar nitidez antes
+   de publicar. Funciona igual para fotos de producto y de variantes. */
+let _adminViewerEl = null, _adminViewerImg = null;
+function openAdminViewer(url){
+  if(!url) return;
+  if(!_adminViewerEl){
+    _adminViewerEl = document.getElementById('adminViewer');
+    _adminViewerImg = document.getElementById('adminViewerImg');
+  }
+  _adminViewerImg.src = url;
+  _adminViewerEl.classList.add('show');
+}
+function closeAdminViewer(ev){
+  if(ev && ev.target && ev.target !== document.getElementById('adminViewer')) return;
+  const el = _adminViewerEl || document.getElementById('adminViewer');
+  if(el) el.classList.remove('show');
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' || e.key === 'Esc') closeAdminViewer();
+});
+
+/* Fondo blanco con IA para una foto de variante: mismo backend seguro
+   (Cloud Function "aiImage") que usa la foto del producto. */
+async function generateVariantWhiteBackground(vid, idx){
+  if(!planAllows('ai-image')){ showPlanWall('ai-image'); return; }
+  const v = pmVariants.find(x=>x.id===vid);
+  if(!v) return;
+  const arr = variantImagesPadded(v);
+  const sourceUrl = arr[idx];
+  if(!sourceUrl){ toast('Subí primero la foto de esa posición', 'err'); return; }
+  const model = settings.aiImageModel || '';
+  if(!model){
+    toast('Configurá el modelo de imagen en Configuraciones → Asistente de IA', 'err');
+    return;
+  }
+  const btnEl = document.getElementById('vrAiBtn' + vid + '_' + idx);
+  if(btnEl) btnEl.disabled = true;
+  try{
+    const res = await cloudCall('aiImage', { slug: TENANT_ID, imageUrl: sourceUrl });
+    if(res && res.image){
+      arr[idx] = res.image;
+      v.images = arr.filter(Boolean);
+      v.image = v.images[0] || '';
+      renderVariantsPanel();
+      toast('Foto con fondo blanco generada ✨', 'ok');
+    } else {
+      toast((res && res.error) || 'El modelo elegido no devolvió una imagen. Probá con otro modelo de imagen en Configuraciones.', 'err');
+    }
+  }catch(err){
+    console.error(err);
+    toast('No se pudo generar la imagen desde el servidor: ' + (err.message||'error'), 'err');
+  }finally{
+    const b2 = document.getElementById('vrAiBtn' + vid + '_' + idx);
+    if(b2) b2.disabled = false;
   }
 }
 
@@ -6502,11 +6719,15 @@ function renderVariantsPanel(){
     '<div class="variant-row">' +
       '<div class="vr-main">' +
         '<div class="vr-imgs">' + variantImagesPadded(v).map((img,i) =>
-          '<span class="vr-slot' + (img?' has':'') + '" title="' + (img ? 'Cambiar foto ' + (i+1) + ' (la 1 es la principal)' : 'Subir foto ' + (i+1)) + '" onclick="triggerVariantImageUpload(\'' + v.id + '\',' + i + ')">' +
-            (img ? '<img src="' + img + '">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>') +
-            (img ? '<span class="rm" onclick="event.stopPropagation();removeVariantImage(\'' + v.id + '\',' + i + ')" title="Quitar foto">✕</span>' : '') +
-            (i===0 ? '<span class="tag">1º</span>' : '') +
-          '</span>'
+          (img
+            ? '<span class="vr-slot has" title="Ver la foto ampliada en alta resolución">' +
+                '<img src="' + img + '" onclick="event.stopPropagation();openAdminViewer(this.src)" alt="Foto ' + (i+1) + '">' +
+                (i===0 ? '<span class="tag">1º</span>' : '') +
+                '<button type="button" class="vr-cam" title="Cambiar esta foto" onclick="event.stopPropagation();triggerVariantImageUpload(\'' + v.id + '\',' + i + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>' +
+                '<button type="button" class="rm" title="Quitar foto" onclick="event.stopPropagation();removeVariantImage(\'' + v.id + '\',' + i + ')">✕</button>' +
+                '<button type="button" class="vr-ai" id="vrAiBtn' + v.id + '_' + i + '" title="Generar fondo blanco con IA" onclick="event.stopPropagation();generateVariantWhiteBackground(\'' + v.id + '\',' + i + ')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 1.8 4.4L18 8l-4.2 1.6L12 14l-1.8-4.4L6 8l4.2-1.6z"/></svg></button>' +
+              '</span>'
+            : '<span class="vr-slot" title="Subir foto ' + (i+1) + '" onclick="triggerVariantImageUpload(\'' + v.id + '\',' + i + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>')
         ).join('') + '</div>' +
         '<div class="vr-fields">' +
           '<input class="f-input" placeholder="Nombre (Ej: M)" value="' + esc(v.name) + '" oninput="variantField(\'' + v.id + '\',\'name\',this.value)">' +
@@ -6548,7 +6769,9 @@ function onVariantImageFileChosen(input){
   const file = input.files && input.files[0];
   const slot = variantImgSlot;
   if(!file || !slot){ input.value=''; return; }
-  compressImageFile(file, 700, 0.72).then(dataUrl => {
+  /* Fotos de los tamaños → cuadrado 1280×1280: así el cliente las ve
+     perfectamente nítidas y grandes al abrir la ficha o hacer zoom. */
+  compressSquareImageFile(file, 1280, 0.86).then(dataUrl => {
     const v = pmVariants.find(x=>x.id===slot.id);
     if(!v){ input.value=''; return; }
     const arr = variantImagesPadded(v);
@@ -6692,14 +6915,14 @@ async function saveProduct(){
   }
 
   let price, stock, unlimited, variants = [], variantGroupName = '';
-  if(hasVariants){
+if(hasVariants){
     variantGroupName = document.getElementById('pVariantGroup').value.trim() || 'Tamaños';
-variants = pmVariants
-      .map(v => {
-        const imgs = variantImagesPadded(v).filter(Boolean);
-        return { id:v.id, name:(v.name||'').trim(), price:Math.max(0,+v.price||0), stock:Math.max(0,Math.round(+v.stock||0)), removed:!!v.removed, image: imgs[0] || '', images: imgs };
-      })
-      .filter(v => v.name || v.removed);
+    variants = [];
+    for(const v of pmVariants){
+      const imgs = variantImagesPadded(v).filter(Boolean);
+      variants.push({ id:v.id, name:(v.name||'').trim(), price:Math.max(0,+v.price||0), stock:Math.max(0,Math.round(+v.stock||0)), removed:!!v.removed, image: imgs[0] || '', images: imgs, thumbs: imgs.length ? await buildThumbsFor(imgs) : [] });
+    }
+    variants = variants.filter(v => v.name || v.removed);
     const activeV = variants.filter(v=>!v.removed);
     if(!activeV.length){ toast('Agregá al menos una opción de variante (ej: M, S, XL)', 'err'); return; }
     if(activeV.some(v=>!v.name)){ toast('Todas las opciones activas necesitan un nombre', 'err'); return; }
@@ -6730,7 +6953,33 @@ variants = pmVariants
   // (ver firstThumb). Se generan siempre al guardar, así que con solo volver
   // a guardar un producto viejo (aunque no le cambies nada) ya gana el
   // acelerador de carga.
-  const thumbs = images.length ? await buildThumbsFor(images) : [];
+  let thumbs = images.length ? await buildThumbsFor(images) : [];
+
+  // Red de seguridad de tamaño (límite 1 MiB por documento de Firestore):
+  // mientras el total de fotos (portada + fotos + tamaños) quepa, se guardan
+  // completas a 1600 px para que el cliente las vea nítidas y grandes. Si el
+  // documento quedaría muy pesado, se reducen en pasos las fotos menos
+  // importantes (tamaños y fotos adicionales primero) para que el guardado
+  // nunca falle ni se pierdan fotos por error de Firestore.
+  let totalMediaChars = images.reduce((s,u)=>s+imageCharSize(u),0)
+    + variants.reduce((s,v)=>s+(v.images||[]).reduce((t,u)=>t+imageCharSize(u),0),0);
+  if(totalMediaChars > PRODUCT_MEDIA_BUDGET){
+    const cells = [];
+    for(const v of variants){
+      (v.images||[]).forEach((u,i)=>{ if(u){ cells.push({ arr: v.images, i }); } });
+    }
+    images.forEach((u,i)=>{ if(u){ cells.push({ arr: images, i }); } });
+    const perCell = Math.max(12000, Math.floor(PRODUCT_MEDIA_BUDGET / Math.max(1, cells.length)));
+    for(const c of cells){
+      try{ c.arr[c.i] = await fitImageChars(c.arr[c.i], perCell); }
+      catch(e){ console.warn('No se pudo ajustar el peso de una foto:', e); }
+    }
+    thumbs = images.length ? await buildThumbsFor(images) : [];
+    for(const v of variants){
+      const imgs = (v.images||[]).filter(Boolean);
+      if(imgs.length){ try{ v.thumbs = await buildThumbsFor(imgs); } catch(e){ v.thumbs = []; } }
+    }
+  }
 
 const data = {
     name, desc:document.getElementById('pDesc').value.trim(), price,
