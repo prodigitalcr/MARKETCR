@@ -2408,7 +2408,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </div>
       <div class="f-row">
         <div class="f-group" style="flex:2">
-          <label>🤖 Modelo de OpenRouter (gratis)</label>
+          <label>🤖 Modelo de OpenRouter (gratis) — chat</label>
           <select class="sort-select" id="saAiModel" style="width:100%">
             <option value="">Cargá los modelos gratis primero</option>
           </select>
@@ -2416,6 +2416,18 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div class="f-group" style="flex:1">
           <label>&nbsp;</label>
           <button class="btn-ghost" style="width:100%;padding:11px 14px;white-space:normal" onclick="saLoadAiModels()" title="Trae de OpenRouter solo los modelos gratuitos que sirven para chat">🔄 Cargar modelos gratis</button>
+        </div>
+      </div>
+      <div class="f-row">
+        <div class="f-group" style="flex:2">
+          <label>🖼️ Modelo para fondo blanco — imagen</label>
+          <select class="sort-select" id="saAiImageModel" style="width:100%">
+            <option value="">Cargá los modelos de imagen primero</option>
+          </select>
+        </div>
+        <div class="f-group" style="flex:1">
+          <label>&nbsp;</label>
+          <button class="btn-ghost" style="width:100%;padding:11px 14px;white-space:normal" onclick="saLoadAiImageModels()" title="Trae de OpenRouter los modelos que soportan salida de imagen (son de pago, el más barato es google/gemini-3.1-flash-lite-image)">🔄 Cargar modelos de imagen</button>
         </div>
       </div>
       <div id="saAiKeyStatus" style="font-size:12.5px;margin-bottom:8px;color:var(--muted)"></div>
@@ -6320,10 +6332,6 @@ document.getElementById('sAiName').value = settings.aiAssistantName||'Cana';
   const _saAiBlocks = ['sAiGeminiBlock','sAiOpenrouterBlock','sAiExternalBlock'];
   if(_saAiNotice) _saAiNotice.style.display = _isAdminOnlyView ? '' : 'none';
   if(_saAiProvGroup) _saAiProvGroup.style.display = _isAdminOnlyView ? 'none' : '';
-  _saAiBlocks.forEach(function(_bid){
-    const _bel = document.getElementById(_bid);
-    if(_bel) _bel.style.display = 'none';
-  });
   if(!_isAdminOnlyView) refreshMaskedAiKeys(); // solo el superadmin ve claves (enmascaradas) y las ingresa
   const geminiModelEl = document.getElementById('sAiGeminiModel');
   if(geminiModelEl) geminiModelEl.value = settings.aiGeminiModel || 'gemini-2.0-flash';
@@ -6345,11 +6353,14 @@ const extProvEl = document.getElementById('sAiExternalProvider');
   if(extBaseEl) extBaseEl.value = settings.aiExternalBaseUrl || '';
 onExternalProviderChange();
   onAiProviderChange();
+  // Forzar ocultación de bloques de proveedor/claves/modelos para admins de tienda (no superadmin)
   if(_isAdminOnlyView){
     _saAiBlocks.forEach(function(_bid){
       const _bel = document.getElementById(_bid);
       if(_bel) _bel.style.display = 'none';
     });
+    if(_saAiProvGroup) _saAiProvGroup.style.display = 'none';
+    if(_saAiNotice) _saAiNotice.style.display = '';
   }
   const aiLockEl = document.getElementById('sAiLockNotice');
   if(aiLockEl) aiLockEl.style.display = planAllows('ai-assistant') ? 'none' : '';
@@ -7474,6 +7485,7 @@ async function saMigrateAiKeys(){
 /* ---------- Claves de IA desde el panel superadmin ---------- */
 let _saAiMasked = { openrouter:'', gemini:'', external:'' };
 let _saAiModel = '';
+let _saAiImageModel = '';
 let _saAiKeyed = {};
 async function saLoadAiKeyFlags(){
   const slugs = (_saTenants || []).map(t => t.id).filter(Boolean);
@@ -7508,7 +7520,13 @@ async function saOnAiStoreChange(){
   const slug = document.getElementById('saAiSlug').value;
   const status = document.getElementById('saAiKeyStatus');
   status.textContent = ''; status.style.color = 'var(--muted)';
-  if(!slug){ const m = document.getElementById('saAiModel'); if(m){ m.innerHTML = '<option value="">Cargá los modelos gratis primero</option>'; } return; }
+  const chatSel = document.getElementById('saAiModel');
+  const imgSel = document.getElementById('saAiImageModel');
+  if(!slug){
+    if(chatSel) chatSel.innerHTML = '<option value="">Cargá los modelos gratis primero</option>';
+    if(imgSel) imgSel.innerHTML = '<option value="">Cargá los modelos de imagen primero</option>';
+    return;
+  }
   status.textContent = 'Consultando estado…';
   try{
     const st = await cloudCall('aiStatus', { slug: slug });
@@ -7517,11 +7535,13 @@ async function saOnAiStoreChange(){
     const exSt = (st && st.external) || {};
     _saAiMasked = { openrouter: orSt.masked || '', gemini: gmSt.masked || '', external: exSt.masked || '' };
     _saAiModel = (st && st.model) || '';
+    _saAiImageModel = (st && st.imageModel) || 'google/gemini-3.1-flash-lite-image';
     saSetMaskedInput('saAiOpenrouterKey', _saAiMasked.openrouter, !!orSt.exists, 'sk-or-v1-...');
     saSetMaskedInput('saAiGeminiKey', _saAiMasked.gemini, !!gmSt.exists, 'AIza...');
     saSetMaskedInput('saAiExternalKey', _saAiMasked.external, !!exSt.exists, 'sk-...');
+    if(imgSel) imgSel.innerHTML = '<option value="'+esc(_saAiImageModel)+'">'+esc(_saAiImageModel)+'</option>';
     status.innerHTML = (st && st.configured)
-      ? '<span style="color:var(--green)">✓ Asistente configurado' + (_saAiModel ? ' · modelo: <b>' + esc(_saAiModel) + '</b>' : '') + '.</span>'
+      ? '<span style="color:var(--green)">✓ Asistente configurado' + (_saAiModel ? ' · modelo chat: <b>' + esc(_saAiModel) + '</b>' : '') + (_saAiImageModel ? ' · modelo imagen: <b>' + esc(_saAiImageModel) + '</b>' : '') + '.</span>'
       : '<span style="color:#92400E">La tienda aún no tiene el asistente completamente configurado (falta clave o modelo).</span>';
   }catch(e){
     status.style.color = 'var(--danger)';
@@ -7553,6 +7573,31 @@ async function saLoadAiModels(){
     console.error(e);
   }
 }
+async function saLoadAiImageModels(){
+  const slug = document.getElementById('saAiSlug').value;
+  const sel = document.getElementById('saAiImageModel');
+  const status = document.getElementById('saAiKeyStatus');
+  if(!slug){ toast('Elegí una tienda primero', 'err'); return; }
+  if(!sel) return;
+  if(!_saAiMasked.openrouter){ sel.innerHTML = '<option value="">Guardá la clave de OpenRouter primero</option>'; status.style.color='var(--danger)'; status.textContent='Guardá primero la clave de OpenRouter para poder listar los modelos de imagen.'; return; }
+  sel.innerHTML = '<option value="">Cargando modelos de imagen…</option>';
+  status.textContent = 'Consultando modelos de imagen de OpenRouter…'; status.style.color = 'var(--muted)';
+  try{
+    const res = await cloudCall('aiModels', { slug: slug, kind: 'image' });
+    const models = (res && res.models) || [];
+    if(!models.length) throw new Error('no vino ningún modelo');
+    sel.innerHTML = models.map(m =>
+      '<option value="' + esc(m.id) + '"' + (m.id === _saAiImageModel ? ' selected' : '') + '>' + esc(m.name || m.id) + (m.price ? ' — ' + m.price : '') + '</option>'
+    ).join('');
+    if(_saAiImageModel) sel.value = _saAiImageModel;
+    status.innerHTML = '<span style="color:var(--green)">✓ ' + models.length + ' modelo(s) de imagen disponibles. Elegí uno y guardá.</span>';
+  }catch(e){
+    status.style.color = 'var(--danger)';
+    status.textContent = 'No se pudieron cargar los modelos de imagen: ' + (e && e.message ? e.message : 'error');
+    sel.innerHTML = '<option value="">Intentalo de nuevo</option>';
+    console.error(e);
+  }
+}
 async function saSaveAiKeys(){
   const slug = document.getElementById('saAiSlug').value;
   const status = document.getElementById('saAiKeyStatus');
@@ -7562,12 +7607,16 @@ async function saSaveAiKeys(){
   const newExt = document.getElementById('saAiExternalKey').value.trim();
   const modelEl = document.getElementById('saAiModel');
   const newModel = (modelEl && modelEl.value) ? modelEl.value.trim() : '';
+  const imgModelEl = document.getElementById('saAiImageModel');
+  const newImgModel = (imgModelEl && imgModelEl.value) ? imgModelEl.value.trim() : '';
   const priv = {};
   if(newOr && newOr !== _saAiMasked.openrouter) priv.aiOpenrouterKey = newOr;
   if(newGem && newGem !== _saAiMasked.gemini) priv.aiApiKey = newGem;
   if(newExt && newExt !== _saAiMasked.external) priv.aiExternalKey = newExt;
   if(newModel && newModel !== _saAiModel) priv.aiModel = newModel;
   if(newModel !== _saAiModel && !newModel) priv.aiModel = firebase.firestore.FieldValue.delete();
+  if(newImgModel && newImgModel !== _saAiImageModel) priv.aiImageModel = newImgModel;
+  if(newImgModel !== _saAiImageModel && !newImgModel) priv.aiImageModel = firebase.firestore.FieldValue.delete();
   if(!Object.keys(priv).length){ toast('No hay claves ni modelo nuevos para guardar', 'err'); return; }
   status.textContent = 'Guardando…'; status.style.color = 'var(--muted)';
   try{
@@ -7584,7 +7633,8 @@ async function saSaveAiKeys(){
     }
     _saAiMasked = { openrouter:newOr, gemini:newGem, external:newExt };
     _saAiModel = newModel;
-    status.innerHTML = '<span style="color:var(--green)">✓ Claves y modelo guardados en el almacén privado de ' + esc(slug) + (newModel ? (' · modelo: <b>' + esc(newModel) + '</b>') : '') + '.</span>';
+    _saAiImageModel = newImgModel;
+    status.innerHTML = '<span style="color:var(--green)">✓ Claves y modelo guardados en el almacén privado de ' + esc(slug) + (newModel ? (' · modelo chat: <b>' + esc(newModel) + '</b>') : '') + (newImgModel ? (' · modelo imagen: <b>' + esc(newImgModel) + '</b>') : '') + '.</span>';
     toast('Configuración de IA guardada', 'ok');
     _saAiKeyed[slug] = true;
     saOnAiStoreChange();
