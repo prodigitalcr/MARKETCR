@@ -6769,9 +6769,12 @@ function onVariantImageFileChosen(input){
   const file = input.files && input.files[0];
   const slot = variantImgSlot;
   if(!file || !slot){ input.value=''; return; }
-  /* Fotos de los tamaños → cuadrado 1280×1280: así el cliente las ve
-     perfectamente nítidas y grandes al abrir la ficha o hacer zoom. */
-  compressSquareImageFile(file, 1280, 0.86).then(dataUrl => {
+  /* Fotos de los tamaños → se guardan en ALTA RESOLUCIÓN conservando el tamaño
+     original de la foto (proporción y dimensiones, NO se recortan ni se reducen
+     a 700 px): máximo lado largo 2048 px y calidad 0.9. El cliente las abre
+     nítidas y grandes. Si todo junto quedara muy pesado para el documento de
+     Firestore, el presupuesto de guardado las ajusta automáticamente. */
+  compressImageFile(file, 2048, 0.9).then(dataUrl => {
     const v = pmVariants.find(x=>x.id===slot.id);
     if(!v){ input.value=''; return; }
     const arr = variantImagesPadded(v);
