@@ -3045,6 +3045,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:4px"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>Actualizar
         </button>
         <button class="btn-ghost" style="width:auto;padding:10px 18px" onclick="doSuperadminLogout()">Cerrar sesión</button>
+        <button class="btn-ghost" style="width:auto;padding:10px 18px" onclick="openSaChangePasswordModal()">Cambiar contraseña</button>
       </div>
     </div>
 
@@ -3347,9 +3348,17 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
      keys directamente. Todas las llamadas a proveedores de IA pasan por acá. */
 const cloudFns = firebase.functions();
   async function cloudCall(name, data){
-    const fn = cloudFns.httpsCallable(name);
-    const res = await fn(data || {});
-    return res.data;
+    try{
+      const user = (auth && auth.currentUser) ? auth.currentUser : null;
+      const isSuper = user && window.SUPERADMIN_EMAILS?.includes(user.email);
+      if(!isSuper){ toast('Solo el superadmin puede invocar funciones de IA', 'err'); return null; }
+      const fn = cloudFns.httpsCallable(name);
+      const res = await fn(data || {});
+      return res.data;
+    }catch(e){
+      toast('Error al invocar la función de IA: ' + (e.message||'error desconocido'), 'err');
+      return null;
+    }
   }
   /* Diagnóstico: si una callable falla, hace un segundo intento MANUAL (con
      el token del usuario) y devuelve el status HTTP crudo para saber si el
@@ -6539,7 +6548,7 @@ function onImageFileChosen(input){
   input.value = '';
 }
 function addImageField(){
-  if(pmImages.length >= 7){ toast('Máximo 7 fotos por producto', 'err'); return; }
+  if(pmImages.length >= 7){ toast('Máximo 7 fotos principales por producto', 'err'); return; }
   pmImages.push('');
   renderImageGrid();
 }
@@ -6684,6 +6693,7 @@ function toggleVariantsUI(){
   if(on && !pmVariants.length){ addVariant(); addVariant(); }
 }
 function addVariant(){
+  if(pmVariants.length >= 5){ toast('Máximo 5 variantes por producto', 'err'); return; }
   pmVariants.push({ id: rid(), name:'', price:0, stock:0, removed:false, image:'', images:[''] });
   renderVariantsPanel();
 }
@@ -6703,8 +6713,8 @@ function variantField(id, field, val){
   v[field] = field==='name' ? val : Math.max(0, parseFloat(val)||0);
 }
 function variantImagesPadded(v){
-  const src = (Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : [])).slice(0,5);
-  while(src.length<5) src.push('');
+  const src = (Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : [])).slice(0,4);
+  while(src.length<4) src.push('');
   return src;
 }
 function renderVariantsPanel(){
@@ -6764,15 +6774,16 @@ function onVariantImageFileChosen(input){
   const file = input.files && input.files[0];
   const slot = variantImgSlot;
   if(!file || !slot){ input.value=''; return; }
-  /* Fotos de los tamaños → se guardan en ALTA RESOLUCIÓN conservando el tamaño
-     original de la foto (proporción y dimensiones, NO se recortan ni se reducen
-     a 700 px): máximo lado largo 2048 px y calidad 0.9. El cliente las abre
-     nítidas y grandes. Si todo junto quedara muy pesado para el documento de
-     Firestore, el presupuesto de guardado las ajusta automáticamente. */
+  /* Fotos de los tamaños → ALTA RESOLUCIÓN, NO se recortan a 1600px:
+     máximo lado largo 2048 px y calidad 0.9. Guardadas en Storage sin límite de peso. */
   compressImageFile(file, 2048, 0.9).then(dataUrl => {
     const v = pmVariants.find(x=>x.id===slot.id);
     if(!v){ input.value=''; return; }
     const arr = variantImagesPadded(v);
+    if(arr.filter(Boolean).length >= 4){
+      toast('Máximo 4 fotos por variante', 'err');
+      input.value=''; return;
+    }
     arr[slot.idx] = dataUrl;
     v.images = arr.filter(Boolean);
     v.image = v.images[0] || '';
@@ -9032,6 +9043,55 @@ function initSuperadminMode(){
     document.getElementById('superadminView').style.display = isSuperadminSession ? '' : 'none';
     if(isSuperadminSession) loadSuperadminData();
   });
+}
+
+function openSaChangePasswordModal(){
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.zIndex = '301';
+  modal.innerHTML = `
+    <div class="modal-bg" onclick="closeSaChangePasswordModal()"></div>
+    <div class="modal-card">
+      <div class="modal-head"><h3>Cambiar contraseña de superadmin</h3>
+        <button class="close-x" onclick="closeSaChangePasswordModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="f-group"><label>Correo actual</label><input class="f-input" type="email" id="saNewPassEmail" value="" readonly></div>
+        <div class="f-group"><label>Nueva contraseña</label><input class="f-input" type="password" id="saNewPassNew" placeholder="••••••••"></div>
+        <div class="f-group"><label>Confirmar nueva contraseña</label><input class="f-input" type="password" id="saNewPassConfirm" placeholder="••••••••"></div>
+        <div id="saChangePassMsg" style="color:var(--danger);font-size:12.5px;margin-top:4px;display:none"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-primary" onclick="saveSaNewPassword()">Guardar nueva contraseña</button>
+        <button class="btn-ghost" onclick="closeSaChangePasswordModal()">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function closeSaChangePasswordModal(){
+  const modal = document.querySelector('.modal:last-child');
+  if(modal) document.body.removeChild(modal);
+}
+
+async function saveSaNewPassword(){
+  const newPass = document.getElementById('saNewPassNew').value;
+  const confirmPass = document.getElementById('saNewPassConfirm').value;
+  const msg = document.getElementById('saChangePassMsg');
+  if(!newPass || newPass.length < 6){ msg.textContent = 'La contraseña debe tener mínimo 6 caracteres'; msg.style.display='block'; return; }
+  if(newPass !== confirmPass){ msg.textContent = 'Las contraseñas no coinciden'; msg.style.display='block'; return; }
+  msg.style.display = 'none';
+  try{
+    const user = auth.currentUser;
+    if(user) await user.updatePassword(newPass);
+    msg.textContent = 'Contraseña actualizada exitosamente ✓';
+    msg.style.display = 'block';
+    setTimeout(closeSaChangePasswordModal, 1500);
+  }catch(e){
+    msg.textContent = 'Error al cambiar contraseña: ' + (e && e.message ? e.message : 'error desconocido');
+    msg.style.display = 'block';
+  }
 }
 
 async function doSuperadminLogin(){
