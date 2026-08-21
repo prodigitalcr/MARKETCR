@@ -3335,10 +3335,14 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
   };
   firebase.initializeApp(firebaseConfig);
   /* App Check (seguridad): valida que quien llama sea tu app real, no un bot.
-     Si el script o la clave fallan, las llamadas igual siguen con auth normal. */
+     Si el script o la clave fallan, las llamadas igual siguen con auth normal.
+     NOTA: App Check requiere que esté habilitado en Firebase Console con un
+     proveedor de reCAPTCHA registrado. Si no está configurado, activarlo aquí
+     HACE FALLAR las Cloud Functions (aiStatus, aiModels, etc.). Por eso se
+     deja desactivado: las funciones usan solo autenticación de Firebase. */
   const RECAPTCHA_SITE_KEY = '6LdrmY4tAAAAAHt27QkcdnCVrdV93PMK5iQrieL5';
   try{
-    if(window.firebase && firebase.appCheck && RECAPTCHA_SITE_KEY){
+    if(window.firebase && firebase.appCheck && RECAPTCHA_SITE_KEY && window.location.hostname.includes('localhost')){
       firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY), true);
     }
   }catch(e){ console.warn('App Check no se pudo inicializar:', e); }
@@ -3350,13 +3354,33 @@ const cloudFns = firebase.functions();
   async function cloudCall(name, data){
     try{
       const user = (auth && auth.currentUser) ? auth.currentUser : null;
-      const isSuper = user && window.SUPERADMIN_EMAILS?.includes(user.email);
-      if(!isSuper){ toast('Solo el superadmin puede invocar funciones de IA', 'err'); return null; }
+      if(!user){ toast('Iniciá sesión primero para usar funciones de IA', 'err'); return null; }
+      const isSuper = user && SUPERADMIN_EMAILS?.includes(user.email);
+      const isAdmin = user && (ADMIN_EMAILS?.includes(user.email) || isSuper);
+      const readOnlyCalls = ['aiStatus', 'aiModels'];
+      if(!isSuper && !readOnlyCalls.includes(name)){
+        toast('Solo el superadmin puede invocar esta función de IA', 'err'); return null;
+      }
+      if(!isAdmin){ toast('Se requieren permisos de administrador', 'err'); return null; }
       const fn = cloudFns.httpsCallable(name);
       const res = await fn(data || {});
       return res.data;
     }catch(e){
-      toast('Error al invocar la función de IA: ' + (e.message||'error desconocido'), 'err');
+      let msg = e.message || 'error desconocido';
+      if(e.code === 'internal' || msg.includes('INTERNAL')){
+        msg = 'Error interno del servidor (Cloud Function). Revisa logs en Firebase Console → Functions → Logs.';
+      }else if(e.code === 'permission-denied' || msg.includes('PERMISSION')){
+        const myEmail = (auth.currentUser && auth.currentUser.email) || 'sin sesión';
+        msg = 'Permiso denegado. ' + msg + ' | Tu sesión actual: ' + myEmail;
+      }else if(e.code === 'unauthenticated'){
+        msg = 'Sesión expirada. Vuelve a iniciar sesión.';
+      }else if(e.code === 'unavailable'){
+        msg = 'Servicio no disponible. Intenta de nuevo en unos segundos.';
+      }else if(e.code === 'not-found'){
+        msg = 'Tienda no encontrada en Firestore. Verificá el slug.';
+      }
+      toast('Error al invocar "' + name + '": ' + msg, 'err');
+      console.error('cloudCall error [' + name + ']:', e);
       return null;
     }
   }
@@ -3406,6 +3430,7 @@ const cloudFns = firebase.functions();
      variable se llena en tiempo real cuando la app detecta qué tienda
      (?tienda=slug) se está mostrando. */
   let ADMIN_EMAILS = [];
+  window.ADMIN_EMAILS = ADMIN_EMAILS;
   /* Correos autorizados como SUPERADMINISTRADOR de TODA la plataforma
      (todas las tiendas y todos los profesionales, sin importar el
      negocio). Se accede agregando ?superadmin=1 a la URL. Cambiá esta
@@ -3413,7 +3438,10 @@ const cloudFns = firebase.functions();
   /* ⚠️  IMPORTANTE ANTES DE DEPLOY: cambiá "admin@prodigital.com" por el
      correo REAL de tu cuenta de Firebase. Si alguien registra ese correo
      antes que vos, obtiene acceso total a toda la plataforma. */
-  const SUPERADMIN_EMAILS = ["admin@prodigital.com"];
+  // Superadmin emails - se cargan desde platform/config en Firestore
+// Fallback hardcodeado solo para compatibilidad inicial
+const SUPERADMIN_EMAILS = ["admin@prodigital.com"];
+  window.SUPERADMIN_EMAILS = SUPERADMIN_EMAILS;
   /* Clave maestra para poder CREAR negocios nuevos desde la página de
      inicio (el selector de negocios). Solo protege quién puede crear un
      negocio nuevo desde la interfaz; es una capa de conveniencia, no
@@ -3809,6 +3837,13 @@ function downscaleDataUrl(dataUrl, maxDim, quality){
 async function buildThumbsFor(images){
   const out = [];
   for(const url of images){
+    /* Si es una URL de Firebase Storage (o cualquier https), NO se miniaturiza:
+       la miniatura sería la misma URL (Storage ya sirve optimizada). Esto evita
+       guardar base64 pesados en el documento. Solo se miniaturizan dataUrls. */
+    if(typeof url === 'string' && url.startsWith('https://')){
+      out.push(url);
+      continue;
+    }
     try{ out.push(await downscaleDataUrl(url, 260, 0.55)); }
     catch(e){ out.push(url); }
   }
@@ -6535,16 +6570,40 @@ function renderImageGrid(){
   }).join('');
 }
 function triggerImageUpload(i){ imgFileSlot = i; document.getElementById('imgFileInput').click(); }
+/* Sube la imagen comprimida a Firebase Storage (carpeta products/{tenant} o
+   variantes) y devuelve la URL pública de descarga. Así las fotos NO pesan
+   en el documento de Firestore (sin límite de 1MB) y se ven nítidas en la tienda.
+   Devuelve {url, blob} o lanza error si Storage no está disponible. */
+async function storageUploadImage(file, folder, maxDim, quality){
+  const blob = await resizeSiteImage(file, maxDim || 1600, quality || 0.86);
+  if(typeof firebase === 'undefined' || !firebase.storage) throw new Error('Storage no disponible');
+  const ext = (blob.type === 'image/png') ? '.png' : '.jpg';
+  const base = folder || ('products/' + (TENANT_ID || 'x'));
+  const name = base + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + ext;
+  const ref = firebase.storage().ref(name);
+  await ref.put(blob, { contentType: blob.type, cacheControl: 'public,max-age=31536000' });
+  const url = await ref.getDownloadURL();
+  return { url, blob };
+}
 function onImageFileChosen(input){
   const file = input.files && input.files[0];
   const slot = imgFileSlot;
   if(!file || slot===null){ input.value=''; return; }
-  /* Alta resolución igual que las fotos de variantes (1600 px): el cliente
-     ve la portada nítida y grande cuando la amplía en la ficha. */
-  compressImageFile(file, 1600, 0.86).then(dataUrl => {
-    pmImages[slot] = dataUrl;
+  /* Fotos del producto: se comprimen y suben a Firebase Storage (products/{tenant}).
+     La URL pública se guarda en el producto — el documento de Firestore queda liviano. */
+  storageUploadImage(file, 'products/' + (TENANT_ID || 'x'), 1600, 0.86).then(r => {
+    pmImages[slot] = r.url;
     renderImageGrid();
-  }).catch(()=> toast('No se pudo procesar esa foto', 'err'));
+    toast('Foto subida a Storage ✓', 'ok');
+  }).catch(e => {
+    console.error('Storage upload error:', e);
+    /* Si Storage falla (sin permisos), caemos a base64 como respaldo */
+    compressImageFile(file, 1600, 0.86).then(dataUrl => {
+      pmImages[slot] = dataUrl;
+      renderImageGrid();
+      toast('Foto guardada (sin Storage) — se copió al documento', 'warn');
+    }).catch(()=> toast('No se pudo procesar esa foto', 'err'));
+  });
   input.value = '';
 }
 function addImageField(){
@@ -6774,9 +6833,10 @@ function onVariantImageFileChosen(input){
   const file = input.files && input.files[0];
   const slot = variantImgSlot;
   if(!file || !slot){ input.value=''; return; }
-  /* Fotos de los tamaños → ALTA RESOLUCIÓN, NO se recortan a 1600px:
-     máximo lado largo 2048 px y calidad 0.9. Guardadas en Storage sin límite de peso. */
-  compressImageFile(file, 2048, 0.9).then(dataUrl => {
+  /* Fotos de los tamaños → ALTA RESOLUCIÓN (2048 px) y subidas a Firebase
+     Storage (products/{tenant}/variants). La URL pública va en la variante —
+     el documento de Firestore queda liviano y sin error de tamaño. */
+  storageUploadImage(file, 'products/' + (TENANT_ID || 'x') + '/variants', 2048, 0.9).then(r => {
     const v = pmVariants.find(x=>x.id===slot.id);
     if(!v){ input.value=''; return; }
     const arr = variantImagesPadded(v);
@@ -6784,11 +6844,29 @@ function onVariantImageFileChosen(input){
       toast('Máximo 4 fotos por variante', 'err');
       input.value=''; return;
     }
-    arr[slot.idx] = dataUrl;
+    arr[slot.idx] = r.url;
     v.images = arr.filter(Boolean);
     v.image = v.images[0] || '';
     renderVariantsPanel();
-  }).catch(()=> toast('No se pudo procesar esa foto', 'err'));
+    toast('Foto de variante subida a Storage ✓', 'ok');
+  }).catch(e => {
+    console.error('Storage upload error (variante):', e);
+    /* Respaldo: base64 si Storage no está disponible */
+    compressImageFile(file, 2048, 0.9).then(dataUrl => {
+      const v = pmVariants.find(x=>x.id===slot.id);
+      if(!v){ input.value=''; return; }
+      const arr = variantImagesPadded(v);
+      if(arr.filter(Boolean).length >= 4){
+        toast('Máximo 4 fotos por variante', 'err');
+        input.value=''; return;
+      }
+      arr[slot.idx] = dataUrl;
+      v.images = arr.filter(Boolean);
+      v.image = v.images[0] || '';
+      renderVariantsPanel();
+      toast('Foto guardada (sin Storage) — se copió al documento', 'warn');
+    }).catch(()=> toast('No se pudo procesar esa foto', 'err'));
+  });
   input.value = '';
 }
 
@@ -9037,8 +9115,21 @@ let _saTenants = [];
 function initSuperadminMode(){
   isSuperadminMode = true;
   document.body.classList.add('superadmin-mode');
+  // Verificar sesión actual inmediata
+  const user = auth.currentUser;
+  const isSuper = user && SUPERADMIN_EMAILS.includes(user.email);
+  console.log('[SUPERADMIN DEBUG] user:', user?.email, 'isSuper:', isSuper, 'SUPERADMIN_EMAILS:', SUPERADMIN_EMAILS);
+  if(isSuper){
+    isSuperadminSession = true;
+    document.getElementById('superadminLoginModal').classList.add('show');
+    document.getElementById('superadminView').style.display = '';
+    loadSuperadminData();
+    return;
+  }
+  // Si no hay sesión, escuchar cambios
   auth.onAuthStateChanged(user => {
     isSuperadminSession = !!(user && SUPERADMIN_EMAILS.includes(user.email));
+    console.log('[SUPERADMIN DEBUG] onAuthStateChanged user:', user?.email, 'isSuper:', isSuperadminSession);
     document.getElementById('superadminLoginModal').classList.toggle('show', !isSuperadminSession);
     document.getElementById('superadminView').style.display = isSuperadminSession ? '' : 'none';
     if(isSuperadminSession) loadSuperadminData();
@@ -9550,8 +9641,6 @@ async function saSaveAiKeys(){
   try{
     await db.collection('tenants').doc(slug).collection('privateSettings').doc('ai').set(priv, { merge:true });
     await migrateStoreKeys(slug);
-    // el proveedor efectivo del chat se lee de las configuraciones PÚBLICAS de la
-    // tienda: sincronizar acá para que aiChat/aiStatus usen el proveedor correcto
     const pubUpd = {};
     if(priv.aiOpenrouterKey || newModel){ pubUpd.aiProvider = 'openrouter'; if(newModel) pubUpd.aiModel = newModel; }
     if(priv.aiApiKey) pubUpd.aiProvider = 'gemini';
@@ -9568,9 +9657,15 @@ async function saSaveAiKeys(){
     saOnAiStoreChange();
     saPopulateAiSlugSelect();
   }catch(e){
+    let msg = e.message || 'error desconocido';
+    if(e.code === 'permission-denied' || msg.includes('PERMISSION')){
+      msg = 'Permiso denegado. Verifica que el documento platform/config exista y tengas permisos de superadmin.';
+    }else if(e.code === 'not-found'){
+      msg = 'Documento no encontrado. Verifica que la tienda exista.';
+    }
     status.style.color = 'var(--danger)';
-    status.textContent = 'No se pudo guardar: ' + (e && e.message ? e.message : 'error');
-    console.error(e);
+    status.textContent = 'No se pudo guardar: ' + msg;
+    console.error('saSaveAiKeys error:', e);
   }
 }
 async function saTestAiOpenRouter(){
@@ -11739,7 +11834,11 @@ async function bootPlatform(){
      activar modo automáticamente (sin necesidad de ?superadmin=1) */
   const user = auth.currentUser;
   const isSuperAdminByEmail = user && window.SUPERADMIN_EMAILS?.includes(user.email);
-  if(isSuperAdminByEmail){
+  /* Superadmin por email SOLO si NO hay una tienda específica (?tienda=slug).
+     Si hay tienda en la URL, se carga esa tienda normal — así los enlaces
+     "Ver" / "Administrar" no redirigen al panel maestro. El superadmin puede
+     volver al panel con ?superadmin=1. */
+  if(isSuperAdminByEmail && !TENANT_ID){
     initSuperadminMode();
     return;
   }
@@ -11784,6 +11883,7 @@ async function bootPlatform(){
       TENANT_DATA.planApprovedId = (st === 'al_dia') ? (TENANT_DATA.membershipPlan || 'emprendedor') : 'emprendedor';
     }
     ADMIN_EMAILS = TENANT_DATA.adminEmails || [];
+    window.ADMIN_EMAILS = ADMIN_EMAILS;
     document.title = (TENANT_DATA.nombre || 'Tienda') + ' — PRO.DIGITAL';
     bindTenantRefs();
     refreshAdminSession();
