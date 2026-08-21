@@ -8354,33 +8354,99 @@ async function revertLegacyMigration(){
   }
 }
 
-/* ---------- copia de seguridad de configuración + inventario en la nube ---------- */
+/* Comprime un string a gzip (ArrayBuffer) con la API nativa CompressionStream */
+async function gzipBytes(text){
+  const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'));
+  const buf = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buf);
+}
+/* Descomprime gzip de vuelta a texto */
+async function gunzipText(u8){
+  const stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(stream).text();
+}
+/* Caché rápida en IndexedDB del último backup comprimido (evita CORS al descargar) */
+let _bkCacheDb = null;
+function bkCacheDb(){
+  if(_bkCacheDb) return Promise.resolve(_bkCacheDb);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('bk_cache', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('blobs');
+    req.onsuccess = () => { _bkCacheDb = req.result; resolve(_bkCacheDb); };
+    req.onerror = () => reject(req.error);
+  });
+}
+async function bkCachePut(key, u8){
+  try{
+    const db2 = await bkCacheDb();
+    await new Promise((res, rej) => {
+      const tx = db2.transaction('blobs', 'readwrite');
+      tx.objectStore('blobs').put(u8, key);
+      tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+    });
+  }catch(e){ console.warn('bkCachePut:', e); }
+}
+async function bkCacheGet(key){
+  try{
+    const db2 = await bkCacheDb();
+    return await new Promise((res) => {
+      const tx = db2.transaction('blobs', 'readonly');
+      const rq = tx.objectStore('blobs').get(key);
+      rq.onsuccess = () => res(rq.result || null);
+      rq.onerror = () => res(null);
+    });
+  }catch(e){ return null; }
+}
+
+/* ---------- copia de seguridad EN FIREBASE STORAGE (JSON comprimido gzip) ----------
+   1) Se arma el JSON completo (settings + productos).
+   2) Se COMPRIME con gzip (mucho menor peso).
+   3) Se guarda en IndexedDB (caché local para descarga instantánea sin CORS)
+      Y se sube a Firebase Storage (backups/{tenant}/{fecha}.json.gz).
+   4) Firestore guarda solo metadata mínima. */
 async function createTenantBackup(){
   const status = document.getElementById('backupStatus');
   status.style.display = 'block';
   status.style.color = 'var(--muted)';
   status.textContent = 'Creando copia de seguridad…';
   try{
-    const stamp = Math.floor(Date.now()/1000);
     const setSnap = await settingsRef.get();
     const prodSnap = await productsCol.get();
-    let batch = db.batch(), count = 0, products = 0;
-    if(setSnap.exists) batch.set(tenantCol('backups').doc('bk_' + stamp + '_settings'), setSnap.data());
-    for(const d of prodSnap.docs){
-      batch.set(tenantCol('backups').doc('bk_' + stamp + '_products').collection('items').doc(d.id), d.data());
-      products++; count++;
-      if(count >= 400){ await batch.commit(); batch = db.batch(); count = 0; }
+    const settings = setSnap.exists ? setSnap.data() : {};
+    const products = prodSnap.docs.map(d => ({ id: d.id, data: d.data() }));
+    const payload = {
+      app: 'MARKETCR',
+      kind: 'backup-config-inventario',
+      tenant: TENANT_ID,
+      exportedAt: new Date().toISOString(),
+      settings: settings,
+      products: products
+    };
+    const rawText = JSON.stringify(payload);
+    status.textContent = 'Comprimiendo copia…';
+    const u8 = await gzipBytes(rawText);
+    if(typeof firebase === 'undefined' || !firebase.storage){
+      throw new Error('Firebase Storage no disponible en este navegador');
     }
-    if(count > 0) await batch.commit();
-    await tenantCol('backups').doc('bk_' + stamp + '_meta').set({
-      at: firebase.firestore.FieldValue.serverTimestamp(),
-      type:'manual',
-      products: products,
-      hasSettings: !!setSnap.exists
-    });
+    const stamp = Date.now();
+    const name = 'backups/' + (TENANT_ID || 'x') + '/' + stamp + '.json.gz';
+    const ref = firebase.storage().ref(name);
+    const blob = new Blob([u8], { type: 'application/gzip' });
+    status.textContent = 'Subiendo copia a Storage…';
+    await ref.put(blob, { contentType: 'application/gzip', cacheControl: 'public,max-age=31536000' });
+    await bkCachePut(name, u8);
+    const meta = {
+      at: new Date().toISOString(),
+      type: 'manual',
+      products: products.length,
+      hasSettings: !!setSnap.exists,
+      storagePath: name,
+      bytes: blob.size
+    };
+    await tenantCol('backups').doc('bk_' + stamp + '_meta').set(meta);
     status.style.color = 'var(--ok,#1B7A43)';
-    status.textContent = '✔ Copia de seguridad creada (bk_' + stamp + '): ' + (setSnap.exists ? 'configuración + ' : '') + products + ' producto(s).';
-    toast('Copia de seguridad creada', 'ok');
+    status.textContent = '✔ Copia creada y comprimida en Storage (' + (products.length ? products.length + ' producto(s)' : 'sin productos') + ', ' + (blob.size/1024).toFixed(0) + ' KB): ' + name;
+    toast('Copia de seguridad creada (comprimida) en Storage', 'ok');
     renderBackupList();
   }catch(e){
     console.error(e);
@@ -8390,7 +8456,7 @@ async function createTenantBackup(){
   }
 }
 
-/* listar copias de seguridad existentes (útiles para que el admin las conozca) */
+/* listar copias de seguridad (metadatos en Firestore + archivo en Storage) */
 async function renderBackupList(){
   try{
     const metas = await tenantCol('backups').limit(100).get();
@@ -8398,15 +8464,112 @@ async function renderBackupList(){
     if(!list) return;
     const items = metas.docs
       .filter(d => /_meta$/.test(d.id) && (d.data()||{}).type === 'manual')
-      .map(d => ({ id: d.id.replace(/_meta$/,''), at: (d.data().at && d.data().at.toDate) ? d.data().at.toDate() : null }))
-      .sort((a,b) => (b.at ? b.at.getTime() : 0) - (a.at ? a.at.getTime() : 0))
+      .map(d => {
+        const data = d.data();
+        return {
+          id: d.id.replace(/_meta$/,''),
+          at: data.at || null,
+          products: data.products || 0,
+          bytes: data.bytes || 0,
+          storagePath: data.storagePath || ''
+        };
+      })
+      .sort((a,b) => (b.at ? new Date(b.at).getTime() : 0) - (a.at ? new Date(a.at).getTime() : 0))
       .slice(0,20);
     if(!items.length){ list.innerHTML = ''; return; }
     list.style.display = 'block';
     list.innerHTML = '<div style="margin-top:8px;font-size:12.5px">Copias guardadas:</div>' + items.map(m =>
-      '<div style="font-size:12px;color:var(--muted)">• <code>' + esc(m.id) + '</code> — ' + esc(m.at ? m.at.toLocaleString() : 'reciente') + '</div>'
+      '<div style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+        '• <code>' + esc(m.id) + '</code> — ' + esc(m.at ? new Date(m.at).toLocaleString() : 'reciente') +
+        (m.products ? ' · ' + m.products + ' producto(s)' : '') +
+        (m.bytes ? ' · ' + (m.bytes/1024).toFixed(0) + ' KB' : '') +
+        (m.storagePath
+          ? '<button type="button" class="btn-ghost" style="width:auto;padding:5px 10px;font-size:11.5px;color:var(--green);font-weight:700" onclick="restoreTenantBackup(this.dataset.path)" data-path="' + esc(m.storagePath) + '">↩ Restaurar</button>' +
+            '<button type="button" class="btn-ghost" style="width:auto;padding:5px 10px;font-size:11.5px;color:var(--danger);font-weight:700" onclick="downloadTenantBackup(this.dataset.path, this.dataset.id)" data-path="' + esc(m.storagePath) + '" data-id="' + esc(m.id) + '">⬇ Descargar</button>'
+          : '')
+      + '</div>'
     ).join('');
   }catch(e){ /* sin permisos o sin copias: silencioso */ }
+}
+
+/* Restaurar una copia desde Storage: obtiene el .json.gz (caché o Storage),
+   lo descomprime y aplica el JSON a Firestore. */
+async function restoreTenantBackup(storagePath){
+  if(!storagePath){ toast('No hay ruta de backup', 'err'); return; }
+  if(!confirm('¿Restaurar esta copia de seguridad? Se sobreescribirá la configuración y se actualizarán/agregarán los productos (sin borrar otros).')) return;
+  const status = document.getElementById('backupStatus');
+  status.style.display = 'block';
+  status.style.color = 'var(--muted)';
+  status.textContent = 'Obteniendo copia de Storage…';
+  try{
+    let u8 = await bkCacheGet(storagePath);
+    if(!u8){
+      if(typeof firebase === 'undefined' || !firebase.storage) throw new Error('Storage no disponible');
+      const ref = firebase.storage().ref(storagePath);
+      const dlUrl = await ref.getDownloadURL();
+      const res = await fetch(dlUrl);
+      if(!res.ok) throw new Error('No se pudo descargar la copia (HTTP ' + res.status + ')');
+      const buf = await res.arrayBuffer();
+      u8 = new Uint8Array(buf);
+    }
+    status.textContent = 'Descomprimiendo copia…';
+    const text = await gunzipText(u8);
+    const payload = JSON.parse(text);
+    if(!payload || payload.kind !== 'backup-config-inventario' || !payload.settings || !Array.isArray(payload.products)){
+      throw new Error('El archivo de la copia no es válido (falta app/kind/settings/products).');
+    }
+    status.textContent = 'Aplicando copia… (' + payload.products.length + ' producto(s))';
+    await settingsRef.set(payload.settings, { merge:true });
+    let batch = db.batch(), count = 0;
+    for(const p of payload.products){
+      if(!p || !p.id) continue;
+      batch.set(productsCol.doc(String(p.id)), p.data || {}, { merge:true });
+      count++;
+      if(count >= 400){ await batch.commit(); batch = db.batch(); count = 0; }
+    }
+    if(count > 0) await batch.commit();
+    status.style.color = 'var(--ok,#1B7A43)';
+    status.textContent = '✔ Copia restaurada: ' + payload.products.length + ' producto(s) procesados.';
+    toast('Copia de seguridad restaurada', 'ok');
+  }catch(e){
+    console.error(e);
+    status.style.color = 'var(--danger)';
+    status.textContent = 'No se pudo restaurar: ' + (e && e.message ? e.message : 'error');
+    toast('No se pudo restaurar la copia', 'err');
+  }
+}
+
+/* Descargar el backup COMPRIMIDO (.json.gz) automáticamente al PC.
+   Usa el caché IndexedDB si existe (descarga instantánea, sin CORS);
+   si no, baja de Storage con fetch. Genera el archivo local y dispara
+   la descarga automática con un <a download>. */
+async function downloadTenantBackup(storagePath, id){
+  try{
+    let u8 = await bkCacheGet(storagePath);
+    let desde = 'caché local';
+    if(!u8){
+      if(typeof firebase === 'undefined' || !firebase.storage) throw new Error('Storage no disponible');
+      const ref = firebase.storage().ref(storagePath);
+      const dlUrl = await ref.getDownloadURL();
+      const res = await fetch(dlUrl);
+      if(!res.ok) throw new Error('No se pudo descargar la copia (HTTP ' + res.status + ')');
+      const buf = await res.arrayBuffer();
+      u8 = new Uint8Array(buf);
+      desde = 'Storage';
+    }
+    const blob = new Blob([u8], { type: 'application/gzip' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (id || ('backup_' + TENANT_ID)) + '.json.gz';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 1000);
+    toast('Descarga automática iniciada (' + desde + ', ' + (blob.size/1024).toFixed(0) + ' KB)', 'ok');
+  }catch(e){
+    console.error(e);
+    toast('No se pudo descargar la copia: ' + (e && e.message ? e.message : 'error'), 'err');
+  }
 }
 
 /* ---------- exportar configuración + inventario a un archivo JSON ---------- */
