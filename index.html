@@ -6640,7 +6640,7 @@ async function generateVariantWhiteBackground(vid, idx){
 /* ---------- fotos del negocio para el carrusel del landing (subidas como archivo, comprimidas a base64) ---------- */
 let bizImages = ['','',''];
 let bizImgSlot = null;
-const BIZ_IMG_MAX_TOTAL_BYTES = 900000; // deja margen bajo el límite de 1MB por documento de Firestore
+/* Sin límite de peso - las fotos se guardan en Firebase Storage, no en Firestore documentos */
 function renderBizImageGrid(){
   const grid = document.getElementById('bizImgGrid');
   if(!grid) return;
@@ -6660,11 +6660,6 @@ function onBizImageFileChosen(input){
   const slot = bizImgSlot;
   if(!file || slot===null){ input.value=''; return; }
   compressImageFile(file, 1600, 0.82).then(dataUrl => {
-    const otherBytes = bizImages.reduce((s,u,i)=> s + (i===slot ? 0 : (u ? u.length : 0)), 0);
-    if(otherBytes + dataUrl.length > BIZ_IMG_MAX_TOTAL_BYTES){
-      toast('Esa foto es muy pesada junto con las demás. Quitá alguna foto o subí una más liviana', 'err');
-      return;
-    }
     bizImages[slot] = dataUrl;
     renderBizImageGrid();
     settingsFormDirty = true;
@@ -9226,11 +9221,6 @@ function onSaEditImageFileChosen(input){
   const slot = saEditImgSlot;
   if(!file || slot===null){ input.value=''; return; }
   compressImageFile(file, 1600, 0.82).then(dataUrl => {
-    const otherBytes = saEditBizImages.reduce((s,u,i)=> s + (i===slot ? 0 : (u ? u.length : 0)), 0);
-    if(otherBytes + dataUrl.length > 900000){
-      toast('Esa foto es muy pesada junto con las demás. Quitá alguna foto o subí una más liviana', 'err');
-      return;
-    }
     saEditBizImages[slot] = dataUrl;
     renderSaEditImageGrid();
   }).catch(()=> toast('No se pudo procesar esa foto', 'err'));
