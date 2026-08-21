@@ -1103,6 +1103,16 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 @keyframes svZoomOut{from{transform:scale(1.14)}to{transform:scale(1)}}
 @keyframes svPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 @keyframes svShine{from{transform:translateX(-120%)}to{transform:translateX(220%)}}
+/* ==================== ANIMACIONES DEL EDITOR CANVA ==================== */
+@keyframes svAnimFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes svAnimSlideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes svAnimSlideDown{from{opacity:0;transform:translateY(-40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes svAnimSlideLeft{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes svAnimSlideRight{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes svAnimBounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-18px)}60%{transform:translateY(-8px)}}
+@keyframes svAnimFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes svAnimPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes svAnimShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
 .sv-hero::after{content:"";position:absolute;bottom:-110px;left:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);animation:svFloat 9s ease-in-out infinite}
 .sv-hero-float{animation:svFadeIn .8s ease both}
 .sv-hero-badge{animation:svFadeIn .7s ease both}
@@ -1124,6 +1134,21 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 .sv-sec-head::after{content:"";display:block;width:56px;height:4px;border-radius:99px;background:linear-gradient(90deg,var(--site-p),var(--site-acc));margin-top:16px}
 .sv-eyebrow,.sv-h2{margin-top:0}
 body.site-live-edit{overflow:hidden}
+/* Edición en vivo SIMPLE: los textos se resaltan y se editan con clic directo;
+   las imágenes se cambian con un clic. El diseño SIEMPRE se acomoda
+   automáticamente (flujo normal del documento), sin mover objetos. */
+body.site-live-edit [contenteditable="true"]{
+  outline:2px dashed rgba(124,58,237,.55);
+  outline-offset:3px;
+  border-radius:6px;
+  cursor:text;
+}
+body.site-live-edit img[data-path]{
+  outline:2px dashed rgba(124,58,237,.55);
+  outline-offset:3px;
+  border-radius:8px;
+  cursor:pointer;
+}
 body.site-live-edit #adminView{background:#fff}
 body.site-live-edit .adm-sidebar{display:none !important}
 body.site-live-edit #adminView .panel:not(#panel-site){display:none !important}
@@ -11100,6 +11125,15 @@ function siteSetPath(o, path, value){
 }
 function siteDeep(v){ return JSON.parse(JSON.stringify(v)); }
 function siteCurrent(){ return deepMerge(siteDeep(SITE_DEFAULTS), siteViewOverride || siteConfig || {}); }
+/* Atributos de edición en vivo: cuando siteLiveEdit está activo, los textos e
+   imágenes de la landing se marcan como editables (contenteditable / data-path)
+   para que se puedan modificar dando clic directo en la vista previa. */
+function svEdText(path, extra){
+  return siteLiveEdit ? (' contenteditable="true" spellcheck="false" data-path="' + esc(path) + '" style="outline:2px dashed rgba(124,58,237,.55);outline-offset:3px;border-radius:6px;cursor:text"' + (extra||'')) : '';
+}
+function svEdImg(path, cls){
+  return (cls||'') + (siteLiveEdit ? (' data-path="' + esc(path) + '" style="outline:2px dashed rgba(124,58,237,.55);outline-offset:3px;border-radius:8px;cursor:pointer"' + ' title="Clic para cambiar esta foto"') : '');
+}
 function siteName(){ const sc = siteViewOverride || siteConfig || {}; return (sc.businessName && String(sc.businessName).trim()) ? String(sc.businessName).trim() : (settings && settings.storeName ? settings.storeName : 'Mi negocio'); }
 function siteTag(){ const sc = siteViewOverride || siteConfig || {}; return (sc.tagline && String(sc.tagline).trim()) ? String(sc.tagline).trim() : (settings && settings.tagline ? settings.tagline : (TENANT_DATA && TENANT_DATA.tagline) || ''); }
 function siteLogo(){ const u = (siteViewOverride && siteViewOverride.logoUrl) || (siteConfig && siteConfig.logoUrl) || (TENANT_DATA && TENANT_DATA.logoUrl) || (settings && settings.logoUrl) || ''; return String(u||'').trim(); }
@@ -11156,11 +11190,50 @@ function listenSite(){
 async function saveSite(){
   if(!siteDoc){ toast('Aún no hay documento de sitio disponible', 'err'); return; }
   try{
-    const cfg = readSiteEditor();
+    /* 1) Leer lo que hay en los inputs del editor lateral */
+    const fromEditor = readSiteEditor();
+    /* 2) Leer la vista previa real: textos e imágenes editados directamente
+          (elementos con data-path dentro de #siteRoot). Si los editaste en la
+          vista, esos valores SON los que se guardan. */
+    const fromPreview = readSiteFromPreview();
+    /* 3) Mezcla: editor (inputs) agrega/secciones; vista previa pisa los campos
+          que editó el usuario en vivo. */
+    let cfg = siteDeep(fromEditor);
+    if(fromPreview){
+      Object.keys(fromPreview).forEach(k => {
+        const v = fromPreview[k];
+        if(typeof v === 'object' && v && !Array.isArray(v)){
+          cfg[k] = deepMerge(cfg[k] || {}, v);
+        } else {
+          cfg[k] = v;
+        }
+      });
+    }
+    /* 4) Los cambios guardados anteriormente en siteConfig (edición en vivo
+          persistida) se conservan como base también. */
+    cfg = deepMerge(cfg, siteDeep(siteConfig || {}));
     await siteDoc.set(JSON.parse(JSON.stringify(cfg)), { merge:true });
     siteConfig = cfg;
-    toast('Landing page guardada', 'ok');
+    toast('Landing page guardada ✓', 'ok');
   }catch(e){ console.error(e); toast('No se pudo guardar: ' + (e && e.message ? e.message : 'error'), 'err'); }
+}
+/* Lee los elementos editables del DOM de la vista previa (data-path) y arma
+   un objeto parcial con los valores YOed aquí, para que "Guardar cambios"
+   persista lo hecho con clic directo en la vista previa. */
+function readSiteFromPreview(){
+  const root = document.getElementById('siteRoot');
+  if(!root) return null;
+  const out = {};
+  root.querySelectorAll('[data-path]').forEach(el => {
+    const path = el.getAttribute('data-path');
+    /* Los data-path con varios puntos son rutas anidadas (hero.badge,
+       hero.title...). Los que incluyen ".image" son imágenes. */
+    const val = el.isContentEditable
+      ? (el.innerText || '').trim()
+      : (el.getAttribute('src') || el.innerText || '').trim();
+    siteSetPath(out, path, val);
+  });
+  return out;
 }
 /* ------------------------- vista pública ------------------------- */
 function openSitePublic(){
@@ -11214,18 +11287,19 @@ function renderSiteFull(){
     + (wa ? '<a class="sv-btn sv-btn-wa" href="' + esc(waSite('Hola, quisiera información sobre sus productos.')) + '" target="_blank" rel="noopener">' + si('wa') + 'WhatsApp</a>' : '')
     + '<a class="sv-btn sv-btn-primary" href="' + esc(store) + '">' + si('cart') + 'Ver catálogo</a>'
     + '</div></header>';
-  /* HERO */
+  /* HERO (diseño automático: el layout fluye solo; en edición los textos e
+     imágenes se resaltan y se editan con clic directo en la vista previa) */
   html += '<div class="sv-wrap"><section class="sv-hero" id="svHero">'
     + '<span class="sv-hero-float">' + esc(name) + ' · ' + esc(tag) + '</span>'
     + '<div class="sv-hero-grid">'
-    + '<div><span class="sv-hero-badge">' + si('cart') + esc(c.hero.badge || '') + '</span>'
-    + '<h1>' + esc(c.hero.title) + '</h1>'
-    + '<p>' + esc(c.hero.sub) + '</p>'
+    + '<div><span class="sv-hero-badge">' + si('cart') + '<span' + svEdText('hero.badge') + '>' + esc(c.hero.badge || '') + '</span></span>'
+    + '<h1' + svEdText('hero.title') + '>' + esc(c.hero.title) + '</h1>'
+    + '<p' + svEdText('hero.sub') + '>' + esc(c.hero.sub) + '</p>'
     + '<div class="sv-hero-actions">'
     + '<a class="sv-btn sv-btn-ghost" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff" href="#svProducts">Ver productos</a>'
     + (wa ? '<a class="sv-btn sv-btn-wa" href="' + esc(waSite('Hola, quisiera información sobre sus productos.')) + '" target="_blank" rel="noopener">' + si('wa') + 'Contactar por WhatsApp</a>' : '')
     + '</div></div>'
-    + '<div class="sv-hero-media">' + (heroImg ? simg(heroImg, name + ' — portada', '') : '<div style="aspect-ratio:4/3.2;border-radius:26px;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.3)"></div>')
+    + '<div class="sv-hero-media">' + (heroImg ? '<img' + svEdImg('hero.image') + ' src="' + esc(heroImg) + '" alt="' + esc(name) + '" loading="lazy">' : '<div style="aspect-ratio:4/3.2;border-radius:26px;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.3)"></div>')
     + '</div>'
     + '</div></section>';
   /* BENEFICIOS */
@@ -11739,8 +11813,10 @@ function toggleSiteLive(){
     closeSiteLightbox();
     renderSiteFull();
     ensureLivePill();
+    enableSiteInlineEditing();
   }else{
     removeLivePill();
+    disableSiteInlineEditing();
   }
 }
 function ensureLivePill(){
@@ -11773,6 +11849,107 @@ function bindSiteLiveInputs(){
     const t = ev.target;
     if(t && t.id && t.closest && t.closest('#panel-site') && (t.type === 'checkbox' || t.type === 'color')) refreshSitePreview();
   });
+}
+/* ==================== EDICIÓN EN VISTA PREVIA (SIMPLE) ====================
+   Los objetos de la landing se editan con CLIC DIRECTO en la vista previa:
+   - Texto: clic → editable (contenteditable) → se escribe en siteConfig.
+   - Imagen: clic → selector → sube a Storage → actualiza URL.
+   El diseño SIEMPRE se acomoda automáticamente (flujo normal del documento).
+   "Guardar cambios" persiste los textos editados.
+   ==================================================================== */
+let _siteSimpleBound = false;
+const SV_ANIMATIONS = [];
+const SV_FONTS = [];
+function siteCanvasGet(objId){
+  if(!siteConfig) siteConfig = {};
+  if(!siteConfig.canvas) siteConfig.canvas = {};
+  if(!siteConfig.canvas[objId]) siteConfig.canvas[objId] = {};
+  return siteConfig.canvas[objId];
+}
+function enableSiteInlineEditing(){
+  const root = document.getElementById('siteRoot');
+  if(!root) return;
+  if(_siteSimpleBound) return;
+  _siteSimpleBound = true;
+  /* Texto editable: al escribir, persistir en siteConfig */
+  root.addEventListener('input', function(ev){
+    if(!siteLiveEdit) return;
+    const el = ev.target;
+    if(el && el.isContentEditable && el.dataset && el.dataset.path){
+      siteInlineWriteText(el.dataset.path, el.innerText);
+    }
+  });
+  /* Texto editable: al salir, refrescar vista previa */
+  root.addEventListener('blur', function(ev){
+    if(!siteLiveEdit) return;
+    const el = ev.target;
+    if(el && el.isContentEditable && el.dataset && el.dataset.path){
+      siteInlineWriteText(el.dataset.path, el.innerText);
+      refreshSitePreview();
+    }
+  }, true);
+  /* Imagen editable: clic para reemplazar */
+  root.addEventListener('click', function(ev){
+    if(!siteLiveEdit) return;
+    const img = ev.target.closest && ev.target.closest('img[data-path]');
+    if(img){
+      ev.preventDefault();
+      ev.stopPropagation();
+      siteInlinePickImage(img.dataset.path);
+    }
+  });
+}
+function disableSiteInlineEditing(){
+  document.querySelectorAll('#siteRoot [contenteditable="true"]').forEach(el => {
+    el.removeAttribute('contenteditable');
+    if(el.dataset && el.dataset.path) el.removeAttribute('data-path');
+  });
+}
+/* Escribe el texto editado en siteConfig siguiendo la ruta data-path.
+   Ej: "hero.title" → siteConfig.hero.title = texto.
+   También sincroniza el input del panel lateral si existe (para que
+   "Guardar cambios" tenga el valor). La ruta con punto se convierte a
+   el id del editor: sf_hero__title (puntos → __). */
+function siteInlineWriteText(path, text){
+  if(!siteConfig) siteConfig = {};
+  const parts = path.split('.');
+  let cur = siteConfig;
+  for(let i=0;i<parts.length-1;i++){
+    if(!cur[parts[i]] || typeof cur[parts[i]] !== 'object') cur[parts[i]] = {};
+    cur = cur[parts[i]];
+  }
+  cur[parts[parts.length-1]] = String(text == null ? '' : text).trim();
+  /* Sincronizar el input del editor lateral */
+  const inputId = 'sf_' + path.replace(/\./g, '__');
+  const inp = document.getElementById(inputId);
+  if(inp && inp.value !== cur[parts[parts.length-1]]){
+    inp.value = cur[parts[parts.length-1]];
+  }
+}
+/* Abre el selector para reemplazar una imagen de la vista previa */
+function siteInlinePickImage(path){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/jpeg,image/png';
+  inp.onchange = async function(){
+    const f = inp.files && inp.files[0];
+    if(!f) return;
+    try{
+      const blob = await resizeSiteImage(f, 1600, 0.86);
+      if(typeof firebase === 'undefined' || !firebase.storage) throw new Error('Storage no disponible');
+      const name = 'sites/' + (TENANT_ID || 'x') + '/' + Date.now() + Math.random().toString(36).slice(2, 7) + '.jpg';
+      const ref = firebase.storage().ref(name);
+      await ref.put(blob, { contentType: blob.type, cacheControl: 'public,max-age=31536000' });
+      const url = await ref.getDownloadURL();
+      siteInlineWriteText(path, url);
+      refreshSitePreview();
+      toast('Imagen actualizada', 'ok');
+    }catch(e){
+      console.error(e);
+      toast('No se pudo subir la imagen: ' + (e && e.message ? e.message : 'error'), 'err');
+    }
+  };
+  inp.click();
 }
 function siteReveal(){
   const els = document.querySelectorAll('#siteRoot .sv-reveal');
