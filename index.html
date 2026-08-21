@@ -11685,6 +11685,14 @@ async function generateSiteWithAI(){
 /* Ajuste en el render: cerrar el editor antes de la vista pública si hay cambios sin guardar */
 async function bootPlatform(){
   renderHeader(); renderChips(); updateCartUI(); renderExternalLinks(); renderStoryVideo();
+  /* SUPERADMIN POR EMAIL: si el usuario actual tiene correo en SUPERADMIN_EMAILS,
+     activar modo automáticamente (sin necesidad de ?superadmin=1) */
+  const user = auth.currentUser;
+  const isSuperAdminByEmail = user && window.SUPERADMIN_EMAILS?.includes(user.email);
+  if(isSuperAdminByEmail){
+    initSuperadminMode();
+    return;
+  }
   if(new URLSearchParams(location.search).get('superadmin') === '1'){
     initSuperadminMode();
     return;
