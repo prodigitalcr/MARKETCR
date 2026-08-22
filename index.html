@@ -379,9 +379,6 @@ textarea.f-input{resize:vertical;min-height:70px}
 .media-item .cover-tag{position:absolute;top:6px;left:6px;background:var(--ink);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px}
 .media-item .rm-btn{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(220,38,38,.92);color:#fff;display:flex;align-items:center;justify-content:center}
 .media-item .rm-btn svg{width:12px;height:12px}
-.media-item .ai-bg-btn{position:absolute;bottom:6px;left:6px;right:6px;height:24px;border-radius:8px;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent));color:#fff;display:flex;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:800;letter-spacing:.2px;box-shadow:0 3px 8px rgba(124,58,237,.4)}
-.media-item .ai-bg-btn:disabled{opacity:.65;cursor:wait}
-.media-item .ai-bg-btn svg{width:11px;height:11px}
 .media-item .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#CBD5E1}
 .media-item.upload{cursor:pointer;transition:.15s}
 .media-item.upload:hover{border-color:var(--green);background:var(--green-soft)}
@@ -408,9 +405,6 @@ textarea.f-input{resize:vertical;min-height:70px}
 .vr-slot .vr-cam{position:absolute;top:1px;left:1px;width:17px;height:17px;border-radius:50%;background:rgba(15,90,48,.88);color:#fff;display:flex;align-items:center;justify-content:center}
 .vr-slot .vr-cam svg{width:9px;height:9px}
 .vr-slot .vr-cam:hover{background:#0F5A30}
-.vr-slot .vr-ai{position:absolute;bottom:1px;right:2px;width:17px;height:17px;border-radius:50%;background:linear-gradient(135deg,var(--ruby),var(--ruby-accent));color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(124,58,237,.5)}
-.vr-slot .vr-ai svg{width:9px;height:9px}
-.vr-slot .vr-ai:disabled{opacity:.6;cursor:wait}
 .vr-fields{flex:1;display:grid;grid-template-columns:1fr 1fr 0.8fr;gap:8px;min-width:220px}
 .vr-fields input{padding:8px 10px;font-size:13px}
 .variant-row .vr-del{width:30px;height:30px;border-radius:8px;background:var(--danger-soft);color:var(--danger);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -1159,6 +1153,12 @@ body.site-live-edit [data-obj].cv-layer{
   outline:1.5px dashed rgba(124,58,237,.35);
   outline-offset:3px;
 }
+/* OBJETOS SUPERPUESTOS: contenedor flotante dentro de la landing, sin
+   romper el flujo: se posicionan de forma absoluta y se editan como capas. */
+#siteRoot{position:relative}
+#cvOverlaysHolder{position:absolute;inset:0;pointer-events:none;overflow:visible}
+#cvOverlaysHolder .cv-overlay-obj{pointer-events:none;box-sizing:border-box}
+body.site-live-edit #cvOverlaysHolder .cv-overlay-obj{pointer-events:auto}
 body.site-live-edit [data-obj].cv-layer.sel{
   outline:2px solid #7C3AED;
   z-index:30;
@@ -2519,20 +2519,16 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <button class="btn-primary" onclick="toggleSiteLive()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Editar en vivo
           </button>
-          <span class="hint">La página se ve a la par y se actualiza sola mientras escribís o subís fotos. Recién se guarda para el público cuando presionás "Guardar cambios".</span>
-        </div>
-        <div class="site-tabs" id="siteTabs"></div>
-        <div id="siteEditorRoot"><div style="text-align:center;color:var(--muted);padding:40px">Cargando editor…</div></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 30px">
-          <button class="btn-dark" onclick="saveSite()">Guardar cambios</button>
-          <button class="btn-primary" onclick="openSitePublic()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Ver mi landing publicada
+          <button class="btn-dark" onclick="saveSite()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Guardar cambios
           </button>
-          <button class="btn-ghost" onclick="loadSiteEditor()">Descartar</button>
           <button class="btn-ghost" style="width:auto" onclick="shareSite()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M12 3v13M7 8l5-5 5 5"/></svg>Compartir enlace
           </button>
+          <span class="hint">👉 Un solo editor: la vista previa. Escribí o subí fotos directamente en la página y guardá con "Guardar cambios" (se publica en Storage al instante).</span>
         </div>
+        <div class="site-tabs" id="siteTabs"></div>
+        <div id="siteEditorRoot"><div style="text-align:center;color:var(--muted);padding:40px">Cargando editor…</div></div>
       </div>
     </section>
 
@@ -2801,7 +2797,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
               <button type="button" class="btn-ghost" style="width:auto;padding:9px 16px;margin-top:8px" onclick="addImageField()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Agregar recuadro de foto
               </button>
-              <div class="hint" style="margin-top:6px">✨ El botón morado <b>"Fondo blanco"</b> sobre cada foto genera automáticamente una versión con fondo blanco usando IA (OpenRouter). Es exclusivo del <b>Plan Destacado</b> y requiere tener configurado un modelo de imagen en Configuraciones → Asistente de IA.</div>
+              <div class="hint" style="margin-top:6px">Las fotos se suben comprimidas a Firebase Storage (se ven nítidas en la tienda y el documento de Firestore queda liviano).</div>
             </div>
 <div class="f-group"><label>Nombre del producto <span class="req">*</span></label><input class="f-input" id="pName" placeholder="Ej: Monstera Deliciosa"></div>
             <div class="f-group"><label>Categoría</label><select class="f-input" id="pCat"></select></div>
@@ -6301,7 +6297,7 @@ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   if(name==='inventory') renderInventory();
   if(name==='orders') renderOrders();
   if(name==='settings') loadSettingsForm();
-  if(name==='site') loadSiteEditor();
+  if(name==='site'){ loadSiteEditor(); ensureSiteLive(); }
   if(name==='membership') loadMembershipPanel();
 if(name==='pos'){ renderPOSCatalog(); renderPOSCart(); renderPOSDashboard(); listenFinanceIfAdmin(); }
   if(name==='finance'){ listenFinanceIfAdmin(); renderFinancePanel(); }
@@ -6654,7 +6650,6 @@ function renderImageGrid(){
       (i===0 ? '<span class="cover-tag">Portada</span>' : '') +
       preview +
       (url ? '<button type="button" class="rm-btn" onclick="event.stopPropagation();removeImageField(' + i + ')" title="Quitar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' : '') +
-      (url ? '<button type="button" class="ai-bg-btn" id="aiBgBtn' + i + '" onclick="event.stopPropagation();generateWhiteBackgroundImage(' + i + ')" title="Generar fondo blanco con IA"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 1.8 4.4L18 8l-4.2 1.6L12 14l-1.8-4.4L6 8l4.2-1.6z"/></svg>Fondo blanco</button>' : '') +
     '</div>';
   }).join('');
 }
@@ -6702,40 +6697,6 @@ function addImageField(){
 }
 function removeImageField(i){ pmImages.splice(i,1); if(!pmImages.length) pmImages.push(''); renderImageGrid(); }
 
-/* ---------- generador de fotos con fondo blanco (IA, exclusivo Plan Destacado) ----------
-   La foto viaja al backend seguro (Cloud Function "aiImage"), que usa la clave
-   de OpenRouter guardada en privateSettings y devuelve la imagen ya editada.
-   El navegador no llega a ver la clave. */
-async function generateWhiteBackgroundImage(slot){
-  if(!planAllows('ai-image')){ showPlanWall('ai-image'); return; }
-  const sourceUrl = pmImages[slot];
-  if(!sourceUrl){ toast('Subí primero una foto en ese recuadro', 'err'); return; }
-  const model = settings.aiImageModel || '';
-  if(!model){
-    toast('Configurá el modelo de imagen en Configuraciones → Asistente de IA', 'err');
-    return;
-  }
-  const btn = document.getElementById('aiBgBtn' + slot);
-  if(btn){ btn.disabled = true; btn.textContent = 'Generando…'; }
-  try{
-    const res = await cloudCall('aiImage', { slug: TENANT_ID, imageUrl: sourceUrl });
-    if(res && res.image){
-      pmImages[slot] = res.image;
-      renderImageGrid();
-      toast('Foto con fondo blanco generada ✨', 'ok');
-    } else {
-      toast((res && res.error) || 'El modelo elegido no devolvió una imagen. Probá con otro modelo de imagen en Configuraciones.', 'err');
-    }
-  }catch(err){
-    console.error(err);
-    toast('No se pudo generar la imagen desde el servidor: ' + (err.message||'error'), 'err');
-  }finally{
-    // renderImageGrid() ya reconstruye el botón; esto solo cubre el caso de error donde no se re-renderiza
-    const btn2 = document.getElementById('aiBgBtn' + slot);
-    if(btn2){ btn2.disabled = false; btn2.textContent = 'Fondo blanco'; }
-  }
-}
-
 /* Visor de fotos a pantalla completa del editor: muestra la foto en su
    resolución real (la que se va a guardar), para verificar nitidez antes
    de publicar. Funciona igual para fotos de producto y de variantes. */
@@ -6757,42 +6718,6 @@ function closeAdminViewer(ev){
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape' || e.key === 'Esc') closeAdminViewer();
 });
-
-/* Fondo blanco con IA para una foto de variante: mismo backend seguro
-   (Cloud Function "aiImage") que usa la foto del producto. */
-async function generateVariantWhiteBackground(vid, idx){
-  if(!planAllows('ai-image')){ showPlanWall('ai-image'); return; }
-  const v = pmVariants.find(x=>x.id===vid);
-  if(!v) return;
-  const arr = variantImagesPadded(v);
-  const sourceUrl = arr[idx];
-  if(!sourceUrl){ toast('Subí primero la foto de esa posición', 'err'); return; }
-  const model = settings.aiImageModel || '';
-  if(!model){
-    toast('Configurá el modelo de imagen en Configuraciones → Asistente de IA', 'err');
-    return;
-  }
-  const btnEl = document.getElementById('vrAiBtn' + vid + '_' + idx);
-  if(btnEl) btnEl.disabled = true;
-  try{
-    const res = await cloudCall('aiImage', { slug: TENANT_ID, imageUrl: sourceUrl });
-    if(res && res.image){
-      arr[idx] = res.image;
-      v.images = arr.filter(Boolean);
-      v.image = v.images[0] || '';
-      renderVariantsPanel();
-      toast('Foto con fondo blanco generada ✨', 'ok');
-    } else {
-      toast((res && res.error) || 'El modelo elegido no devolvió una imagen. Probá con otro modelo de imagen en Configuraciones.', 'err');
-    }
-  }catch(err){
-    console.error(err);
-    toast('No se pudo generar la imagen desde el servidor: ' + (err.message||'error'), 'err');
-  }finally{
-    const b2 = document.getElementById('vrAiBtn' + vid + '_' + idx);
-    if(b2) b2.disabled = false;
-  }
-}
 
 /* ---------- fotos del negocio para el carrusel del landing (subidas como archivo, comprimidas a base64) ---------- */
 let bizImages = ['','',''];
@@ -6878,7 +6803,6 @@ function renderVariantsPanel(){
                 (i===0 ? '<span class="tag">1º</span>' : '') +
                 '<button type="button" class="vr-cam" title="Cambiar esta foto" onclick="event.stopPropagation();triggerVariantImageUpload(\'' + v.id + '\',' + i + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>' +
                 '<button type="button" class="rm" title="Quitar foto" onclick="event.stopPropagation();removeVariantImage(\'' + v.id + '\',' + i + ')">✕</button>' +
-                '<button type="button" class="vr-ai" id="vrAiBtn' + v.id + '_' + i + '" title="Generar fondo blanco con IA" onclick="event.stopPropagation();generateVariantWhiteBackground(\'' + v.id + '\',' + i + ')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 1.8 4.4L18 8l-4.2 1.6L12 14l-1.8-4.4L6 8l4.2-1.6z"/></svg></button>' +
               '</span>'
             : '<span class="vr-slot" title="Subir foto ' + (i+1) + '" onclick="triggerVariantImageUpload(\'' + v.id + '\',' + i + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>')
         ).join('') + '</div>' +
@@ -11397,7 +11321,7 @@ async function saveSite(){
     siteConfig = cfg;
     /* 6) GUARDAR EN STORAGE: configuración completa con URL estable */
     await saveSiteToStorage(cfg);
-    toast('Landing page guardada ✓', 'ok');
+    toast('Landing page guardada ✓ (Firestore + Storage)', 'ok');
   }catch(e){ console.error(e); toast('No se pudo guardar: ' + (e && e.message ? e.message : 'error'), 'err'); }
 }
 /* Lee los elementos editables del DOM de la vista previa (data-path) y arma
@@ -11641,6 +11565,7 @@ function renderSiteFull(){
   siteHeaderScroll();
   renderSiteDemoBanner();
   siteReveal();
+  renderSiteOverlays();
   /* En modo edición en vivo: convertir los objetos en capas Canva */
   if(siteLiveEdit) cvAutoDetectLayers();
   if(document.body.classList.contains('in-admin')){
@@ -11680,12 +11605,21 @@ function cvAutoDetectLayers(){
     el.style.cursor = 'pointer';
     cvWrapTools(el, id);
   });
-  /* 3) Botones CTA: .sv-btn (excepto os del nav) */
+  /* 3) Botones CTA: .sv-btn (excepto los del nav) */
   root.querySelectorAll('.sv-hero-actions .sv-btn, .sv-cta .sv-btn, .sv-btn-primary, .sv-hero-actions a').forEach(function(el){
     if(el.closest('[data-obj]')) return;
     const id = 'cv' + (++_cvObjSeq);
     el.setAttribute('data-obj', id);
     el.setAttribute('data-way', 'button');
+    cvWrapTools(el, id);
+  });
+  /* 4) ICONOS movibles de beneficios y "por qué elegirnos" */
+  root.querySelectorAll('.sv-b-icon, .sv-about-list li svg, .sv-contact-ico').forEach(function(el){
+    if(el.closest('[data-obj]')) return;
+    const id = 'cvic' + (++_cvObjSeq);
+    el.setAttribute('data-obj', id);
+    el.setAttribute('data-way', 'icon');
+    el.style.cursor = 'move';
     cvWrapTools(el, id);
   });
   /* Aplicar estilos guardados del canvas */
@@ -12136,6 +12070,19 @@ function toggleSiteLive(){
     renderSiteFull();
   }
 }
+/* Editor unificado: abre SIEMPRE el modo edición en vivo (vista previa a la
+   par). No hay formularios separados: todo se edita en la vista previa. */
+function ensureSiteLive(){
+  if(siteLiveEdit) return;
+  siteConfig = readSiteEditor();
+  siteLiveEdit = true;
+  document.body.classList.add('site-live-edit');
+  siteDemoActive = false; siteViewOverride = null;
+  closeSiteLightbox();
+  renderSiteFull();
+  ensureLivePill();
+  enableSiteInlineEditing();
+}
 /* Botón "Volver al panel": aparece DEBAJO del panel flotante de estilo
    (el panel está en bottom:74px; el botón queda en bottom:16px, mismo lado). */
 function ensureLivePill(){
@@ -12191,6 +12138,8 @@ const CV_FONTS = ['Inter','Georgia','Arial','Helvetica','Times New Roman','Couri
 let _cvBound = false, _cvDrag = null, _cvSel = null, _cvMoved = false;
 function siteCanvasGet(objId){
   if(!siteConfig) siteConfig = {};
+  /* Los objetos superpuestos guardan su estilo en overlays[id] (mismo sistema) */
+  if(siteConfig.overlays && siteConfig.overlays[objId]) return siteConfig.overlays[objId];
   if(!siteConfig.canvas) siteConfig.canvas = {};
   if(!siteConfig.canvas[objId]) siteConfig.canvas[objId] = {};
   return siteConfig.canvas[objId];
@@ -12241,9 +12190,14 @@ function enableSiteInlineEditing(){
   root.addEventListener('input', function(ev){
     if(!siteLiveEdit) return;
     const el = ev.target;
-    if(el && el.isContentEditable && el.dataset && el.dataset.path){
-      siteInlineWriteText(el.dataset.path, el.innerText);
-      siteLiveAutoSave();
+    if(el && el.isContentEditable){
+      const layer = el.closest('[data-obj]');
+      if(el.dataset && el.dataset.path){
+        siteInlineWriteText(el.dataset.path, el.innerText);
+      } else if(layer && siteConfig.overlays && siteConfig.overlays[layer.dataset.obj]){
+        siteConfig.overlays[layer.dataset.obj].text = el.innerText;
+      }
+      if(el.dataset && el.dataset.path || (layer && siteConfig.overlays && siteConfig.overlays[layer.dataset.obj])) siteLiveAutoSave();
     }
   });
   document.addEventListener('mousemove', cvDragMove);
@@ -12314,6 +12268,21 @@ function cvSelect(objId){
   sp.querySelectorAll('.sp-anim').forEach(b => b.classList.toggle('on', b.dataset.anim === (st.anim || '')));
   sp.querySelector('[data-cv-sp="bold"]').classList.toggle('on', !!st.bold);
   sp.querySelector('[data-cv-sp="italic"]').classList.toggle('on', !!st.italic);
+  /* Sombra editable: sincronizar los controles con el estado actual */
+  const sh = st.shadow || {};
+  const shx = sp.querySelector('[data-cv-sp="shx"]');
+  const shy = sp.querySelector('[data-cv-sp="shy"]');
+  const shb = sp.querySelector('[data-cv-sp="shb"]');
+  const shc = sp.querySelector('[data-cv-sp="shc"]');
+  const sho = sp.querySelector('[data-cv-sp="sho"]');
+  if(shx) shx.value = sh.offX || 0;
+  if(shy) shy.value = sh.offY || 0;
+  if(shb) shb.value = sh.blur || 0;
+  if(sho) sho.value = (sh.opacity == null ? 0.3 : sh.opacity);
+  if(shc){
+    const hex = sh.colorHex || '#000000';
+    shc.value = /^#[0-9a-f]{6}$/i.test(hex) ? hex : '#000000';
+  }
 }
 function cvSelectReset(){ cvSelect(null); }
 /* ---- Drag: mover (translate), size (w/h), rotar ---- */
@@ -12395,6 +12364,7 @@ function cvApply(layer, st){
   if(st.rotate) t.push('rotate(' + st.rotate + 'deg)');
   layer.style.transform = t.length ? t.join(' ') : 'none';
   if(st.w) layer.style.width = st.w + 'px';
+  if(st.h && st.h > 0) layer.style.height = st.h + 'px';
   /* Texto: estilos tipográficos */
   const tx = layer.querySelector('[data-cv="text"]');
   if(tx){
@@ -12404,6 +12374,14 @@ function cvApply(layer, st){
     tx.style.fontWeight = st.bold ? '700' : '400';
     tx.style.fontStyle = st.italic ? 'italic' : 'normal';
     tx.style.textAlign = st.align || 'left';
+  }
+  /* SOMBRA editable: se aplica al objeto completo con box-shadow */
+  if(st.shadow){
+    const sh = st.shadow;
+    layer.style.boxShadow = (sh.enabled === false ? 'none' :
+      (sh.offX||0) + 'px ' + (sh.offY||0) + 'px ' + (sh.blur||0) + 'px ' + (sh.color||'rgba(0,0,0,.3)'));
+  } else {
+    layer.style.boxShadow = '';
   }
   /* Animación */
   layer.style.animation = st.anim ? (st.anim + ' 1.3s ease infinite') : '';
@@ -12431,9 +12409,27 @@ function ensureCvStylePanel(){
     '<div class="sp-row">' +
       '<button class="sp-btn" data-cv-sp="moveup" title="Subir objeto (mantiene el orden)">⬆️ Arriba</button>' +
       '<button class="sp-btn" data-cv-sp="movedown" title="Bajar objeto (mantiene el orden)">⬇️ Abajo</button>' +
+      '<button class="sp-btn" data-cv-sp="delobj" title="Eliminar objeto">🗑️</button>' +
+    '</div>' +
+    '<h5 style="margin-top:6px">🌫️ Sombra</h5>' +
+    '<div class="sp-row">' +
+      '<label style="font-size:11px;color:#9CA3AF">X</label><input type="number" data-cv-sp="shx" min="-50" max="50" step="1" style="width:48px">' +
+      '<label style="font-size:11px;color:#9CA3AF">Y</label><input type="number" data-cv-sp="shy" min="-50" max="50" step="1" style="width:48px">' +
+      '<label style="font-size:11px;color:#9CA3AF">Blur</label><input type="number" data-cv-sp="shb" min="0" max="60" step="1" style="width:48px">' +
+    '</div>' +
+    '<div class="sp-row">' +
+      '<label style="font-size:11px;color:#9CA3AF">Color</label><input type="color" data-cv-sp="shc" style="width:32px;height:28px">' +
+      '<label style="font-size:11px;color:#9CA3AF">Opac.</label><input type="number" data-cv-sp="sho" min="0" max="1" step="0.05" style="width:48px">' +
+      '<button class="sp-btn" data-cv-sp="shoff" title="Quitar sombra">🚫</button>' +
     '</div>' +
     '<h5 style="margin-top:6px">✨ Animación</h5>' +
-    '<div class="sp-btns">' + CV_ANIMATIONS.map((a,i) => '<button class="sp-anim" data-anim="' + a + '">' + esc(CV_ANIM_NAMES[i]) + '</button>').join('') + '</div>';
+    '<div class="sp-btns">' + CV_ANIMATIONS.map((a,i) => '<button class="sp-anim" data-anim="' + a + '">' + esc(CV_ANIM_NAMES[i]) + '</button>').join('') + '</div>' +
+    '<h5 style="margin-top:6px">➕ Agregar objeto</h5>' +
+    '<div class="sp-btns">' +
+      '<button class="sp-btn" data-cv-sp="addtext">TEXT</button>' +
+      '<button class="sp-btn" data-cv-sp="addimg">📷</button>' +
+      '<button class="sp-btn" data-cv-sp="added">● Círculo</button>' +
+    '</div>';
   document.body.appendChild(sp);
   sp.addEventListener('input', function(ev){
     if(!_cvSel) return;
@@ -12452,8 +12448,24 @@ function ensureCvStylePanel(){
         tx.innerText = ev.target.value;
         const path = tx.getAttribute('data-path');
         if(path) siteInlineWriteText(path, ev.target.value);
+        else if(siteConfig.overlays && siteConfig.overlays[_cvSel]) siteConfig.overlays[_cvSel].text = ev.target.value;
       }
       return;
+    }
+    /* SOMBRA editable (offset X/Y, blur, color, opacidad) */
+    else if(['shx','shy','shb','shc','sho'].includes(k)){
+      if(!st.shadow) st.shadow = { offX:0, offY:3, blur:8, color:'rgba(0,0,0,.3)', enabled:true };
+      if(k === 'shx') st.shadow.offX = parseFloat(ev.target.value) || 0;
+      else if(k === 'shy') st.shadow.offY = parseFloat(ev.target.value) || 0;
+      else if(k === 'shb') st.shadow.blur = Math.max(0, parseFloat(ev.target.value) || 0);
+      else if(k === 'shc') st.shadow.colorHex = ev.target.value;
+      else if(k === 'sho') st.shadow.opacity = Math.max(0, Math.min(1, parseFloat(ev.target.value) || 0.3));
+      // Construir color con opacidad: rgba(hex, opacidad)
+      const hex = st.shadow.colorHex || '#000000';
+      const op = st.shadow.opacity == null ? 0.3 : st.shadow.opacity;
+      const r = parseInt(hex.slice(1,3),16), g2 = parseInt(hex.slice(3,5),16), b2 = parseInt(hex.slice(5,7),16);
+      st.shadow.color = 'rgba(' + r + ',' + g2 + ',' + b2 + ',' + op + ')';
+      st.shadow.enabled = true;
     }
     const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(_cvSel) + '"]');
     cvApply(layer, st);
@@ -12487,7 +12499,129 @@ function ensureCvStylePanel(){
     if(up){ cvReorder(_cvSel, 'up'); return; }
     const down = ev.target.closest('[data-cv-sp="movedown"]');
     if(down){ cvReorder(_cvSel, 'down'); return; }
+    /* Eliminar objeto (texto/imagen/círculo superpuesto) */
+    const del = ev.target.closest('[data-cv-sp="delobj"]');
+    if(del){ cvDeleteOverlay(_cvSel); return; }
+    /* Quitar sombra */
+    const shoff = ev.target.closest('[data-cv-sp="shoff"]');
+    if(shoff){
+      if(st.shadow) st.shadow.enabled = false;
+      cvApply(layer, st);
+      return;
+    }
+    /* Agregar objetos superpuestos */
+    const addT = ev.target.closest('[data-cv-sp="addtext"]');
+    if(addT){ cvAddOverlay('text'); return; }
+    const addI = ev.target.closest('[data-cv-sp="addimg"]');
+    if(addI){ cvAddOverlay('image'); return; }
+    const addE = ev.target.closest('[data-cv-sp="added"]');
+    if(addE){ cvAddOverlay('ellipse'); return; }
   });
+}
+/* ---- Agregar OBJETOS SUPERPUESTOS (texto, imagen, círculo) al landing ----
+   Se agregan como capas libres dentro de un contenedor flotante dentro de
+   #siteRoot: se pueden mover, redimensionar, rotar, estilizar y aplicarles
+   SOMBRA editable. Se guardan en siteConfig.overlays[{id}] y se persisten
+   con "Guardar cambios" (saveSite usa siteConfig como base). */
+function cvAddOverlay(kind){
+  const root = document.getElementById('siteRoot');
+  if(!root) return;
+  if(!siteConfig.overlays) siteConfig.overlays = {};
+  const id = 'ov' + Date.now().toString(36);
+  const ov = siteConfig.overlays[id] = {
+    kind: kind,
+    x: 60, y: 60, w: 180, h: 60, rotate: 0,
+    font: 'Georgia', fontSize: 28, color: '#17202A', bold: true, italic: false, align: 'left',
+    text: (kind === 'text' ? 'Nuevo texto' : ''),
+    shadow: { offX: 0, offY: 4, blur: 12, color: 'rgba(0,0,0,.35)', enabled: true }
+  };
+  sceneBuildOverlay(id);
+  cvSelect(id);
+}
+/* Crea el elemento DOM de un overlay dentro del contenedor flotante */
+function sceneBuildOverlay(id){
+  const root = document.getElementById('siteRoot');
+  if(!root) return;
+  const ov = siteConfig && siteConfig.overlays && siteConfig.overlays[id];
+  if(!ov) return;
+  let cont = document.getElementById('cvOverlaysHolder');
+  if(!cont || !root.contains(cont)){
+    cont = document.createElement('div');
+    cont.id = 'cvOverlaysHolder';
+    root.appendChild(cont);
+  }
+  const el = document.createElement('div');
+  el.className = 'cv-overlay-obj';
+  el.setAttribute('data-obj', id);
+  el.setAttribute('data-way', ov.kind || 'text');
+  el.style.cssText = 'position:absolute;left:0;top:0;width:' + (ov.w||180) + 'px;height:' + (ov.h||60) + 'px;';
+  if(ov.kind === 'image'){
+    el.innerHTML = (ov.image
+      ? '<img src="' + esc(ov.image) + '" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:block;cursor:pointer" onclick="event.stopPropagation();cvAddOverlayImage(\'' + id + '\')" title="Clic para cambiar la imagen">'
+      : '<div data-cv="image" style="width:100%;height:100%;background:#E5E7EB;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px" onclick="event.stopPropagation();cvAddOverlayImage(\'' + id + '\')">📷</div>');
+  } else if(ov.kind === 'ellipse'){
+    el.innerHTML = '<div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#BE185D)"></div>';
+  } else {
+    el.innerHTML = '<div data-cv="text">' + esc(ov.text || 'Texto') + '</div>';
+  }
+  el.appendChild(cvToolSpan('cv-t-r'));
+  el.appendChild(cvToolSpan('cv-t-r2'));
+  el.appendChild(cvToolSpan('cv-t-r3'));
+  el.appendChild(cvToolSpan('cv-t-rot'));
+  el.classList.add('cv-layer');
+  cvApply(el, ov);
+  cont.appendChild(el);
+}
+/* Renderiza TODOS los overlays guardados (se llama tras cada renderSiteFull) */
+function renderSiteOverlays(){
+  const root = document.getElementById('siteRoot');
+  if(!root) return;
+  const old = document.getElementById('cvOverlaysHolder');
+  if(old) old.remove();
+  if(!siteConfig || !siteConfig.overlays) return;
+  Object.keys(siteConfig.overlays).forEach(function(id){
+    sceneBuildOverlay(id);
+  });
+}
+/* Span de tool reutilizable para objetos superpuestos */
+function cvToolSpan(cls){
+  const s = document.createElement('span');
+  s.className = 'cv-tool ' + cls;
+  s.setAttribute('onmousedown', 'event.preventDefault();event.stopPropagation();cvDragStartTool(event, cls.indexOf("rot") !== -1 ? "rotate" : "size")');
+  return s;
+}
+/* Subir imagen a un objeto superpuesto */
+function cvAddOverlayImage(id){
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/jpeg,image/png';
+  inp.onchange = async function(){
+    const f = inp.files && inp.files[0];
+    if(!f) return;
+    try{
+      const blob = await resizeSiteImage(f, 1600, 0.86);
+      const ref = firebase.storage().ref('sites/' + (TENANT_ID || 'x') + '/ov-' + Date.now() + '.jpg');
+      await ref.put(blob, { contentType: blob.type, cacheControl: 'public,max-age=31536000' });
+      const url = await ref.getDownloadURL();
+      const ov = siteConfig && siteConfig.overlays && siteConfig.overlays[id];
+      if(ov) ov.image = url;
+      sceneBuildOverlay(id);
+      cvSelect(id);
+      toast('Imagen agregada ✓', 'ok');
+    }catch(e){ toast('No se pudo subir la imagen: ' + (e && e.message ? e.message : 'error'), 'err'); }
+  };
+  inp.click();
+}
+/* Eliminar un objeto superpuesto (solo los creados por el usuario) */
+function cvDeleteOverlay(id){
+  const ovs = siteConfig && siteConfig.overlays;
+  if(!ovs || !ovs[id]){ toast('Solo se pueden eliminar los objetos superpuestos', 'err'); return; }
+  delete ovs[id];
+  if(siteConfig.canvas && siteConfig.canvas[id]) delete siteConfig.canvas[id];
+  const el = document.querySelector('#siteRoot [data-obj="' + CSS.escape(id) + '"]');
+  if(el) el.remove();
+  cvSelectReset();
+  toast('Objeto eliminado', 'ok');
+  siteLiveAutoSave();
 }
 /* ---- Reordenar objetos (mantiene el orden y la organización) ----
    Mueve el elemento dentro de su contenedor: arriba = más temprano en el
