@@ -12102,7 +12102,7 @@ async function siteUploadImage(file, target){
     const url = await ref.getDownloadURL();
     if(el) el.value = url;
     if(el && el.parentElement){ const pr = el.parentElement.querySelector('.sf-preview'); if(pr){ pr.src = url; pr.style.display = ''; } }
-    if(siteLiveEdit){ siteConfig = readSiteEditor(); renderSiteFull(); }
+    if(siteLiveEdit){ siteConfig = sitePreserveLive(readSiteEditor()); renderSiteFull(); }
     toast('Foto subida', 'ok');
   }catch(e){
     console.error(e);
@@ -12114,7 +12114,7 @@ function toggleSiteLive(){
   document.body.classList.toggle('site-live-edit', siteLiveEdit);
   if(siteLiveEdit){
     siteDemoActive = false; siteViewOverride = null;
-    siteConfig = readSiteEditor();
+    siteConfig = sitePreserveLive(readSiteEditor());
     closeSiteLightbox();
     renderSiteFull();
     ensureLivePill();
@@ -12140,7 +12140,7 @@ function toggleSiteLive(){
    par). No hay formularios separados: todo se edita en la vista previa. */
 function ensureSiteLive(){
   if(siteLiveEdit) return;
-  siteConfig = readSiteEditor();
+  siteConfig = sitePreserveLive(readSiteEditor());
   siteLiveEdit = true;
   document.body.classList.add('site-live-edit');
   siteDemoActive = false; siteViewOverride = null;
@@ -12181,12 +12181,45 @@ function siteReturnToPanel(){
   }
 }
 function removeLivePill(){ const p = document.getElementById('svLivePill'); if(p) p.remove(); }
+/* Reconstruye siteConfig desde el editor (inputs del formulario) SIN perder
+   el estado visual de la edición en vivo: posiciones/rotaciones/tamaños
+   (canvas), objetos superpuestos (overlays) e imágenes borradas
+   (removedUrls). Evita que subir una foto o tipear en el formulario borre
+   los cambios anteriores. */
+function sitePreserveLive(cfg){
+  if(!cfg) return cfg;
+  if(siteConfig){
+    if(siteConfig.canvas) cfg.canvas = siteConfig.canvas;
+    if(siteConfig.overlays) cfg.overlays = siteConfig.overlays;
+    if(siteConfig.removedUrls) cfg.removedUrls = siteConfig.removedUrls;
+    /* Textos/imágenes editadas con clic-directo en la vista previa que NO
+       tienen input en el formulario se conservan desde siteConfig. */
+    const liveKeys = ['hero','about','offer','cta','footer','benefits','whyUs','categories','featured','testimonials','gallery'];
+    liveKeys.forEach(function(k){
+      if(!cfg[k] || (typeof cfg[k] === 'object' && !Array.isArray(cfg[k]) && Object.keys(cfg[k]).every(function(x){ return !cfg[k][x]; }))){
+        if(siteConfig[k]) cfg[k] = siteConfig[k];
+      }
+    });
+    if(siteConfig.videoVertical && !cfg.videoVertical) cfg.videoVertical = siteConfig.videoVertical;
+    if(siteConfig.videoHorizontal && !cfg.videoHorizontal) cfg.videoHorizontal = siteConfig.videoHorizontal;
+    if(siteConfig.businessName && !cfg.businessName) cfg.businessName = siteConfig.businessName;
+    if(siteConfig.tagline && !cfg.tagline) cfg.tagline = siteConfig.tagline;
+    if(siteConfig.logoUrl && !cfg.logoUrl) cfg.logoUrl = siteConfig.logoUrl;
+    if(siteConfig.seoTitle && !cfg.seoTitle) cfg.seoTitle = siteConfig.seoTitle;
+    if(siteConfig.seoDesc && !cfg.seoDesc) cfg.seoDesc = siteConfig.seoDesc;
+    if(siteConfig.contact){
+      if(!cfg.contact) cfg.contact = siteConfig.contact;
+      else cfg.contact = deepMerge(cfg.contact, siteConfig.contact);
+    }
+  }
+  return cfg;
+}
 function refreshSitePreview(){
   if(siteLiveRAF) return;
   siteLiveRAF = requestAnimationFrame(function(){
     siteLiveRAF = 0;
     try{
-      siteConfig = readSiteEditor();
+      siteConfig = sitePreserveLive(readSiteEditor());
       renderSiteFull();
     }catch(e){ console.error(e); }
   });
