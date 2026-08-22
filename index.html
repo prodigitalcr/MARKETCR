@@ -760,6 +760,15 @@ body.employee-view #posShareWaRow{display:none !important}
 .order-client{font-weight:700}
 .order-meta{font-size:12px;color:var(--muted)}
 .order-items-list{font-size:12.5px;color:var(--muted);max-width:260px}
+/* Historial de mensajes del formulario de contacto (landing) */
+.msg-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px;max-width:840px}
+.msg-card.unread{border-left:4px solid var(--green);background:#FBFDFC}
+.msg-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.msg-head b{font-size:14.5px}
+.msg-date{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.msg-meta{font-size:12.5px;color:var(--muted);margin-top:4px}
+.msg-body{font-size:13.5px;margin-top:8px;background:#F7F9FB;border-radius:10px;padding:10px 12px;white-space:pre-wrap}
+.msg-actions{display:flex;gap:6px;margin-top:10px}
 
 .settings-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px;max-width:760px}
 /* Un admin de tienda (no superadmin) NUNCA ve proveedor/claves/modelos de IA,
@@ -1172,9 +1181,10 @@ body.site-live-edit .cv-layer .cv-tool{
   background:#7C3AED;
 }
 body.site-live-edit .cv-layer.sel .cv-tool{display:block}
-/* La X de borrado de imágenes se ve SIEMPRE en modo edición (sin esperar
-   a seleccionar) y desaparece en la publicación. */
+/* La X de borrado se ve SIEMPRE en modo edición en imágenes y objetos
+   superpuestos (sin esperar a seleccionar); desaparece en la publicación. */
 body.site-live-edit [data-way="image"] .cv-t-del{display:block}
+body.site-live-edit .cv-overlay-obj .cv-t-del{display:block}
 body.site-live-edit .cv-layer .cv-t-r{width:10px;height:10px;top:-7px;left:-7px;cursor:nwse-resize}
 body.site-live-edit .cv-layer .cv-t-r2{width:10px;height:10px;top:-7px;right:-7px;cursor:nesw-resize}
 body.site-live-edit .cv-layer .cv-t-r3{width:10px;height:10px;bottom:-7px;right:-7px;cursor:nwse-resize}
@@ -2015,6 +2025,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11h6M9 15h4M5 3h14v18l-2-1.5L15 21l-2-1.5L11 21l-2-1.5L7 21l-2-1.5z"/></svg><span>Pedidos</span>
         <span class="nav-badge" id="ordersNavBadge" style="display:none">0</span>
       </button>
+      <button class="adm-link" data-panel="messages" onclick="showPanel('messages',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg><span>Mensajes</span>
+        <span class="nav-badge" id="messagesNavBadge" style="display:none">0</span>
+      </button>
       <div class="sec">Tienda</div>
 <button class="adm-link" data-panel="settings" onclick="showPanel('settings',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Configuraciones</span>
@@ -2150,6 +2164,16 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
     </section>
 
     <!-- PEDIDOS -->
+    <!-- MENSAJES DEL FORMULARIO DE CONTACTO (historial) -->
+    <section class="panel" id="panel-messages">
+      <div class="adm-title">Mensajes del sitio</div>
+      <div class="adm-sub">Este es el historial de los formularios de contacto de tu landing page. Cada visita que escriba en "Contacto" queda registrada aquí, junto al envío por WhatsApp.</div>
+      <div class="adm-toolbar">
+        <button class="btn-export" onclick="renderMessages(true)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>Actualizar</button>
+      </div>
+      <div id="messagesList"><div style="text-align:center;color:var(--muted);padding:24px">Cargando mensajes…</div></div>
+    </section>
+
     <section class="panel" id="panel-orders">
       <div class="adm-title">Pedidos</div>
       <div class="adm-sub">Pedidos recibidos desde la tienda web. El comprobante SINPE llega a tu WhatsApp.</div>
@@ -3348,7 +3372,20 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <div class="f-group" style="margin-top:12px">
         <label>Enlace para "Buscar clientes" (plataforma externa)</label>
         <input class="f-input" id="saBuscarClientesUrl" placeholder="Ej: https://www.google.com/maps/search/clientes+en+mi+zona">
-        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Pegá aquí el enlace de la plataforma con la que los negocios buscan clientes (Google Maps u otra). Aparecerá como botón "Buscar clientes" en el panel de TODOS los negocios, sin importar su plan.</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Pegá aquí el enlace de la plataforma con la que los negocios buscan clientes (Google Maps u otra). Aparecerá como botón "Buscar clientes" solo para los negocios que cumplen el plan y están autorizados.</div>
+        <div style="margin-top:10px">
+          <label style="font-size:12.5px;font-weight:700">Plan mínimo para usar "Buscar clientes"</label>
+          <select class="f-input" id="saBuscarPlanOnly" style="max-width:260px">
+            <option value="destacado">Solo Plan Destacado (recomendado)</option>
+            <option value="profesional">Plan Profesional o superior</option>
+            <option value="emprendedor">Todos los planes</option>
+          </select>
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:12.5px;font-weight:700">Negocios autorizados (vacío = todos los que cumplan el plan)</label>
+          <div id="saBuscarClientsList" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px"></div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Marcá a qué negocios le compartís esta herramienta. Si no marcás ninguno, la usan todos los que tienen el plan elegido.</div>
+        </div>
       </div>
       <div id="saPlanConfigWrap" style="margin-top:12px">
         <div style="color:var(--muted);padding:12px 0">Cargando configuración…</div>
@@ -6208,6 +6245,7 @@ function enterAdmin(){
   loadAnalytics();
   populatePOSSellerFilter();
   updateEmployeeTopbar();
+  messagesColInit();
   // Verificar expiración completa: recordatorio 24h, suspensión y revertir plan
   checkMembershipExpiry().then(()=>{
     checkAndRevertExpiredPlan().then(()=>{ updatePlanLockBanner(); });
@@ -6301,6 +6339,7 @@ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   if(name==='stats'){ renderStats(); loadAnalytics(); }
   if(name==='inventory') renderInventory();
   if(name==='orders') renderOrders();
+  if(name==='messages') renderMessages();
   if(name==='settings') loadSettingsForm();
   if(name==='site'){ loadSiteEditor(); ensureSiteLive(); }
   if(name==='membership') loadMembershipPanel();
@@ -7174,6 +7213,77 @@ async function deleteOrder(num){
     toast('No se pudo eliminar el pedido: ' + (e && e.message ? e.message : 'error desconocido'), 'err');
     console.error(e);
   }
+}
+/* ---------- HISTORIAL DE MENSAJES DEL FORMULARIO (landing) ----------
+   Cada envío del formulario de contacto queda en
+   tenants/{slug}/siteMessages y se muestra acá con opción de marcar
+   leído o eliminar. El badge del nav muestra los no leídos. */
+let messagesCol = null;
+function messagesRef(){
+  if(!messagesCol) messagesCol = db.collection('tenants').doc(TENANT_ID).collection('siteMessages');
+  return messagesCol;
+}
+async function renderMessages(){
+  const box = document.getElementById('messagesList');
+  if(!box) return;
+  box.innerHTML = '<div style="text-align:center;color:var(--muted);padding:24px">Cargando mensajes…</div>';
+  try{
+    const q = await messagesRef().orderBy('createdAt', 'desc').limit(200).get();
+    const list = q.docs.map(function(d){ return Object.assign({ id: d.id }, d.data()); });
+    if(!list.length){
+      box.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;background:#F7F9FB;border:1.5px dashed #E8EDF2;border-radius:14px">Aún no hay mensajes del formulario de contacto. Cuando un visitante escriba en "Contacto", aparecerá aquí.</div>';
+      updateMessagesBadge();
+      return;
+    }
+    box.innerHTML = list.map(function(m){
+      const d = m.createdAt && m.createdAt.toDate ? m.createdAt.toDate() : new Date(m.createdAt);
+      const dt = (isNaN(d.getTime()) ? '—' : d.toLocaleDateString('es-CR') + ' · ' + d.toLocaleTimeString('es-CR', {hour:'2-digit',minute:'2-digit'}));
+      const wa = m.phone ? '<a class="icon-btn" target="_blank" href="https://wa.me/' + waDigits(m.phone) + '?text=' + encodeURIComponent('Hola ' + (m.name||'') + ', te escribimos de ' + (settings && settings.storeName ? settings.storeName : 'nuestro negocio') + '.') + '" title="Responder por WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg></a>' : '';
+      return '<div class="msg-card' + (m.leido ? '' : ' unread') + '">' +
+        '<div class="msg-head"><b>' + esc(m.name || 'Anónimo') + '</b><span class="msg-date">' + dt + '</span></div>' +
+        (m.email ? '<div class="msg-meta">📧 ' + esc(m.email) + '</div>' : '') +
+        (m.phone ? '<div class="msg-meta">📱 ' + esc(m.phone) + '</div>' : '') +
+        (m.message ? '<div class="msg-body">' + esc(m.message) + '</div>' : '') +
+        '<div class="msg-actions">' +
+          '<button class="icon-btn" title="Marcar leído/no leído" onclick="toggleMessageRead(\'' + m.id + '\', ' + (m.leido ? 'true' : 'false') + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button>' +
+          wa +
+          '<button class="icon-btn danger" title="Eliminar" onclick="deleteMessage(\'' + m.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
+        '</div></div>';
+    }).join('');
+    updateMessagesBadge();
+  }catch(e){
+    console.error(e);
+    box.innerHTML = '<div style="text-align:center;color:var(--danger);padding:24px">No se pudieron cargar los mensajes: ' + esc(e && e.message ? e.message : 'error') + '</div>';
+  }
+}
+async function toggleMessageRead(id, current){
+  try{
+    await messagesRef().doc(id).update({ leido: !current });
+    renderMessages();
+  }catch(e){ toast('No se pudo actualizar: ' + (e && e.message ? e.message : 'error'), 'err'); }
+}
+async function deleteMessage(id){
+  if(!confirm('¿Eliminar este mensaje definitivamente?')) return;
+  try{
+    await messagesRef().doc(id).delete();
+    toast('Mensaje eliminado', 'ok');
+    renderMessages();
+  }catch(e){ toast('No se pudo eliminar: ' + (e && e.message ? e.message : 'error'), 'err'); }
+}
+/* Badge del nav con la cantidad de mensajes no leídos */
+async function updateMessagesBadge(){
+  const b = document.getElementById('messagesNavBadge');
+  if(!b) return;
+  try{
+    const snap = await messagesRef().where('leido', '==', false).limit(50).get();
+    const n = snap.size;
+    if(n > 0){ b.textContent = n > 50 ? '50+' : n; b.style.display = ''; }
+    else b.style.display = 'none';
+  }catch(e){ b.style.display = 'none'; }
+}
+function messagesColInit(){
+  updateMessagesBadge();
+  setInterval(updateMessagesBadge, 60000);
 }
 function viewOrder(num){
   const o = orders.find(x=>x.number===num);
@@ -10352,7 +10462,14 @@ const DEFAULT_PLAN_CONFIG = {
   ],
   paymentMethods:['SINPE Móvil','Transferencia bancaria'],
   platformSinpe: '',
-  buscarClientesUrl: '' // enlace de la plataforma para buscar clientes (ej. Google Maps) que ve cada negocio
+  buscarClientesUrl: '', // enlace de la plataforma para buscar clientes (ej. Google Maps) que ve cada negocio
+  /* QUÉ NEGOCIOS USAN "BUSCAR CLIENTES":
+     - buscarClientesPlanOnly: plan mínimo requerido ('destacado' = solo
+       negocios destacados o superiores; null/null = también emprendedores)
+     - buscarClientesAllowed: lista de slugs autorizados por el superadmin
+       (vacío = TODOS los negocios que cumplan el plan) */
+  buscarClientesPlanOnly: 'destacado',
+  buscarClientesAllowed: []
 };
 
 let planConfig = null;
@@ -10389,6 +10506,14 @@ async function savePlanConfig(){
   if(sinpeEl) planConfig.platformSinpe = sinpeEl.value.trim();
   const bcEl = document.getElementById('saBuscarClientesUrl');
   if(bcEl) planConfig.buscarClientesUrl = bcEl.value.trim();
+  const bpEl = document.getElementById('saBuscarPlanOnly');
+  if(bpEl) planConfig.buscarClientesPlanOnly = bpEl.value;
+  /* Negocios autorizados: los checkboxes marcados */
+  const allowed = [];
+  document.querySelectorAll('#saBuscarClientsList input:checked').forEach(function(el){
+    if(el.value) allowed.push(el.value);
+  });
+  planConfig.buscarClientesAllowed = allowed;
   const inputs = wrap.querySelectorAll('[data-plan-field]');
   const newPlans = [];
   const newPeriods = [];
@@ -10428,6 +10553,24 @@ function resetPlanConfigDefaults(){
   renderPlanConfigUI();
   toast('Valores restaurados (recordá guardar)', 'ok');
 }
+/* Negocios autorizados para "Buscar clientes": checkboxes pintados desde
+   la lista de tenants que cargó el superadmin (_saTenants). */
+function renderSaBuscarClientesChoices(){
+  const list = document.getElementById('saBuscarClientsList');
+  if(!list) return;
+  const allowed = (planConfig && planConfig.buscarClientesAllowed) || [];
+  const tenants = (typeof _saTenants !== 'undefined' && _saTenants) ? _saTenants : [];
+  if(!tenants.length){
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted)">Cargando lista de negocios…</div>';
+    return;
+  }
+  list.innerHTML = tenants.map(function(t){
+    const slug = t.id || '';
+    const name = (t.nombre || t.storeName || slug);
+    return '<label style="display:inline-flex;align-items:center;gap:6px;background:#F7F9FB;border:1px solid #E8EDF2;border-radius:9px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer">' +
+      '<input type="checkbox" value="' + esc(slug) + '"' + (allowed.indexOf(slug) !== -1 ? ' checked' : '') + ' style="width:15px;height:15px"> ' + esc(name) + '</label>';
+  }).join('');
+}
 function renderPlanConfigUI(){
   const wrap = document.getElementById('saPlanConfigWrap');
   if(!wrap || !planConfig) return;
@@ -10435,6 +10578,9 @@ function renderPlanConfigUI(){
   if(sinpeEl) sinpeEl.value = planConfig.platformSinpe || '';
   const bcEl = document.getElementById('saBuscarClientesUrl');
   if(bcEl) bcEl.value = planConfig.buscarClientesUrl || '';
+  const bpEl = document.getElementById('saBuscarPlanOnly');
+  if(bpEl && planConfig.buscarClientesPlanOnly) bpEl.value = planConfig.buscarClientesPlanOnly;
+  renderSaBuscarClientesChoices();
   let html = '<div style="display:grid;gap:16px">';
   html += '<div><b style="font-size:14px">Planes disponibles</b><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:8px">';
   planConfig.plans.forEach((p,i)=>{
@@ -10463,7 +10609,33 @@ function renderPlanConfigUI(){
 }
 
 /* ---------- "Buscar clientes" (enlace definido por el superadministrador) ---------- */
+/* ¿El negocio actual está autorizado para "Buscar clientes"?
+   Solo si el superadmin lo habilitó para su plan (por defecto: DESTACADO)
+   y lo incluyó en la lista de negocios autorizados (si la lista existe). */
+function canUseBuscarClientes(){
+  let cfg = planConfig;
+  if(!cfg){
+    try{
+      const c = DEFAULT_PLAN_CONFIG;
+      cfg = c;
+    }catch(e){ cfg = DEFAULT_PLAN_CONFIG; }
+  }
+  const plan = getActivePlanId();
+  const minPlan = (cfg && cfg.buscarClientesPlanOnly) || 'destacado';
+  const planOk = !PLAN_RANK[minPlan] || (PLAN_RANK[plan] || 1) >= PLAN_RANK[minPlan];
+  if(!planOk) return false;
+  const allowed = (cfg && cfg.buscarClientesAllowed) || [];
+  /* Si el superadmin definió una lista, el negocio debe estar en ella */
+  if(allowed && allowed.length){
+    return allowed.indexOf(TENANT_ID || '') !== -1;
+  }
+  return true;
+}
 async function openBuscarClientes(){
+  if(!canUseBuscarClientes()){
+    toast('"Buscar clientes" es exclusivo del plan Destacado y solo está habilitado en tu negocio si el superadmin lo autorizó.', 'err');
+    return;
+  }
   let url = '';
   if(planConfig) url = planConfig.buscarClientesUrl || '';
   else {
@@ -11293,12 +11465,39 @@ function simg(url, alt, cls){
 function listenSite(){
   if(!siteDoc || siteUnsub) return;
   siteUnsub = siteDoc.onSnapshot(function(snap){
-    siteConfig = snap.exists ? snap.data() : null;
-    const panelOpen = document.getElementById('panel-site') && document.getElementById('panel-site').classList.contains('active');
-    if(document.body.classList.contains('site-mode')) renderSiteFull();
-    else if(document.body.classList.contains('in-admin') && panelOpen) loadSiteEditor();
+    /* Al llegar un snapshot: solo se acepta la data si existe y no hay
+       cambios locales sin guardar (así no se pisan las fotos recién
+       subidas en el editor con la versión vieja del documento). */
+    if(snap.exists){
+      if(!siteDirty || !siteLiveEdit){
+        siteConfig = snap.data();
+        const panelOpen = document.getElementById('panel-site') && document.getElementById('panel-site').classList.contains('active');
+        if(document.body.classList.contains('site-mode')) renderSiteFull();
+        else if(document.body.classList.contains('in-admin') && panelOpen) loadSiteEditor();
+      }
+    }
   }, function(){});
+  /* Refuerzo: la FUENTE DE VERDAD del público es el landing.json de
+     Storage (siempre la última versión guardada). Si el snapshot de
+     Firestore tarda o viene desactualizado, se fusiona encima. */
+  try{
+    if(typeof firebase !== 'undefined' && firebase.storage){
+      firebase.storage().ref('sites-config/' + (TENANT_ID || 'x') + '/landing.json')
+        .getDownloadURL().then(function(url){
+          return fetch(url).then(function(r){ return r.ok ? r.json() : null; });
+        }).then(function(storageCfg){
+          if(storageCfg && storageCfg !== siteConfig){
+            if(!siteDirty || !siteLiveEdit){
+              siteConfig = deepMerge(siteDeep(storageCfg), siteDeep(siteConfig || {}));
+              if(document.body.classList.contains('site-mode')) renderSiteFull();
+              else if(document.body.classList.contains('in-admin') && document.getElementById('panel-site') && document.getElementById('panel-site').classList.contains('active')) loadSiteEditor();
+            }
+          }
+        }).catch(function(){});
+    }
+  }catch(e){}
 }
+let siteDirty = false;
 /* Guarda el JSON del landing en Firebase Storage con URL ESTABLE
    (sites-config/{tienda}/landing.json = SIEMPRE la última versión).
    Así el sitio siempre tiene su configuración completa respaldada y
@@ -11347,6 +11546,7 @@ async function saveSite(){
     /* 5) GUARDAR EN FIRESTORE (firma del sitio para la app) */
     await siteDoc.set(JSON.parse(JSON.stringify(cfg)), { merge:true });
     siteConfig = cfg;
+    siteDirty = false;
     /* 6) GUARDAR EN STORAGE: configuración completa con URL estable */
     await saveSiteToStorage(cfg);
     toast('Landing page guardada ✓ (Firestore + Storage)', 'ok');
@@ -11367,6 +11567,32 @@ function readSiteFromPreview(){
     const val = el.isContentEditable
       ? (el.innerText || '').trim()
       : (el.getAttribute('src') || el.innerText || '').trim();
+    /* Las imágenes con data-path: si el siteConfig YA tiene una URL más
+       reciente (ej: recién subida al Storage) no la pisen con el src del
+       DOM que puede estar desactualizado tras una recarga del editor. */
+    const isImg = /\.image$/.test(path) || el.getAttribute('src');
+    if(isImg && siteConfig){
+      const cur = siteGet(siteConfig, path);
+      if(cur && /firebasestorage\.com/.test(String(cur)) && cur !== val){
+        return; // el DOM trae la versión vieja; el config tiene la nueva
+      }
+    }
+    /* Rutas con índices numéricos (gallery.0, categories.1.image…) se
+       guardan como ARRAYS en el config, no como objetos: así el render
+       sigue funcionando (length/indexOf). */
+    const idxPath = path.match(/^([a-zA-Z]+)\.(\d+)(?:\.(\w+))?$/);
+    if(idxPath){
+      if(!out[idxPath[1]]) out[idxPath[1]] = [];
+      const arr = out[idxPath[1]];
+      const i = parseInt(idxPath[2], 10);
+      if(idxPath[3]){
+        if(!arr[i]) arr[i] = {};
+        arr[i][idxPath[3]] = val;
+      } else {
+        arr[i] = val;
+      }
+      return;
+    }
     siteSetPath(out, path, val);
   });
   return out;
@@ -11626,6 +11852,20 @@ function cvAutoDetectLayers(){
     el.setAttribute('data-way', 'image');
     el.setAttribute('data-cv', 'image');
     el.style.cursor = 'pointer';
+    /* Rutas de array (galería/categorías/productos): el data-path permite
+       reemplazar/borrar la foto y guardarla en el config correcto. */
+    if(!el.getAttribute('data-path')){
+      const gal = el.closest('.sv-gal');
+      const cat = el.closest('.sv-cat');
+      const card = el.closest('.sv-card');
+      let idx = -1, arrKey = '';
+      if(gal){ arrKey = 'gallery'; idx = Array.prototype.indexOf.call(gal.parentElement.children, gal); }
+      else if(cat){ arrKey = 'categories'; idx = Array.prototype.indexOf.call(cat.parentElement.children, cat); }
+      else if(card){ arrKey = 'featured'; idx = Array.prototype.indexOf.call(card.parentElement.children, card); }
+      if(arrKey && idx > -1){
+        el.setAttribute('data-path', arrKey + '.' + idx + (arrKey === 'gallery' ? '' : '.image'));
+      }
+    }
     cvWrapTools(el, id);
   });
   /* 3) Botones CTA: .sv-btn (excepto los del nav) */
@@ -11786,7 +12026,21 @@ function submitSiteForm(f){
   if(gt) lines.push('Teléfono: ' + gt);
   if(ge) lines.push('Correo: ' + ge);
   if(!siteWa()){ toast('Configurá un WhatsApp para recibir mensajes', 'err'); return false; }
+  /* HISTORIAL del formulario: cada envío queda guardado en Firestore
+     (tenants/{tienda}/siteMessages) para verlo en el admin. */
+  try{
+    db.collection('tenants').doc(TENANT_ID).collection('siteMessages').add({
+      name: gn || 'Anónimo',
+      email: ge,
+      phone: gt,
+      message: gm,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      leido: false,
+      url: location.href
+    }).catch(function(e){ console.warn('No se pudo guardar el mensaje:', e); });
+  }catch(e){ console.warn('No se pudo guardar el mensaje:', e); }
   window.open(waSite(lines.join('\n')), '_blank');
+  toast('Mensaje enviado y guardado en el historial ✓', 'ok');
   return false;
 }
 function siteMenuToggle(){
@@ -11924,6 +12178,12 @@ function siteEditorFieldHTML(f, val, pf){
   return '<div class="sf-field"><label>' + esc(f.l) + '</label>' + up + '<input type="' + (f.t||'text') + '" id="' + id + '" value="' + valS + '">' + (f.h ? '<div class="sf-hint">' + esc(f.h) + '</div>' : '') + '</div>';
 }
 function loadSiteEditor(){
+  /* ANTES de regenerar: volcar lo escrito en los inputs actuales a siteConfig
+     para no perder nada al cambiar de pestaña o recargar el editor. */
+  const prevRoot = document.getElementById('siteEditorRoot');
+  if(prevRoot && prevRoot.children.length){
+    try{ siteConfig = sitePreserveLive(readSiteEditor()); }catch(e){}
+  }
   generateSiteTabs();
   const root = document.getElementById('siteEditorRoot');
   if(!root) return;
@@ -12002,7 +12262,11 @@ function renderSiteUrlRows(urls){
 }
 function readSiteEditor(){
   if(!siteConfig) siteConfig = {};
-  const c = siteDeep(SITE_DEFAULTS);
+  /* BASE: lo que ya está guardado en siteConfig (fotos subidas en la vista
+     previa, cambios ediciones, overlays, etc.). NO arrancar de SITE_DEFAULTS
+     porque se borrarían todos los cambios anteriores. Los inputs del
+     formulario solo PISAN los campos que realmente tienen. */
+  const c = siteDeep(siteConfig || {});
   SITE_EDITOR_SIMPLE.forEach(function(grp){
     grp.f.forEach(function(f){
       const id = 'sf_' + f.k.replace(/\./g,'__');
@@ -12019,9 +12283,17 @@ function readSiteEditor(){
     });
   });
   SITE_EDITOR_ROWS.forEach(function(def){
-    const arr = c[def.k] = [];
     const list = document.getElementById('sfList_' + def.k);
-    if(!list) return;
+    /* Si el tab de listas NO está montado en el DOM, conservar los valores
+       ya guardados en siteConfig (si no, al guardar/auto-guardar se borran
+       categorías, productos destacados y testimonios con sus fotos). */
+    if(!list){
+      if(siteConfig && siteConfig[def.k] && siteConfig[def.k].length){
+        c[def.k] = siteDeep(siteConfig[def.k]);
+      }
+      return;
+    }
+    const arr = [];
     Array.prototype.forEach.call(list.children, function(div){
       const parts = (div.id || '').split('_');
       if(parts.length < 3) return;
@@ -12037,6 +12309,7 @@ function readSiteEditor(){
       const has = def.cols.slice(0,2).some(function(col){ return String(item[col]||'').trim() !== ''; });
       if(has) arr.push(item);
     });
+    c[def.k] = arr;
   });
   const gal = [];
   const gList = document.getElementById('sfList_gallery');
@@ -12047,8 +12320,11 @@ function readSiteEditor(){
       const u = el && el.value.trim();
       if(u) gal.push(u);
     });
+    c.gallery = gal;
+  } else if(siteConfig && siteConfig.gallery && siteConfig.gallery.length){
+    /* Tab de galería no montado: conservar lo guardado */
+    c.gallery = siteDeep(siteConfig.gallery);
   }
-  c.gallery = gal;
   return c;
 }
 function shareSite(){
@@ -12102,7 +12378,12 @@ async function siteUploadImage(file, target){
     const url = await ref.getDownloadURL();
     if(el) el.value = url;
     if(el && el.parentElement){ const pr = el.parentElement.querySelector('.sf-preview'); if(pr){ pr.src = url; pr.style.display = ''; } }
-    if(siteLiveEdit){ siteConfig = sitePreserveLive(readSiteEditor()); renderSiteFull(); }
+    /* SIEMPRE volcar el valor del input actualizado a siteConfig (aunque el
+       modo edición en vivo esté apagado) para que "Guardar cambios" lo
+       persista. */
+    siteConfig = sitePreserveLive(readSiteEditor());
+    siteDirty = true;
+    if(siteLiveEdit) renderSiteFull();
     toast('Foto subida', 'ok');
   }catch(e){
     console.error(e);
@@ -12209,7 +12490,15 @@ function sitePreserveLive(cfg){
     if(siteConfig.seoDesc && !cfg.seoDesc) cfg.seoDesc = siteConfig.seoDesc;
     if(siteConfig.contact){
       if(!cfg.contact) cfg.contact = siteConfig.contact;
-      else cfg.contact = deepMerge(cfg.contact, siteConfig.contact);
+      else {
+        /* El contacto SIEMPRE se fusiona campo a campo: los valores vacíos
+           del formulario no pisan datos ya guardados (ej: whatsapp viene
+           de Configuraciones cuando el campo está vacío). */
+        const keep = siteConfig.contact;
+        Object.keys(keep).forEach(function(k){
+          if(cfg.contact[k] === undefined || cfg.contact[k] === '') cfg.contact[k] = keep[k];
+        });
+      }
     }
   }
   return cfg;
@@ -12220,6 +12509,7 @@ function refreshSitePreview(){
     siteLiveRAF = 0;
     try{
       siteConfig = sitePreserveLive(readSiteEditor());
+      siteDirty = true;
       renderSiteFull();
     }catch(e){ console.error(e); }
   });
@@ -12327,6 +12617,7 @@ function enableSiteInlineEditing(){
    depender de presionar ningún botón. */
 let _cvSaveTimer = null;
 function siteLiveAutoSave(){
+  siteDirty = true;
   if(_cvSaveTimer) clearTimeout(_cvSaveTimer);
   _cvSaveTimer = setTimeout(async function(){
     if(!siteLiveEdit) return;
@@ -12335,6 +12626,7 @@ function siteLiveAutoSave(){
       if(siteDoc) await siteDoc.set(JSON.parse(JSON.stringify(merged)), { merge:true });
       await saveSiteToStorage(merged);
       siteConfig = merged;
+      siteDirty = false;
       toast('Cambio guardado ✓', 'ok');
     }catch(e){ console.warn('Auto-guardado falló:', e && e.message); }
     _cvSaveTimer = null;
@@ -12438,6 +12730,7 @@ function cvDragMove(ev){
     st.rotate = Math.round(Math.atan2(ev.clientY - cy, ev.clientX - cx) * 180 / Math.PI + 90) - (Math.round(Math.atan2(ev.clientY - cy, ev.clientX - cx) * 180 / Math.PI + 90) % 5);
   }
   cvApply(d.layer, st);
+  siteDirty = true;
   /* Al escalar, ajustar el tamaño de fuente proporcionalmente */
   if(d.mode === 'size'){
     const txt = d.layer.querySelector('[data-cv="text"]');
@@ -12646,7 +12939,7 @@ function cvAddOverlay(kind){
   const id = 'ov' + Date.now().toString(36);
   const ov = siteConfig.overlays[id] = {
     kind: kind,
-    x: 60, y: 60, w: 180, h: 60, rotate: 0,
+    x: 60, y: 60, w: 180, h: (kind === 'image' ? 135 : 60), rotate: 0,
     font: 'Georgia', fontSize: 28, color: '#17202A', bold: true, italic: false, align: 'left',
     text: (kind === 'text' ? 'Nuevo texto' : ''),
     shadow: { offX: 0, offY: 4, blur: 12, color: 'rgba(0,0,0,.35)', enabled: true }
@@ -12684,6 +12977,7 @@ function sceneBuildOverlay(id){
   el.appendChild(cvToolSpan('cv-t-r2'));
   el.appendChild(cvToolSpan('cv-t-r3'));
   el.appendChild(cvToolSpan('cv-t-rot'));
+  el.appendChild(cvToolDelSpan(id));
   el.classList.add('cv-layer');
   cvApply(el, ov);
   cont.appendChild(el);
@@ -12699,11 +12993,25 @@ function renderSiteOverlays(){
     sceneBuildOverlay(id);
   });
 }
-/* Span de tool reutilizable para objetos superpuestos */
+/* Span de tool reutilizable para objetos superpuestos.
+   IMPORTANTE: el modo (size/rotate) se escribe LITERAL en el atributo
+   (no se puede usar la variable `cls` dentro del onmousedown porque el
+   atributo se evalúa en el scope global y `cls` no existe allí). */
 function cvToolSpan(cls){
   const s = document.createElement('span');
   s.className = 'cv-tool ' + cls;
-  s.setAttribute('onmousedown', 'event.preventDefault();event.stopPropagation();cvDragStartTool(event, cls.indexOf("rot") !== -1 ? "rotate" : "size")');
+  const mode = cls.indexOf('rot') !== -1 ? 'rotate' : 'size';
+  s.setAttribute('onmousedown', "event.preventDefault();event.stopPropagation();cvDragStartTool(event,'" + mode + "')");
+  return s;
+}
+/* X roja para eliminar el objeto superpuesto (igual que las imágenes) */
+function cvToolDelSpan(id){
+  const s = document.createElement('span');
+  s.className = 'cv-tool cv-t-del';
+  s.title = 'Eliminar este objeto';
+  s.textContent = '✕';
+  s.setAttribute('onmousedown', 'event.preventDefault();event.stopPropagation()');
+  s.setAttribute('onclick', "event.preventDefault();event.stopPropagation();cvDeleteOverlay('" + id + "')");
   return s;
 }
 /* Subir imagen a un objeto superpuesto */
@@ -12760,6 +13068,7 @@ function cvReorder(objId, dir){
 /* ---- Escribe texto editado en siteConfig (con ruta) ---- */
 function siteInlineWriteText(path, text){
   if(!siteConfig) siteConfig = {};
+  if(!path || String(path).indexOf('.') === -1){ return; }
   const parts = path.split('.');
   let cur = siteConfig;
   for(let i=0;i<parts.length-1;i++){
@@ -12767,10 +13076,22 @@ function siteInlineWriteText(path, text){
     cur = cur[parts[i]];
   }
   cur[parts[parts.length-1]] = String(text == null ? '' : text).trim();
+  /* Sincronizar también los inputs del formulario lateral (sf_*) */
   const inputId = 'sf_' + path.replace(/\./g, '__');
   const inp = document.getElementById(inputId);
   if(inp && inp.value !== cur[parts[parts.length-1]]){
     inp.value = cur[parts[parts.length-1]];
+  }
+  /* Sincronizar filas de listas (srow_*) y galería (grow_*) */
+  const rowMatch = path.match(/^([a-zA-Z]+)\.(\d+)\.(\w+)$/);
+  if(rowMatch){
+    const rInp = document.getElementById('srow_' + rowMatch[1] + '_' + rowMatch[2] + '_' + rowMatch[3]);
+    if(rInp) rInp.value = String(text == null ? '' : text).trim();
+  }
+  const galMatch = path.match(/^gallery\.(\d+)$/);
+  if(galMatch){
+    const gInp = document.getElementById('grow_' + galMatch[1] + '_url');
+    if(gInp) gInp.value = String(text == null ? '' : text).trim();
   }
 }
 /* ---- Subir imagen a Storage desde la vista previa ---- */
@@ -12790,6 +13111,7 @@ function siteInlinePickImage(path){
       const url = await ref.getDownloadURL();
       siteInlineWriteText(path, url);
       refreshSitePreview();
+      siteDirty = true;
       toast('Imagen subida a Storage ✓ (guardando…)', 'ok');
       siteLiveAutoSave();
     }catch(e){
