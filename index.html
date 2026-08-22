@@ -878,8 +878,6 @@ body.is-admin-view #sAiConfigSuperBlock{display:none !important}
 #siteView{display:none;min-height:100vh;background:#fff;color:#17202A;font-family:var(--font)}
 body.site-mode #siteView{display:block}
 body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminView,body.site-mode .wa-float,body.site-mode .story-float{display:none !important}
-.site-back{position:fixed;left:12px;top:12px;z-index:70;padding:8px 14px;border-radius:999px;background:#17202A;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.25)}
-.site-back:hover{background:#111}
 .sv-header{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid #EDF0F3;transition:.25s}
 .sv-header.scrolled{box-shadow:0 10px 30px rgba(23,32,42,.08)}
 .sv-header-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:68px;display:flex;align-items:center;gap:20px}
@@ -1174,12 +1172,21 @@ body.site-live-edit .cv-layer .cv-tool{
   background:#7C3AED;
 }
 body.site-live-edit .cv-layer.sel .cv-tool{display:block}
+/* La X de borrado de imágenes se ve SIEMPRE en modo edición (sin esperar
+   a seleccionar) y desaparece en la publicación. */
+body.site-live-edit [data-way="image"] .cv-t-del{display:block}
 body.site-live-edit .cv-layer .cv-t-r{width:10px;height:10px;top:-7px;left:-7px;cursor:nwse-resize}
 body.site-live-edit .cv-layer .cv-t-r2{width:10px;height:10px;top:-7px;right:-7px;cursor:nesw-resize}
 body.site-live-edit .cv-layer .cv-t-r3{width:10px;height:10px;bottom:-7px;right:-7px;cursor:nwse-resize}
 body.site-live-edit .cv-layer .cv-t-rot{
   width:14px;height:14px;bottom:-32px;left:50%;margin-left:-7px;
   background:#FFD100;cursor:grab;
+}
+body.site-live-edit .cv-layer .cv-t-del{
+  width:20px;height:20px;top:-10px;right:-10px;
+  background:#DC2626;border:2px solid #fff;border-radius:50%;
+  color:#fff;font-size:11px;font-weight:800;line-height:16px;
+  cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.4);
 }
 body.site-live-edit .cv-layer .cv-t-rot::before{
   content:'';position:absolute;left:50%;top:-22px;width:1.5px;height:20px;
@@ -1217,7 +1224,6 @@ body.site-live-edit #panel-site .site-tabs{padding:0 20px}
 body.site-live-edit #panel-site .site-ed-scroll{max-width:none;padding:0 14px 26px}
 body.site-live-edit #siteView{display:block;position:fixed;top:0;bottom:0;right:0;left:min(540px,46vw);overflow-y:auto;min-height:0;z-index:220;background:#fff}
 body.site-live-edit .sv-header{left:min(540px,46vw)}
-body.site-live-edit .site-back{display:none}
 .sv-editor-pill{position:fixed;z-index:530;bottom:16px;right:16px;display:flex;gap:8px;align-items:center;background:#17202A;color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.3);border:none}
 .sv-editor-pill:hover{background:#111}
 @media(max-width:980px){
@@ -1678,7 +1684,6 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 
 <!-- ================= SITIO WEB PROFESIONAL (VISTA PÚBLICA) ================= -->
 <div id="siteView">
-  <button class="site-back" id="siteBackBtn" style="display:none" onclick="closeSitePublic()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:15px;height:15px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Volver al panel</button>
   <div id="siteRoot"></div>
   <div class="sv-lightbox" id="svLightbox" onclick="closeSiteLightbox()"><span class="sv-lightbox-x">×</span><img id="svLightImg" alt="Ampliar imagen"></div>
 </div>
@@ -11026,82 +11031,104 @@ const SITE_DEFAULTS = {
    El admin puede empezar la landing con una de estas plantillas: cambia
    colores, fuentes, estilos del hero y textos sugeridos. Se aplican con
    "Usar este tema" (aplica los colores/estilos al editor y vista previa). */
-const SITE_THEMES = [
+/* ==================== PLANTILLAS PREDEFINIDAS ====================
+   En lugar de simples temas de colores, cada plantilla es una landing
+   COMPLETA lista para editar: textos reales, imágenes, colores y secciones
+   armadas. Se aplican con un clic y se guardan igual que todo lo demás. */
+const SITE_TEMPLATES = [
   {
-    id:'verde-naturaleza', name:'🌿 Verde Naturaleza',
-    desc:'Verde fresco, ideal tiendas de plantas, jardín o natural',
-    primaryColor:'#1B7A43', secondaryColor:'#0F5A30', accentColor:'#FFD100',
-    heroBadge:'Catálogo y venta directa · MARKET CR',
-    heroTitle:'Naturaleza que transforma tu espacio',
-    heroSub:'Productos seleccionados con calidad garantizada y entrega a domicilio.'
+    id:'tpl-verde', name:'🌿 Verde Natural',
+    desc:'Plantas, jardín o productos naturales',
+    seed: {
+      primaryColor:'#1B7A43', secondaryColor:'#0F5A30', accentColor:'#FFD100',
+      heroBadge:'Catálogo y venta directa · MARKET CR',
+      heroTitle:'Naturaleza que transforma tu espacio',
+      heroSub:'Productos seleccionados con calidad garantizada y entrega a domicilio.',
+      seed:'verde'
+    }
   },
   {
-    id:'ruby-premium', name:'💜 Rubí Premium',
-    desc:'Morado elegante, ideal marca premium o servicios de diseño',
-    primaryColor:'#7C3AED', secondaryColor:'#5B21B6', accentColor:'#FDE047',
-    heroBadge:'Experiencia premium · MARKET CR',
-    heroTitle:'Calidad premium que se nota',
-    heroSub:'Cuidamos cada detalle para que tu experiencia sea única.'
+    id:'tpl-ruby', name:'💜 Rubí Premium',
+    desc:'Marca premium, diseño o servicios elegantes',
+    seed: {
+      primaryColor:'#7C3AED', secondaryColor:'#5B21B6', accentColor:'#FDE047',
+      heroBadge:'Experiencia premium · MARKET CR',
+      heroTitle:'Calidad premium que se nota',
+      heroSub:'Cuidamos cada detalle para que tu experiencia sea única.',
+      seed:'ruby'
+    }
   },
   {
-    id:'sol-dorado', name:'🌞 Sol Dorado',
-    desc:'Amarillo cálido, ideal cafeterías, repostería o moda',
-    primaryColor:'#D97706', secondaryColor:'#92400E', accentColor:'#FDE68A',
-    heroBadge:'Frescura y sabor · MARKET CR',
-    heroTitle:'Lo mejor llega con calor humano',
-    heroSub:'Preparado con dedicación y entregado con amor a tu puerta.'
+    id:'tpl-sol', name:'🌞 Sol Dorado',
+    desc:'Café, repostería, moda o productos cálidos',
+    seed: {
+      primaryColor:'#D97706', secondaryColor:'#92400E', accentColor:'#FDE68A',
+      heroBadge:'Frescura y sabor · MARKET CR',
+      heroTitle:'Lo mejor llega con calor humano',
+      heroSub:'Preparado con dedicación y entregado con amor a tu puerta.',
+      seed:'sol'
+    }
   },
   {
-    id:'océano-azul', name:'🌊 Océano Azul',
-    desc:'Azul confiable, ideal tecnología, salud o servicios',
-    primaryColor:'#2563EB', secondaryColor:'#1D4ED8', accentColor:'#93C5FD',
-    heroBadge:'Confianza y seguridad · MARKET CR',
-    heroTitle:'Soluciones claras, resultados reales',
-    heroSub:'Confiá en nuestro equipo: calidad y atención en cada paso.'
+    id:'tpl-oceano', name:'🌊 Océano Azul',
+    desc:'Tecnología, salud o servicios profesionales',
+    seed: {
+      primaryColor:'#2563EB', secondaryColor:'#1D4ED8', accentColor:'#93C5FD',
+      heroBadge:'Confianza y seguridad · MARKET CR',
+      heroTitle:'Soluciones claras, resultados reales',
+      heroSub:'Confiá en nuestro equipo: calidad y atención en cada paso.',
+      seed:'oceano'
+    }
   },
   {
-    id:'rojo-energia', name:'🔴 Rojo Energía',
-    desc:'Rojo vibrante, ideal deporte, comida o promociones',
-    primaryColor:'#DC2626', secondaryColor:'#991B1B', accentColor:'#FCA5A5',
-    heroBadge:'Energía y pasión · MARKET CR',
-    heroTitle:'Viví la diferencia hoy',
-    heroSub:'Productos con carácter y promociones que no podés ignorar.'
+    id:'tpl-rojo', name:'🔴 Rojo Energía',
+    desc:'Deporte, comida o promociones vibrantes',
+    seed: {
+      primaryColor:'#DC2626', secondaryColor:'#991B1B', accentColor:'#FCA5A5',
+      heroBadge:'Energía y pasión · MARKET CR',
+      heroTitle:'Viví la diferencia hoy',
+      heroSub:'Productos con carácter y promociones que no podés ignorar.',
+      seed:'rojo'
+    }
   }
 ];
-function siteThemeApply(themeId){
-  const t = (SITE_THEMES || []).find(x => x.id === themeId);
-  if(!t){ toast('Tema no encontrado', 'err'); return; }
-  if(!siteConfig) siteConfig = {};
-  /* Aplicar colores y textos del tema al siteConfig */
-  siteConfig.primaryColor = t.primaryColor;
-  siteConfig.secondaryColor = t.secondaryColor;
-  siteConfig.accentColor = t.accentColor;
-  if(t.heroBadge) siteConfig.hero = Object.assign({}, siteConfig.hero || {}, { badge: t.heroBadge });
-  if(t.heroTitle) siteConfig.hero = Object.assign({}, siteConfig.hero || {}, { title: t.heroTitle });
-  if(t.heroSub) siteConfig.hero = Object.assign({}, siteConfig.hero || {}, { sub: t.heroSub });
-  /* Actualizar los inputs del editor (si existen) */
-  if(document.getElementById('sf_primaryColor')) document.getElementById('sf_primaryColor').value = t.primaryColor;
-  if(document.getElementById('sf_secondaryColor')) document.getElementById('sf_secondaryColor').value = t.secondaryColor;
-  if(document.getElementById('sf_accentColor')) document.getElementById('sf_accentColor').value = t.accentColor;
-  if(document.getElementById('sf_hero__badge')) document.getElementById('sf_hero__badge').value = t.heroBadge || '';
-  if(document.getElementById('sf_hero__title')) document.getElementById('sf_hero__title').value = t.heroTitle || '';
-  if(document.getElementById('sf_hero__sub')) document.getElementById('sf_hero__sub').value = t.heroSub || '';
-  /* Refrescar vista previa */
-  renderSiteFull();
-  toast('Tema "' + t.name.replace(/^[^ ]+ /, '') + '" aplicado', 'ok');
+/* Arma una plantilla completa (copia de SITE_DEFAULTS con nuevos textos,
+   colores y semillas de imágenes para diferenciar cada plantilla). */
+function siteBuildTemplate(s){
+  const t = siteDeep(SITE_DEFAULTS);
+  t.primaryColor = s.primaryColor; t.secondaryColor = s.secondaryColor; t.accentColor = s.accentColor;
+  t.hero = Object.assign({}, t.hero, { badge: s.heroBadge, title: s.heroTitle, sub: s.heroSub });
+  return t;
 }
-/* Selector de temas (se muestra en el panel de landing) */
+/* Aplica una plantilla predefinida completa al editor (se puede guardar) */
+function siteTemplateApply(tplId){
+  const s = (SITE_TEMPLATES || []).find(x => x.id === tplId);
+  if(!s){ toast('Plantilla no encontrada', 'err'); return; }
+  if(!siteConfig) siteConfig = {};
+  const c = siteCurrent();
+  const replaced = siteBuildTemplate(s.seed);
+  /* Conservar datos del negocio ya cargados (nombre, contacto, redes) */
+  siteConfig = deepMerge(siteDeep(replaced), siteDeep(siteConfig || {}));
+  siteConfig.primaryColor = s.seed.primaryColor;
+  siteConfig.secondaryColor = s.seed.secondaryColor;
+  siteConfig.accentColor = s.seed.accentColor;
+  renderSiteFull();
+  loadSiteEditor();
+  siteLiveAutoSave();
+  toast('Plantilla "' + s.name.replace(/^[^ ]+ /, '') + '" aplicada ✓', 'ok');
+}
+/* Selector de plantillas (se muestra en el panel de landing) */
 function siteThemesHTML(){
   return '<div class="site-grp">' +
-    '<h4>🎨 Tema del sitio</h4>' +
-    '<div class="hint">Elegí uno de los 5 temas preestablecidos para empezar: aplica colores, textos del hero y estilo. Después podés personalizar todo.</div>' +
+    '<h4>🧩 Plantillas predefinidas</h4>' +
+    '<div class="hint">Elegí una plantilla completa para tu landing: trae textos, imágenes, colores y secciones listas para editar. Después personalizás todo con clic directo en la vista previa.</div>' +
     '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:8px">' +
-      SITE_THEMES.map(t =>
-        '<button type="button" class="theme-card" data-theme="' + esc(t.id) + '" onclick="siteThemeApply(\'' + esc(t.id) + '\')" style="border:2px solid #E8EDF2;border-radius:12px;padding:10px;text-align:center;cursor:pointer;background:#fff;transition:.15s">' +
+      SITE_TEMPLATES.map(t =>
+        '<button type="button" class="theme-card" data-theme="' + esc(t.id) + '" onclick="siteTemplateApply(\'' + esc(t.id) + '\')" style="border:2px solid #E8EDF2;border-radius:12px;padding:10px;text-align:center;cursor:pointer;background:#fff;transition:.15s">' +
           '<div style="display:flex;gap:4px;justify-content:center;margin-bottom:8px">' +
-            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.primaryColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
-            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.secondaryColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
-            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.accentColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
+            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.seed.primaryColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
+            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.seed.secondaryColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
+            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.seed.accentColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
           '</div>' +
           '<b style="font-size:13px;display:block">' + esc(t.name) + '</b>' +
           '<span style="font-size:11px;color:var(--muted);display:block;margin-top:2px">' + esc(t.desc) + '</span>' +
@@ -11259,6 +11286,7 @@ function siteStars(n){
 }
 function simg(url, alt, cls){
   if(!url) return '';
+  if(imgRemoved(url)) return '';
   return '<img class="' + (cls||'') + '" src="' + esc(url) + '" alt="' + esc(alt) + '" loading="lazy" onerror="var p=this.parentNode;if(p){p.classList.add(\'sv-img-broken\');this.style.display=\'none\';}">';
 }
 /* ------------------------- persistencia ------------------------- */
@@ -11349,8 +11377,7 @@ function openSitePublic(){
   if(siteDemoActive) siteViewOverride = null;
   document.body.classList.add('site-mode');
   renderSiteFull();
-  const back = document.getElementById('siteBackBtn');
-  if(back) back.style.display = document.body.classList.contains('in-admin') ? 'flex' : 'none';
+  if(document.body.classList.contains('in-admin')){ ensureLivePill(); sitePillLabel(); }
 }
 function viewSiteDemo(){
   siteDemoActive = true;
@@ -11358,8 +11385,7 @@ function viewSiteDemo(){
   document.body.classList.add('site-mode');
   closeSiteLightbox();
   renderSiteFull();
-  const back = document.getElementById('siteBackBtn');
-  if(back) back.style.display = document.body.classList.contains('in-admin') ? 'flex' : 'none';
+  if(document.body.classList.contains('in-admin')){ ensureLivePill(); sitePillLabel(); }
 }
 function closeSitePublic(){
   document.body.classList.remove('site-mode');
@@ -11382,7 +11408,7 @@ function renderSiteFull(){
   let html = '';
   html += '<header class="sv-header" id="svHeader"><div class="sv-header-inner">'
     + '<a class="sv-brand" href="#svHero">'
-    + (logo ? '<img class="sv-logo" src="' + esc(logo) + '" alt="Logo ' + esc(name) + '">' : '<span class="sv-logo-ph">' + esc(name.charAt(0).toUpperCase()) + '</span>')
+    + (logo && !imgRemoved(logo) ? '<img class="sv-logo" src="' + esc(logo) + '" alt="Logo ' + esc(name) + '">' : '<span class="sv-logo-ph">' + esc(name.charAt(0).toUpperCase()) + '</span>')
     + '<span><span class="sv-storename">' + esc(name) + '</span>' + (tag ? '<span class="sv-storetag">' + esc(tag) + '</span>' : '') + '</span></a>'
     + '<nav class="sv-nav">' + nav + '</nav>'
     + '<div class="sv-cta-group">'
@@ -11407,7 +11433,7 @@ function renderSiteFull(){
     + '<a class="sv-btn sv-btn-ghost" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff" href="#svProducts">Ver productos</a>'
     + (wa ? '<a class="sv-btn sv-btn-wa" href="' + esc(waSite('Hola, quisiera información sobre sus productos.')) + '" target="_blank" rel="noopener">' + si('wa') + 'Contactar por WhatsApp</a>' : '')
     + '</div></div>'
-    + '<div class="sv-hero-media">' + (heroImg ? '<img' + svEdImg('hero.image') + ' src="' + esc(heroImg) + '" alt="' + esc(name) + '" loading="lazy">' : '<div style="aspect-ratio:4/3.2;border-radius:26px;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.3)"></div>')
+    + '<div class="sv-hero-media">' + (heroImg && !imgRemoved(heroImg) ? '<img' + svEdImg('hero.image') + ' src="' + esc(heroImg) + '" alt="' + esc(name) + '" loading="lazy">' : '<div style="aspect-ratio:4/3.2;border-radius:26px;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.3)"></div>')
     + '</div>'
     + '</div></section>';
   /* VIDEOS: vertical tipo historia (grande) + horizontal HD — por enlace de
@@ -11494,7 +11520,7 @@ function renderSiteFull(){
     + '<div class="sv-sec-head"><div class="sv-eyebrow">Clientes felices</div><h2 class="sv-h2">Testimonios</h2></div>'
     + '<div class="sv-test-grid sv-reveal">'
     + c.testimonials.map(function(t){
-        const av = t.photo ? '<img class="sv-avatar" src="' + esc(t.photo) + '" alt="' + esc(t.name) + '">' : '<span class="sv-avatar">' + esc((t.name||'C').charAt(0).toUpperCase()) + '</span>';
+        const av = t.photo && !imgRemoved(t.photo) ? '<img class="sv-avatar" src="' + esc(t.photo) + '" alt="' + esc(t.name) + '">' : '<span class="sv-avatar">' + esc((t.name||'C').charAt(0).toUpperCase()) + '</span>';
         return '<div class="sv-test"><div class="sv-stars">' + siteStars(Number(t.stars)||5) + '</div><p>"' + esc(t.comment) + '"</p><div class="sv-test-who">' + av + '<span><b>' + esc(t.name) + '</b><span>Cliente verificado</span></span></div></div>';
       }).join('')
     + '</div></div></section>';
@@ -11540,7 +11566,7 @@ function renderSiteFull(){
     + '</div></div></section>';
   /* FOOTER */
   html += '<footer class="sv-footer"><div class="sv-footer-inner">'
-    + '<div><div class="sv-f-brand">' + (logo ? '<img class="sv-f-logo" src="' + esc(logo) + '" alt="Logo">' : '<span class="sv-f-logo-ph">' + esc(name.charAt(0).toUpperCase()) + '</span>') + esc(name) + '</div>'
+    + '<div><div class="sv-f-brand">' + (logo && !imgRemoved(logo) ? '<img class="sv-f-logo" src="' + esc(logo) + '" alt="Logo">' : '<span class="sv-f-logo-ph">' + esc(name.charAt(0).toUpperCase()) + '</span>') + esc(name) + '</div>'
     + '<p>' + esc(c.footer.about || c.about.text) + '</p></div>'
     + '<div class="sv-f-col"><h4>Navegación</h4><a href="#svHero">Inicio</a><a href="#svAbout">Nosotros</a><a href="#svProducts">Productos</a><a href="#svContact">Contacto</a></div>'
     + '<div class="sv-f-col"><h4>Contacto</h4>'
@@ -11568,10 +11594,7 @@ function renderSiteFull(){
   renderSiteOverlays();
   /* En modo edición en vivo: convertir los objetos en capas Canva */
   if(siteLiveEdit) cvAutoDetectLayers();
-  if(document.body.classList.contains('in-admin')){
-    const back = document.getElementById('siteBackBtn');
-    if(back && back.style.display !== 'flex') back.style.display = 'flex';
-  }
+  sitePillLabel();
 }
 /* ---- AUTO-DETECCIÓN DE CAPAS: envuelve TODOS los objetos del landing. ----
    Corre justo después del render cuando el modo edición está activo.
@@ -11647,6 +11670,18 @@ function cvWrapTools(el, objId){
   rot.className = 'cv-tool cv-t-rot';
   rot.setAttribute('onmousedown', 'event.preventDefault();event.stopPropagation();cvDragStartTool(event,"rotate")');
   el.appendChild(rot);
+  /* IMÁGENES: botón ✕ para borrarla (solo visible en modo edición; en la
+     vista pública NO aparece porque .cv-tool solo se muestra con .sel en
+     body.site-live-edit). Al borrar se limpia el config y se re-renderiza. */
+  if(el.getAttribute('data-way') === 'image'){
+    const del = document.createElement('span');
+    del.className = 'cv-tool cv-t-del';
+    del.title = 'Borrar esta imagen';
+    del.textContent = '✕';
+    del.setAttribute('onmousedown', 'event.preventDefault();event.stopPropagation()');
+    del.setAttribute('onclick', 'event.preventDefault();event.stopPropagation();cvImageDelete(\'' + objId + '\')');
+    el.appendChild(del);
+  }
   /* Para textos: marcar el contenido editable y con data-path */
   if(el.getAttribute('data-way') === 'text'){
     el.setAttribute('data-cv', 'text');
@@ -11655,6 +11690,36 @@ function cvWrapTools(el, objId){
     /* Asocia la ruta si el texto es reconocible por el editor configurado */
     el.setAttribute('data-path', el.dataset.path || textPathFor(el));
   }
+}
+/* Borrar una imagen de la landing desde la vista previa de edición.
+   La X solo existe en modo edición; en la publicación desaparece. */
+function cvImageDelete(objId){
+  const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(objId) + '"]');
+  if(!layer) return;
+  const path = layer.getAttribute('data-path');
+  if(path){
+    siteSetPath(siteConfig, path, '');
+    if(siteConfig.canvas) delete siteConfig.canvas[objId];
+    renderSiteFull();
+    siteLiveAutoSave();
+    toast('Imagen borrada ✓ (se guardará al publicar)', 'ok');
+  } else {
+    /* Sin data-path (categorías, galería, productos...): se marca por URL
+       para que el re-render no la restaure. */
+    const img = layer.tagName === 'IMG' ? layer : layer.querySelector('img');
+    const src = img && img.getAttribute('src');
+    if(!src){ layer.style.display = 'none'; toast('Imagen borrada ✓', 'ok'); return; }
+    if(!siteConfig.removedUrls) siteConfig.removedUrls = [];
+    siteConfig.removedUrls.push(src);
+    renderSiteFull();
+    siteLiveAutoSave();
+    toast('Imagen borrada ✓ (se guardará al publicar)', 'ok');
+  }
+}
+/* ¿La URL de esta imagen fue borrada en el editor? */
+function imgRemoved(url){
+  if(!url || !siteConfig || !siteConfig.removedUrls || !siteConfig.removedUrls.length) return false;
+  return siteConfig.removedUrls.indexOf(url) !== -1;
 }
 /* Mejor esfuerzo: deducir la ruta del texto si es uno conocido */
 function textPathFor(el){
@@ -12054,6 +12119,7 @@ function toggleSiteLive(){
     renderSiteFull();
     ensureLivePill();
     enableSiteInlineEditing();
+    sitePillLabel();
   }else{
     removeLivePill();
     disableSiteInlineEditing();
@@ -12083,8 +12149,9 @@ function ensureSiteLive(){
   ensureLivePill();
   enableSiteInlineEditing();
 }
-/* Botón "Volver al panel": aparece DEBAJO del panel flotante de estilo
-   (el panel está en bottom:74px; el botón queda en bottom:16px, mismo lado). */
+/* ÚNICO Botón "Volver al panel" (esquina inferior derecha, debajo del panel
+   flotante de estilo). Si está en edición en vivo, sale y AUTO-GUARDA; si es
+   la vista pública, vuelve al panel del negocio. */
 function ensureLivePill(){
   if(document.getElementById('svLivePill')) return;
   const p = document.createElement('button');
@@ -12094,8 +12161,24 @@ function ensureLivePill(){
   p.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:540;background:#17202A;color:#fff;border:none;border-radius:999px;padding:10px 20px;font-size:13.5px;font-weight:800;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,.35);display:flex;align-items:center;gap:8px';
   p.onmouseover = function(){ p.style.background = '#111'; };
   p.onmouseout = function(){ p.style.background = '#17202A'; };
-  p.onclick = function(){ toggleSiteLive(); };
+  p.onclick = function(){ siteReturnToPanel(); };
   document.body.appendChild(p);
+}
+/* Etiqueta del pill según el estado actual */
+function sitePillLabel(){
+  const p = document.getElementById('svLivePill');
+  if(!p) return;
+  if(siteLiveEdit) p.innerHTML = '💾 Salir de edición y guardar';
+  else p.innerHTML = '🔙 Volver al panel';
+}
+/* Acción única de vuelta: desde edición → guarda y vuelve al panel;
+   desde vista pública → vuelve al panel. */
+function siteReturnToPanel(){
+  if(siteLiveEdit){
+    toggleSiteLive(); /* al salir ya AUTO-GUARDA en Firestore + Storage */
+  } else {
+    closeSitePublic();
+  }
 }
 function removeLivePill(){ const p = document.getElementById('svLivePill'); if(p) p.remove(); }
 function refreshSitePreview(){
