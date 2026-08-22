@@ -1103,6 +1103,16 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 @keyframes svZoomOut{from{transform:scale(1.14)}to{transform:scale(1)}}
 @keyframes svPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 @keyframes svShine{from{transform:translateX(-120%)}to{transform:translateX(220%)}}
+/* Animaciones del editor Canva (capas del landing) */
+@keyframes cvAnimFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes cvAnimSlideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1}}
+@keyframes cvAnimSlideDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1}}
+@keyframes cvAnimSlideLeft{from{opacity:0;transform:translateX(30px)}to{opacity:1}}
+@keyframes cvAnimSlideRight{from{opacity:0;transform:translateX(-30px)}to{opacity:1}}
+@keyframes cvAnimBounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-16px)}60%{transform:translateY(-8px)}}
+@keyframes cvAnimFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes cvAnimPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes cvAnimShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 /* ==================== ANIMACIONES DEL EDITOR CANVA ==================== */
 @keyframes svAnimFadeIn{from{opacity:0}to{opacity:1}}
 @keyframes svAnimSlideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
@@ -1134,21 +1144,69 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 .sv-sec-head::after{content:"";display:block;width:56px;height:4px;border-radius:99px;background:linear-gradient(90deg,var(--site-p),var(--site-acc));margin-top:16px}
 .sv-eyebrow,.sv-h2{margin-top:0}
 body.site-live-edit{overflow:hidden}
-/* Edición en vivo SIMPLE: los textos se resaltan y se editan con clic directo;
-   las imágenes se cambian con un clic. El diseño SIEMPRE se acomoda
-   automáticamente (flujo normal del documento), sin mover objetos. */
-body.site-live-edit [contenteditable="true"]{
-  outline:2px dashed rgba(124,58,237,.55);
-  outline-offset:3px;
-  border-radius:6px;
-  cursor:text;
+/* ==================== EDITOR CANVA — CAPAS (proporcionado) ====================
+   Cada objeto editable se marca como capa. El flujo del documento se mantiene
+   (proporciones correctas, responsive intacto) y el desplazamiento/giro se
+   aplica con transform: translate/rotate. Los cambios se guardan en
+   siteConfig.canvas[objId] y se persisten con "Guardar cambios". */
+body.site-live-edit [data-obj]{
+  position:relative;
+  transition:none;
 }
-body.site-live-edit img[data-path]{
-  outline:2px dashed rgba(124,58,237,.55);
+body.site-live-edit [data-obj].cv-layer{
+  transform-origin:center center;
+  cursor:move;
+  outline:1.5px dashed rgba(124,58,237,.35);
   outline-offset:3px;
-  border-radius:8px;
-  cursor:pointer;
 }
+body.site-live-edit [data-obj].cv-layer.sel{
+  outline:2px solid #7C3AED;
+  z-index:30;
+  outline-offset:3px;
+}
+body.site-live-edit .cv-layer .cv-tool{
+  position:absolute;
+  display:none;
+  z-index:40;
+  border-radius:50%;
+  border:2px solid #fff;
+  box-shadow:0 1px 4px rgba(0,0,0,.45);
+  background:#7C3AED;
+}
+body.site-live-edit .cv-layer.sel .cv-tool{display:block}
+body.site-live-edit .cv-layer .cv-t-r{width:10px;height:10px;top:-7px;left:-7px;cursor:nwse-resize}
+body.site-live-edit .cv-layer .cv-t-r2{width:10px;height:10px;top:-7px;right:-7px;cursor:nesw-resize}
+body.site-live-edit .cv-layer .cv-t-r3{width:10px;height:10px;bottom:-7px;right:-7px;cursor:nwse-resize}
+body.site-live-edit .cv-layer .cv-t-rot{
+  width:14px;height:14px;bottom:-32px;left:50%;margin-left:-7px;
+  background:#FFD100;cursor:grab;
+}
+body.site-live-edit .cv-layer .cv-t-rot::before{
+  content:'';position:absolute;left:50%;top:-22px;width:1.5px;height:20px;
+  background:#7C3AED;transform:translateX(-50%);
+}
+/* Panel de estilo flotante */
+.cv-style-panel{
+  position:fixed;bottom:74px;right:16px;z-index:520;
+  width:280px;background:#17202A;color:#fff;border-radius:16px;
+  padding:14px 16px;box-shadow:0 20px 50px rgba(0,0,0,.4);
+  display:none;font-family:var(--font);
+}
+.cv-style-panel.show{display:block}
+.cv-style-panel h5{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:#9CA3AF;margin:0 0 8px}
+.cv-style-panel .sp-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.cv-style-panel select,.cv-style-panel input[type=number],.cv-style-panel input[type=color]{
+  background:#0F172A;color:#fff;border:1px solid #334155;border-radius:8px;padding:6px 8px;font-size:12.5px;outline:none;
+}
+.cv-style-panel select{flex:1;min-width:90px}
+.cv-style-panel input[type=number]{width:60px}
+.cv-style-panel input[type=color]{width:32px;height:28px;padding:0;border:none;cursor:pointer}
+.cv-style-panel .sp-btn{background:#7C3AED;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.cv-style-panel .sp-btn:hover{background:#6D28D9}
+.cv-style-panel .sp-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.cv-style-panel .sp-anim{font-size:10.5px;padding:5px 8px;border-radius:7px;background:#1F2937;border:1px solid #374151;color:#D1D5DB;cursor:pointer}
+.cv-style-panel .sp-anim.on{background:#7C3AED;color:#fff;border-color:#7C3AED}
+@media(max-width:760px){.cv-style-panel{left:10px;right:10px;width:auto;bottom:10px}}
 body.site-live-edit #adminView{background:#fff}
 body.site-live-edit .adm-sidebar{display:none !important}
 body.site-live-edit #adminView .panel:not(#panel-site){display:none !important}
@@ -1160,7 +1218,7 @@ body.site-live-edit #panel-site .site-ed-scroll{max-width:none;padding:0 14px 26
 body.site-live-edit #siteView{display:block;position:fixed;top:0;bottom:0;right:0;left:min(540px,46vw);overflow-y:auto;min-height:0;z-index:220;background:#fff}
 body.site-live-edit .sv-header{left:min(540px,46vw)}
 body.site-live-edit .site-back{display:none}
-.sv-editor-pill{position:fixed;z-index:310;top:12px;right:12px;display:flex;gap:8px;align-items:center;background:#17202A;color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.3);border:none}
+.sv-editor-pill{position:fixed;z-index:530;bottom:16px;right:16px;display:flex;gap:8px;align-items:center;background:#17202A;color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.3);border:none}
 .sv-editor-pill:hover{background:#111}
 @media(max-width:980px){
   body.site-live-edit #siteView{left:0;right:0;top:0;bottom:47%;overflow-y:auto}
@@ -3122,6 +3180,12 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 <button class="btn-primary" style="width:auto;padding:12px 22px" onclick="saCreateTenant()">Crear negocio</button>
 <button class="btn-ghost" style="width:auto;padding:12px 22px;margin-left:8px" onclick="saMigrateAiKeys()" title="Mueve las claves de IA que aún estén en el documento público settings/store hacia la subcolección privada privateSettings/ai y las borra del público">🔐 Migrar claves IA (seguridad)</button>
       <div id="saMigrateStatus" style="font-size:12.5px;margin-top:6px"></div>
+      <div style="margin-top:12px">
+        <button style="background:none;border:none;color:var(--muted);font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:8px 0" onclick="saGoBack()" title="Volver a la pantalla anterior">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:16px;height:16px"><path d="m15 18-6-6 6-6"/></svg>
+          Atrás
+        </button>
+      </div>
     </div>
 
     <div class="settings-card" style="margin-bottom:20px">
@@ -9398,6 +9462,10 @@ async function doSuperadminLogout(){
   document.getElementById('superadminLoginModal').classList.add('show');
   document.getElementById('superadminView').style.display = 'none';
 }
+/* Volver a la pantalla anterior desde el panel superadmin */
+function saGoBack(){
+  location.href = location.pathname;
+}
 
 async function loadSuperadminData(){
   const tbody = document.getElementById('saTableBody');
@@ -10951,6 +11019,11 @@ const SITE_DEFAULTS = {
   businessName: '', tagline: '', logoUrl: '',
   primaryColor: '#1B7A43', secondaryColor: '#0F5A30', accentColor: '#FFD100',
   seoTitle: '', seoDesc: '',
+  /* Videos por enlace (YouTube o directo):
+     - videoVertical: formato historia (9:16) grande, para el hero de la landing.
+     - videoHorizontal: alta calidad (16:9) para la sección de presentación. */
+  videoVertical: '',
+  videoHorizontal: '',
   hero: {
     badge: 'Catálogo y venta directa · MARKET CR',
     title: 'Plantas que transforman tu espacio y llegan hasta tu puerta',
@@ -11025,6 +11098,93 @@ const SITE_DEFAULTS = {
     notice: 'Comercio asociado a MARKET CR'
   }
 };
+/* ==================== TEMAS PREESTABLECIDOS (5 plantillas) ====================
+   El admin puede empezar la landing con una de estas plantillas: cambia
+   colores, fuentes, estilos del hero y textos sugeridos. Se aplican con
+   "Usar este tema" (aplica los colores/estilos al editor y vista previa). */
+const SITE_THEMES = [
+  {
+    id:'verde-naturaleza', name:'🌿 Verde Naturaleza',
+    desc:'Verde fresco, ideal tiendas de plantas, jardín o natural',
+    primaryColor:'#1B7A43', secondaryColor:'#0F5A30', accentColor:'#FFD100',
+    heroBadge:'Catálogo y venta directa · MARKET CR',
+    heroTitle:'Naturaleza que transforma tu espacio',
+    heroSub:'Productos seleccionados con calidad garantizada y entrega a domicilio.'
+  },
+  {
+    id:'ruby-premium', name:'💜 Rubí Premium',
+    desc:'Morado elegante, ideal marca premium o servicios de diseño',
+    primaryColor:'#7C3AED', secondaryColor:'#5B21B6', accentColor:'#FDE047',
+    heroBadge:'Experiencia premium · MARKET CR',
+    heroTitle:'Calidad premium que se nota',
+    heroSub:'Cuidamos cada detalle para que tu experiencia sea única.'
+  },
+  {
+    id:'sol-dorado', name:'🌞 Sol Dorado',
+    desc:'Amarillo cálido, ideal cafeterías, repostería o moda',
+    primaryColor:'#D97706', secondaryColor:'#92400E', accentColor:'#FDE68A',
+    heroBadge:'Frescura y sabor · MARKET CR',
+    heroTitle:'Lo mejor llega con calor humano',
+    heroSub:'Preparado con dedicación y entregado con amor a tu puerta.'
+  },
+  {
+    id:'océano-azul', name:'🌊 Océano Azul',
+    desc:'Azul confiable, ideal tecnología, salud o servicios',
+    primaryColor:'#2563EB', secondaryColor:'#1D4ED8', accentColor:'#93C5FD',
+    heroBadge:'Confianza y seguridad · MARKET CR',
+    heroTitle:'Soluciones claras, resultados reales',
+    heroSub:'Confiá en nuestro equipo: calidad y atención en cada paso.'
+  },
+  {
+    id:'rojo-energia', name:'🔴 Rojo Energía',
+    desc:'Rojo vibrante, ideal deporte, comida o promociones',
+    primaryColor:'#DC2626', secondaryColor:'#991B1B', accentColor:'#FCA5A5',
+    heroBadge:'Energía y pasión · MARKET CR',
+    heroTitle:'Viví la diferencia hoy',
+    heroSub:'Productos con carácter y promociones que no podés ignorar.'
+  }
+];
+function siteThemeApply(themeId){
+  const t = (SITE_THEMES || []).find(x => x.id === themeId);
+  if(!t){ toast('Tema no encontrado', 'err'); return; }
+  if(!siteConfig) siteConfig = {};
+  /* Aplicar colores y textos del tema al siteConfig */
+  siteConfig.primaryColor = t.primaryColor;
+  siteConfig.secondaryColor = t.secondaryColor;
+  siteConfig.accentColor = t.accentColor;
+  if(t.heroBadge) siteConfig.hero = Object.assign({}, siteConfig.hero || {}, { badge: t.heroBadge });
+  if(t.heroTitle) siteConfig.hero = Object.assign({}, siteConfig.hero || {}, { title: t.heroTitle });
+  if(t.heroSub) siteConfig.hero = Object.assign({}, siteConfig.hero || {}, { sub: t.heroSub });
+  /* Actualizar los inputs del editor (si existen) */
+  if(document.getElementById('sf_primaryColor')) document.getElementById('sf_primaryColor').value = t.primaryColor;
+  if(document.getElementById('sf_secondaryColor')) document.getElementById('sf_secondaryColor').value = t.secondaryColor;
+  if(document.getElementById('sf_accentColor')) document.getElementById('sf_accentColor').value = t.accentColor;
+  if(document.getElementById('sf_hero__badge')) document.getElementById('sf_hero__badge').value = t.heroBadge || '';
+  if(document.getElementById('sf_hero__title')) document.getElementById('sf_hero__title').value = t.heroTitle || '';
+  if(document.getElementById('sf_hero__sub')) document.getElementById('sf_hero__sub').value = t.heroSub || '';
+  /* Refrescar vista previa */
+  renderSiteFull();
+  toast('Tema "' + t.name.replace(/^[^ ]+ /, '') + '" aplicado', 'ok');
+}
+/* Selector de temas (se muestra en el panel de landing) */
+function siteThemesHTML(){
+  return '<div class="site-grp">' +
+    '<h4>🎨 Tema del sitio</h4>' +
+    '<div class="hint">Elegí uno de los 5 temas preestablecidos para empezar: aplica colores, textos del hero y estilo. Después podés personalizar todo.</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:8px">' +
+      SITE_THEMES.map(t =>
+        '<button type="button" class="theme-card" data-theme="' + esc(t.id) + '" onclick="siteThemeApply(\'' + esc(t.id) + '\')" style="border:2px solid #E8EDF2;border-radius:12px;padding:10px;text-align:center;cursor:pointer;background:#fff;transition:.15s">' +
+          '<div style="display:flex;gap:4px;justify-content:center;margin-bottom:8px">' +
+            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.primaryColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
+            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.secondaryColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
+            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.accentColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
+          '</div>' +
+          '<b style="font-size:13px;display:block">' + esc(t.name) + '</b>' +
+          '<span style="font-size:11px;color:var(--muted);display:block;margin-top:2px">' + esc(t.desc) + '</span>' +
+        '</button>'
+      ).join('') +
+    '</div></div>';
+}
 /* Ejemplo terminado: un negocio distinto (café + plantas) para que el admin
    vea "cómo se ve" la landing y pueda usarlo como punto de partida. */
 const SITE_DEMO = {
@@ -11187,6 +11347,26 @@ function listenSite(){
     else if(document.body.classList.contains('in-admin') && panelOpen) loadSiteEditor();
   }, function(){});
 }
+/* Guarda el JSON del landing en Firebase Storage con URL ESTABLE
+   (sites-config/{tienda}/landing.json = SIEMPRE la última versión).
+   Así el sitio siempre tiene su configuración completa respaldada y
+   consultable en Storage con la misma URL. */
+async function saveSiteToStorage(cfg){
+  if(typeof firebase === 'undefined' || !firebase.storage) return null;
+  try{
+    const name = 'sites-config/' + (TENANT_ID || 'x') + '/landing.json';
+    await firebase.storage().ref(name).put(
+      new Blob([JSON.stringify(cfg)], { type: 'application/json' }),
+      { contentType: 'application/json', cacheControl: 'public,max-age=31536000' }
+    );
+    const url = await firebase.storage().ref(name).getDownloadURL();
+    console.info('Landing guardada en Storage (URL estable):', url);
+    return url;
+  }catch(e){
+    console.warn('No se pudo copiar la landing a Storage (no crítico):', e && e.message);
+    return null;
+  }
+}
 async function saveSite(){
   if(!siteDoc){ toast('Aún no hay documento de sitio disponible', 'err'); return; }
   try{
@@ -11212,8 +11392,11 @@ async function saveSite(){
     /* 4) Los cambios guardados anteriormente en siteConfig (edición en vivo
           persistida) se conservan como base también. */
     cfg = deepMerge(cfg, siteDeep(siteConfig || {}));
+    /* 5) GUARDAR EN FIRESTORE (firma del sitio para la app) */
     await siteDoc.set(JSON.parse(JSON.stringify(cfg)), { merge:true });
     siteConfig = cfg;
+    /* 6) GUARDAR EN STORAGE: configuración completa con URL estable */
+    await saveSiteToStorage(cfg);
     toast('Landing page guardada ✓', 'ok');
   }catch(e){ console.error(e); toast('No se pudo guardar: ' + (e && e.message ? e.message : 'error'), 'err'); }
 }
@@ -11226,6 +11409,7 @@ function readSiteFromPreview(){
   const out = {};
   root.querySelectorAll('[data-path]').forEach(el => {
     const path = el.getAttribute('data-path');
+    if(!path) return; // ignorar capas sin ruta (auto-detectadas sin ruta mapeada)
     /* Los data-path con varios puntos son rutas anidadas (hero.badge,
        hero.title...). Los que incluyen ".image" son imágenes. */
     const val = el.isContentEditable
@@ -11302,6 +11486,36 @@ function renderSiteFull(){
     + '<div class="sv-hero-media">' + (heroImg ? '<img' + svEdImg('hero.image') + ' src="' + esc(heroImg) + '" alt="' + esc(name) + '" loading="lazy">' : '<div style="aspect-ratio:4/3.2;border-radius:26px;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.3)"></div>')
     + '</div>'
     + '</div></section>';
+  /* VIDEOS: vertical tipo historia (grande) + horizontal HD — por enlace de
+     YouTube o archivo .mp4. Si no se cargan, no se muestra la sección. */
+  const vvUrl = (c.videoVertical || '').trim();
+  const vhUrl = (c.videoHorizontal || '').trim();
+  if(vvUrl || vhUrl){
+    html += '<section class="sv-sec sv-sec-alt" id="svVideos"><div class="sv-inner">'
+      + '<div class="sv-sec-head"><div class="sv-eyebrow">Videos</div><h2 class="sv-h2">Conocé más de nosotros</h2></div>'
+      + '<div class="sv-videos-grid" style="display:grid;grid-template-columns:' + (vvUrl && vhUrl ? '1fr 1.6fr' : '1fr') + ';gap:20px;align-items:start">';
+    if(vvUrl){
+      const embedV = youtubeEmbedUrl(vvUrl);
+      html += '<div class="sv-video-v" style="max-width:380px;margin:0 auto;width:100%">'
+        + '<div style="aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:#111;box-shadow:0 18px 40px rgba(0,0,0,.25)">'
+        + (embedV
+            ? '<iframe src="' + esc(embedV) + '" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>'
+            : '<video src="' + esc(vvUrl) + '" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>')
+        + '</div>'
+        + '<p style="text-align:center;font-size:12.5px;color:#64748B;margin-top:8px">📱 Video vertical</p></div>';
+    }
+    if(vhUrl){
+      const embedH = youtubeEmbedUrl(vhUrl);
+      html += '<div class="sv-video-h" style="width:100%">'
+        + '<div style="aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#111;box-shadow:0 18px 40px rgba(0,0,0,.25)">'
+        + (embedH
+            ? '<iframe src="' + esc(embedH) + '" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>'
+            : '<video src="' + esc(vhUrl) + '" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>')
+        + '</div>'
+        + '<p style="text-align:center;font-size:12.5px;color:#64748B;margin-top:8px">🎬 Video horizontal HD</p></div>';
+    }
+    html += '</div></div></section>';
+  }
   /* BENEFICIOS */
   html += '<section class="sv-sec" id="svBenefits"><div class="sv-inner">'
     + '<div class="sv-sec-head"><div class="sv-eyebrow">Por qué comprar aquí</div><h2 class="sv-h2">Propuesta de valor</h2></div>'
@@ -11427,10 +11641,96 @@ function renderSiteFull(){
   siteHeaderScroll();
   renderSiteDemoBanner();
   siteReveal();
+  /* En modo edición en vivo: convertir los objetos en capas Canva */
+  if(siteLiveEdit) cvAutoDetectLayers();
   if(document.body.classList.contains('in-admin')){
     const back = document.getElementById('siteBackBtn');
     if(back && back.style.display !== 'flex') back.style.display = 'flex';
   }
+}
+/* ---- AUTO-DETECCIÓN DE CAPAS: envuelve TODOS los objetos del landing. ----
+   Corre justo después del render cuando el modo edición está activo.
+   Marca títulos, párrafos, botones e imágenes con data-obj + data-path y les
+   agrega los "tools" (4 esquinas + rotar). Así TODAS las secciones (hero,
+   beneficios, categorías, productos, oferta, nosotros, testimonios, galería,
+   CTA y contacto) se pueden mover/redimensionar/rotar/estilizar/animar. */
+let _cvObjSeq = 0;
+function cvAutoDetectLayers(){
+  const root = document.getElementById('siteRoot');
+  if(!root) return;
+  _cvObjSeq = 0;
+  /* 1) Textos principales: h1,h2,h3, p, .sv-eyebrow, .sv-lead, .sv-storename,
+        .sv-storetag, .sv-test p, nombres y comentarios de testimonios... */
+  root.querySelectorAll('h1, h2, h3, h4, p, .sv-eyebrow, .sv-lead, .sv-storename, .sv-storetag, .sv-price, .sv-offer h3, .sv-benefit h3, .sv-benefit p, .sv-card-body h3, .sv-card-desc, .sv-test p, .sv-contact-row b').forEach(function(el){
+    if(el.closest('[data-obj]')) return;
+    if(el.isContentEditable) return;
+    const id = 'cv' + (++_cvObjSeq);
+    el.setAttribute('data-obj', id);
+    el.setAttribute('data-way', 'text');
+    el.classList.add('cv-editable-text');
+    cvWrapTools(el, id);
+  });
+  /* 2) Imágenes: todas dentro de la landing (excepto header/footer menores) */
+  root.querySelectorAll('img.sv-logo, .sv-hero-media img, .sv-card-media img, .sv-gal img, .sv-offer-media img, .sv-about-media img, .sv-test-who img, .sv-cat img').forEach(function(el){
+    if(el.closest('[data-obj]')) return;
+    const id = 'cvimg' + (++_cvObjSeq);
+    el.setAttribute('data-obj', id);
+    el.setAttribute('data-way', 'image');
+    el.setAttribute('data-cv', 'image');
+    el.style.cursor = 'pointer';
+    cvWrapTools(el, id);
+  });
+  /* 3) Botones CTA: .sv-btn (excepto os del nav) */
+  root.querySelectorAll('.sv-hero-actions .sv-btn, .sv-cta .sv-btn, .sv-btn-primary, .sv-hero-actions a').forEach(function(el){
+    if(el.closest('[data-obj]')) return;
+    const id = 'cv' + (++_cvObjSeq);
+    el.setAttribute('data-obj', id);
+    el.setAttribute('data-way', 'button');
+    cvWrapTools(el, id);
+  });
+  /* Aplicar estilos guardados del canvas */
+  root.querySelectorAll('[data-obj]').forEach(layer => {
+    const st = siteCanvasGet(layer.dataset.obj);
+    cvApply(layer, st);
+  });
+}
+/* Envuelve un elemento con los tools (4 esquinas + rotar) y lo marca.
+   Se reutiliza el propio elemento como capa (position:relative en modo edición). */
+function cvWrapTools(el, objId){
+  const wrap = document.createElement('span');
+  wrap.className = 'cv-tool cv-t-r';
+  wrap.setAttribute('onmousedown', 'event.preventDefault();event.stopPropagation();cvDragStartTool(event,"size")');
+  el.appendChild(wrap);
+  const w2 = document.createElement('span');
+  w2.className = 'cv-tool cv-t-r2';
+  w2.setAttribute('onmousedown', 'event.preventDefault();event.stopPropagation();cvDragStartTool(event,"size")');
+  el.appendChild(w2);
+  const w3 = document.createElement('span');
+  w3.className = 'cv-tool cv-t-r3';
+  w3.setAttribute('onmousedown', 'event.preventDefault();event.stopPropagation();cvDragStartTool(event,"size")');
+  el.appendChild(w3);
+  const rot = document.createElement('span');
+  rot.className = 'cv-tool cv-t-rot';
+  rot.setAttribute('onmousedown', 'event.preventDefault();event.stopPropagation();cvDragStartTool(event,"rotate")');
+  el.appendChild(rot);
+  /* Para textos: marcar el contenido editable y con data-path */
+  if(el.getAttribute('data-way') === 'text'){
+    el.setAttribute('data-cv', 'text');
+    el.setAttribute('contenteditable', 'true');
+    el.setAttribute('spellcheck', 'false');
+    /* Asocia la ruta si el texto es reconocible por el editor configurado */
+    el.setAttribute('data-path', el.dataset.path || textPathFor(el));
+  }
+}
+/* Mejor esfuerzo: deducir la ruta del texto si es uno conocido */
+function textPathFor(el){
+  const html = el.outerHTML || '';
+  if(html.indexOf('sv-hero-badge') !== -1) return 'hero.badge';
+  if(html.indexOf('sv-hero') !== -1 && el.tagName === 'H1') return 'hero.title';
+  if(html.indexOf('sv-hero') !== -1 && el.tagName === 'P') return 'hero.sub';
+  if(html.indexOf('sv-eyebrow') !== -1) return 'eyebrow';
+  if(html.indexOf('sv-h2') !== -1) return 'h2';
+  return '';
 }
 function renderSiteDemoBanner(){
   const root = document.getElementById('siteView');
@@ -11567,6 +11867,10 @@ const SITE_EDITOR_SIMPLE = [
     { k:'hero.sub', l:'Subtítulo', t:'textarea' },
     { k:'hero.image', l:'Imagen de portada (URL)', t:'url' }
   ]},
+  { g:'🎬 Videos', f:[
+    { k:'videoVertical', l:'Video VERTICAL tipo historia (YouTube o .mp4)', t:'url', h:'Formato 9:16 grande. Pegá el enlace de YouTube (https://youtube.com/watch?v=...) o .mp4' },
+    { k:'videoHorizontal', l:'Video HORIZONTAL en alta calidad (YouTube o .mp4)', t:'url', h:'Formato 16:9 HD. Pegá el enlace de YouTube (https://youtube.com/watch?v=...) o .mp4' }
+  ]},
   { g:'Oferta especial', f:[
     { k:'offer.name', l:'Producto en oferta', t:'text' },
     { k:'offer.percent', l:'Descuento (ej: -25%)', t:'text' },
@@ -11627,7 +11931,9 @@ function loadSiteEditor(){
   const c = siteCurrent();
   let html = '';
   if(siteSectionTab === 'negocio'){
-    html = SITE_EDITOR_SIMPLE.map(function(grp){
+    /* TEMAS PREESTABLECIDOS: se muestran arriba para empezar con una plantilla */
+    html = siteThemesHTML();
+    html += SITE_EDITOR_SIMPLE.map(function(grp){
       return '<div class="site-grp"><h4>' + esc(grp.g) + '</h4>'
         + '<div class="f-row" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">' + grp.f.map(function(f){ return siteEditorFieldHTML(f, siteGet(c, f.k), f.k); }).join('') + '</div></div>';
     }).join('');
@@ -11817,13 +12123,30 @@ function toggleSiteLive(){
   }else{
     removeLivePill();
     disableSiteInlineEditing();
+    /* AUTO-GUARDADO: al salir del modo en vivo, se persisten TODOS los
+       textos/imágenes editados en la vista previa (Firestore + Storage)
+       para que ningún cambio se pierda. */
+    try{
+      const merged = deepMerge(siteDeep(readSiteEditor()), siteDeep(siteConfig || {}));
+      if(siteDoc){ siteDoc.set(JSON.parse(JSON.stringify(merged)), { merge:true }).catch(()=>{}); }
+      saveSiteToStorage(merged).catch(()=>{});
+      siteConfig = merged;
+    }catch(e){ console.warn('Auto-guardado al salir del modo en vivo:', e); }
+    /* Re-render limpio: quita las capas y tools del modo edición */
+    renderSiteFull();
   }
 }
+/* Botón "Volver al panel": aparece DEBAJO del panel flotante de estilo
+   (el panel está en bottom:74px; el botón queda en bottom:16px, mismo lado). */
 function ensureLivePill(){
   if(document.getElementById('svLivePill')) return;
   const p = document.createElement('button');
-  p.id = 'svLivePill'; p.className = 'sv-editor-pill'; p.type = 'button';
-  p.innerHTML = '&#9998; Volver a editar';
+  p.id = 'svLivePill';
+  p.type = 'button';
+  p.innerHTML = '🔙 Volver al panel';
+  p.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:540;background:#17202A;color:#fff;border:none;border-radius:999px;padding:10px 20px;font-size:13.5px;font-weight:800;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,.35);display:flex;align-items:center;gap:8px';
+  p.onmouseover = function(){ p.style.background = '#111'; };
+  p.onmouseout = function(){ p.style.background = '#17202A'; };
   p.onclick = function(){ toggleSiteLive(); };
   document.body.appendChild(p);
 }
@@ -11850,66 +12173,341 @@ function bindSiteLiveInputs(){
     if(t && t.id && t.closest && t.closest('#panel-site') && (t.type === 'checkbox' || t.type === 'color')) refreshSitePreview();
   });
 }
-/* ==================== EDICIÓN EN VISTA PREVIA (SIMPLE) ====================
-   Los objetos de la landing se editan con CLIC DIRECTO en la vista previa:
-   - Texto: clic → editable (contenteditable) → se escribe en siteConfig.
-   - Imagen: clic → selector → sube a Storage → actualiza URL.
-   El diseño SIEMPRE se acomoda automáticamente (flujo normal del documento).
-   "Guardar cambios" persiste los textos editados.
+/* ==================== EDITOR CANVA COMPLETO (TODA LA LANDING) ====================
+   Al activar "Editar en vivo" TODOS los objetos visuales del landing se
+   convierten automáticamente en "capas" editables (auto-detección):
+   - DRAG para mover (transform: translate — no rompe el flujo/proporciones)
+   - Handles morados en las 4 esquinas para redimensionar (ancho/altura y fuente)
+   - Handle amarillo abajo para ROTAR
+   - Doble clic en un texto para editarlo
+   - Clic en una imagen para subir una nueva a Storage
+   - Panel flotante: tipografía (fuente, tamaño, color, negrita, cursiva,
+     alineación) y ANIMACIONES (fade, slide, bounce, float, pulse, shake...)
+   Todo se guarda en siteConfig.canvas[objId] y "Guardar cambios" lo persiste.
    ==================================================================== */
-let _siteSimpleBound = false;
-const SV_ANIMATIONS = [];
-const SV_FONTS = [];
+const CV_ANIMATIONS = ['','cvAnimFadeIn','cvAnimSlideUp','cvAnimSlideDown','cvAnimSlideLeft','cvAnimSlideRight','cvAnimBounce','cvAnimFloat','cvAnimPulse','cvAnimShake'];
+const CV_ANIM_NAMES = ['Sin animación','Aparecer','Subir','Bajar','Entrar izq.','Entrar der.','Rebote','Flotar','Pulso','Sacudida'];
+const CV_FONTS = ['Inter','Georgia','Arial','Helvetica','Times New Roman','Courier New','Verdana','Trebuchet MS','Impact','Tahoma'];
+let _cvBound = false, _cvDrag = null, _cvSel = null, _cvMoved = false;
 function siteCanvasGet(objId){
   if(!siteConfig) siteConfig = {};
   if(!siteConfig.canvas) siteConfig.canvas = {};
   if(!siteConfig.canvas[objId]) siteConfig.canvas[objId] = {};
   return siteConfig.canvas[objId];
 }
+/* ---- Activa el editor: convierte la landing en capas editables ---- */
 function enableSiteInlineEditing(){
   const root = document.getElementById('siteRoot');
   if(!root) return;
-  if(_siteSimpleBound) return;
-  _siteSimpleBound = true;
-  /* Texto editable: al escribir, persistir en siteConfig */
-  root.addEventListener('input', function(ev){
+  if(_cvBound) return;
+  _cvBound = true;
+  /* Double-click en texto → editable; clic en imagen → selector */
+  root.addEventListener('dblclick', function(ev){
     if(!siteLiveEdit) return;
-    const el = ev.target;
-    if(el && el.isContentEditable && el.dataset && el.dataset.path){
-      siteInlineWriteText(el.dataset.path, el.innerText);
+    const layer = ev.target.closest('[data-obj]');
+    if(!layer) return;
+    const txt = layer.querySelector('[data-cv="text"]');
+    if(txt){
+      txt.contentEditable = 'true';
+      txt.focus();
     }
   });
-  /* Texto editable: al salir, refrescar vista previa */
-  root.addEventListener('blur', function(ev){
+  root.addEventListener('mousedown', function(ev){
     if(!siteLiveEdit) return;
-    const el = ev.target;
-    if(el && el.isContentEditable && el.dataset && el.dataset.path){
-      siteInlineWriteText(el.dataset.path, el.innerText);
-      refreshSitePreview();
+    const layer = ev.target.closest('[data-obj]');
+    if(!layer){
+      cvSelectReset();
+      return;
     }
+    cvSelect(layer.dataset.obj);
+    /* Si se pulsan los tools, NO iniciar drag de mover */
+    if(ev.target.closest('.cv-tool')) return;
+    if(ev.target.closest('[data-cv="text"]')) return; // editar texto, no mover
+    _cvMoved = false;
+    cvDragStart(ev, layer);
   }, true);
-  /* Imagen editable: clic para reemplazar */
   root.addEventListener('click', function(ev){
     if(!siteLiveEdit) return;
-    const img = ev.target.closest && ev.target.closest('img[data-path]');
+    /* Si el objeto se acaba de mover (drag), NO abrir el selector de imagen */
+    if(_cvMoved) return;
+    const img = ev.target.closest('img[data-cv="image"]');
     if(img){
       ev.preventDefault();
       ev.stopPropagation();
       siteInlinePickImage(img.dataset.path);
     }
   });
+  /* Texto editable: persistir al escribir + auto-guardado con debounce */
+  root.addEventListener('input', function(ev){
+    if(!siteLiveEdit) return;
+    const el = ev.target;
+    if(el && el.isContentEditable && el.dataset && el.dataset.path){
+      siteInlineWriteText(el.dataset.path, el.innerText);
+      siteLiveAutoSave();
+    }
+  });
+  document.addEventListener('mousemove', cvDragMove);
+  document.addEventListener('mouseup', cvDragEnd);
+  ensureCvStylePanel();
+  cvBuildLayers();
+}
+/* AUTO-GUARDADO rápido: 2 segundos después del último cambio en la vista
+   previa, guarda la landing completa en Firestore + Storage. Así los
+   textos y fotos editados en vivo se persisten automáticamente sin
+   depender de presionar ningún botón. */
+let _cvSaveTimer = null;
+function siteLiveAutoSave(){
+  if(_cvSaveTimer) clearTimeout(_cvSaveTimer);
+  _cvSaveTimer = setTimeout(async function(){
+    if(!siteLiveEdit) return;
+    try{
+      const merged = deepMerge(siteDeep(readSiteEditor()), siteDeep(siteConfig || {}));
+      if(siteDoc) await siteDoc.set(JSON.parse(JSON.stringify(merged)), { merge:true });
+      await saveSiteToStorage(merged);
+      siteConfig = merged;
+      toast('Cambio guardado ✓', 'ok');
+    }catch(e){ console.warn('Auto-guardado falló:', e && e.message); }
+    _cvSaveTimer = null;
+  }, 2000);
 }
 function disableSiteInlineEditing(){
+  cvSelectReset();
   document.querySelectorAll('#siteRoot [contenteditable="true"]').forEach(el => {
     el.removeAttribute('contenteditable');
-    if(el.dataset && el.dataset.path) el.removeAttribute('data-path');
+  });
+  const sp = document.getElementById('cvStylePanel');
+  if(sp) sp.classList.remove('show');
+}
+/* ---- Auto-detección: marca TODOS los objetos visuales como capas ---- */
+function cvBuildLayers(){
+  document.querySelectorAll('#siteRoot [data-obj]').forEach(layer => {
+    layer.classList.add('cv-layer');
+    const st = siteCanvasGet(layer.dataset.obj);
+    cvApply(layer, st);
   });
 }
-/* Escribe el texto editado en siteConfig siguiendo la ruta data-path.
-   Ej: "hero.title" → siteConfig.hero.title = texto.
-   También sincroniza el input del panel lateral si existe (para que
-   "Guardar cambios" tenga el valor). La ruta con punto se convierte a
-   el id del editor: sf_hero__title (puntos → __). */
+/* ---- Selección ---- */
+function cvSelect(objId){
+  _cvSel = objId;
+  document.querySelectorAll('#siteRoot [data-obj]').forEach(l => {
+    l.classList.toggle('sel', l.dataset.obj === objId);
+  });
+  const sp = document.getElementById('cvStylePanel');
+  if(!sp) return;
+  if(!objId){ sp.classList.remove('show'); return; }
+  sp.classList.add('show');
+  const st = siteCanvasGet(objId);
+  const fEl = sp.querySelector('[data-cv-sp="font"]');
+  const sEl = sp.querySelector('[data-cv-sp="size"]');
+  const cEl = sp.querySelector('[data-cv-sp="color"]');
+  const aEl = sp.querySelector('[data-cv-sp="align"]');
+  const tEl = sp.querySelector('[data-cv-sp="text"]');
+  if(fEl) fEl.value = st.font || 'Inter';
+  if(sEl) sEl.value = st.fontSize || 16;
+  if(cEl) cEl.value = st.color || '#17202A';
+  if(aEl) aEl.value = st.align || 'left';
+  if(tEl){
+    const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(objId) + '"]');
+    const tx = layer && layer.querySelector('[data-cv="text"]');
+    tEl.value = tx ? (tx.innerText || '') : '';
+  }
+  sp.querySelectorAll('.sp-anim').forEach(b => b.classList.toggle('on', b.dataset.anim === (st.anim || '')));
+  sp.querySelector('[data-cv-sp="bold"]').classList.toggle('on', !!st.bold);
+  sp.querySelector('[data-cv-sp="italic"]').classList.toggle('on', !!st.italic);
+}
+function cvSelectReset(){ cvSelect(null); }
+/* ---- Drag: mover (translate), size (w/h), rotar ---- */
+function cvDragStart(ev, layer){
+  const st = siteCanvasGet(layer.dataset.obj);
+  const rect = layer.getBoundingClientRect();
+  _cvDrag = {
+    layer,
+    startX: ev.clientX, startY: ev.clientY,
+    origX: st.x || 0, origY: st.y || 0,
+    origW: st.w || rect.width, origH: st.h || rect.height,
+    origRot: st.rotate || 0,
+    mode: 'move',
+    rect
+  };
+  ev.preventDefault();
+}
+function cvDragMove(ev){
+  if(!_cvDrag || !siteLiveEdit) return;
+  _cvMoved = true;
+  const d = _cvDrag;
+  const dx = ev.clientX - d.startX;
+  const dy = ev.clientY - d.startY;
+  const st = siteCanvasGet(d.layer.dataset.obj);
+  if(d.mode === 'move'){
+    /* SNAP a múltiplos de 5px: mantiene los objetos ALINEADOS y organizados,
+       evitando posiciones desordenadas/milimétricas. */
+    st.x = Math.round((d.origX + dx) / 5) * 5;
+    st.y = Math.round((d.origY + dy) / 5) * 5;
+  } else if(d.mode === 'size'){
+    st.w = Math.round(Math.max(60, d.origW + dx) / 5) * 5;
+    st.h = Math.round(Math.max(24, d.origH + dy) / 5) * 5;
+  } else if(d.mode === 'rotate'){
+    const cx = d.rect.left + d.rect.width/2;
+    const cy = d.rect.top + d.rect.height/2;
+    /* ROTACIÓN CON SNAP: se ajusta a 5° en 5° (nada de ángulos raros) */
+    st.rotate = Math.round(Math.atan2(ev.clientY - cy, ev.clientX - cx) * 180 / Math.PI + 90) - (Math.round(Math.atan2(ev.clientY - cy, ev.clientX - cx) * 180 / Math.PI + 90) % 5);
+  }
+  cvApply(d.layer, st);
+  /* Al escalar, ajustar el tamaño de fuente proporcionalmente */
+  if(d.mode === 'size'){
+    const txt = d.layer.querySelector('[data-cv="text"]');
+    if(txt){
+      const base = st.fontSize || 16;
+      const ratio = (st.w || 100) / 100;
+      txt.style.fontSize = Math.round(base * Math.max(.5, Math.min(3, ratio))) + 'px';
+    }
+  }
+}
+function cvDragEnd(){ _cvDrag = null; }
+function cvDragTool(mode){
+  return function(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+    cvDragStartTool(ev, mode);
+  };
+}
+function cvDragStartTool(ev, mode){
+  if(!_cvSel) return;
+  const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(_cvSel) + '"]');
+  if(!layer) return;
+  const st = siteCanvasGet(_cvSel);
+  const rect = layer.getBoundingClientRect();
+  _cvDrag = {
+    layer, mode,
+    startX: ev.clientX, startY: ev.clientY,
+    origX: st.x || 0, origY: st.y || 0,
+    origW: st.w || rect.width, origH: st.h || rect.height,
+    origRot: st.rotate || 0,
+    rect
+  };
+}
+/* ---- Aplica el estilo de una capa (transform, tamaño, texto, anim) ---- */
+function cvApply(layer, st){
+  if(!layer) return;
+  /* transform: translate + rotate (NO cambia el flujo → proporciones ok) */
+  const t = [];
+  if(st.x || st.y) t.push('translate(' + (st.x||0) + 'px, ' + (st.y||0) + 'px)');
+  if(st.rotate) t.push('rotate(' + st.rotate + 'deg)');
+  layer.style.transform = t.length ? t.join(' ') : 'none';
+  if(st.w) layer.style.width = st.w + 'px';
+  /* Texto: estilos tipográficos */
+  const tx = layer.querySelector('[data-cv="text"]');
+  if(tx){
+    if(st.font) tx.style.fontFamily = "'" + st.font + "', sans-serif";
+    if(st.fontSize) tx.style.fontSize = st.fontSize + 'px';
+    if(st.color) tx.style.color = st.color;
+    tx.style.fontWeight = st.bold ? '700' : '400';
+    tx.style.fontStyle = st.italic ? 'italic' : 'normal';
+    tx.style.textAlign = st.align || 'left';
+  }
+  /* Animación */
+  layer.style.animation = st.anim ? (st.anim + ' 1.3s ease infinite') : '';
+}
+/* ---- Panel de estilo ---- */
+function ensureCvStylePanel(){
+  if(document.getElementById('cvStylePanel')) return;
+  const sp = document.createElement('div');
+  sp.id = 'cvStylePanel'; sp.className = 'cv-style-panel';
+  sp.innerHTML =
+    '<h5>✍️ Texto <span style="color:#6B7280;font-weight:400;text-transform:none;letter-spacing:0">(doble clic también)</span></h5>' +
+    '<div class="sp-row"><input type="text" data-cv-sp="text" placeholder="Escribí el texto aquí" style="flex:1;background:#0F172A;color:#fff;border:1px solid #334155;border-radius:8px;padding:6px 8px;font-size:12.5px;outline:none"></div>' +
+    '<h5>🎨 Estilo del objeto</h5>' +
+    '<div class="sp-row"><label style="font-size:11px;color:#9CA3AF">Fuente</label>' +
+      '<select data-cv-sp="font">' + CV_FONTS.map(f => '<option value="' + esc(f) + '">' + esc(f) + '</option>').join('') + '</select></div>' +
+    '<div class="sp-row"><label style="font-size:11px;color:#9CA3AF">Tamaño</label>' +
+      '<input type="number" data-cv-sp="size" min="10" max="120" step="1">' +
+      '<label style="font-size:11px;color:#9CA3AF">Color</label>' +
+      '<input type="color" data-cv-sp="color"></div>' +
+    '<div class="sp-row">' +
+      '<button class="sp-btn" data-cv-sp="bold" title="Negrita"><b>B</b></button>' +
+      '<button class="sp-btn" data-cv-sp="italic" title="Cursiva"><i>I</i></button>' +
+      '<select data-cv-sp="align" style="flex:1"><option value="left">Izquierda</option><option value="center">Centro</option><option value="right">Derecha</option></select></div>' +
+    '<h5 style="margin-top:6px">📐 Orden del objeto</h5>' +
+    '<div class="sp-row">' +
+      '<button class="sp-btn" data-cv-sp="moveup" title="Subir objeto (mantiene el orden)">⬆️ Arriba</button>' +
+      '<button class="sp-btn" data-cv-sp="movedown" title="Bajar objeto (mantiene el orden)">⬇️ Abajo</button>' +
+    '</div>' +
+    '<h5 style="margin-top:6px">✨ Animación</h5>' +
+    '<div class="sp-btns">' + CV_ANIMATIONS.map((a,i) => '<button class="sp-anim" data-anim="' + a + '">' + esc(CV_ANIM_NAMES[i]) + '</button>').join('') + '</div>';
+  document.body.appendChild(sp);
+  sp.addEventListener('input', function(ev){
+    if(!_cvSel) return;
+    const st = siteCanvasGet(_cvSel);
+    const k = ev.target.dataset.cvSp;
+    if(!k) return;
+    if(k === 'size') st.fontSize = Math.max(10, Math.min(120, parseFloat(ev.target.value) || 16));
+    else if(k === 'color') st.color = ev.target.value;
+    else if(k === 'font') st.font = ev.target.value;
+    else if(k === 'align') st.align = ev.target.value;
+    else if(k === 'text'){
+      /* Editar el contenido del texto desde el panel (como editor web) */
+      const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(_cvSel) + '"]');
+      const tx = layer && layer.querySelector('[data-cv="text"]');
+      if(tx){
+        tx.innerText = ev.target.value;
+        const path = tx.getAttribute('data-path');
+        if(path) siteInlineWriteText(path, ev.target.value);
+      }
+      return;
+    }
+    const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(_cvSel) + '"]');
+    cvApply(layer, st);
+  });
+  sp.addEventListener('click', function(ev){
+    if(!_cvSel) return;
+    const st = siteCanvasGet(_cvSel);
+    const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(_cvSel) + '"]');
+    const btn = ev.target.closest('.sp-anim');
+    if(btn){
+      st.anim = btn.dataset.anim || '';
+      sp.querySelectorAll('.sp-anim').forEach(b => b.classList.toggle('on', b.dataset.anim === st.anim));
+      cvApply(layer, st);
+      return;
+    }
+    const bold = ev.target.closest('[data-cv-sp="bold"]');
+    if(bold){
+      st.bold = !st.bold;
+      bold.classList.toggle('on', st.bold);
+      cvApply(layer, st);
+      return;
+    }
+    const ital = ev.target.closest('[data-cv-sp="italic"]');
+    if(ital){
+      st.italic = !st.italic;
+      ital.classList.toggle('on', st.italic);
+      cvApply(layer, st);
+      return;
+    }
+    const up = ev.target.closest('[data-cv-sp="moveup"]');
+    if(up){ cvReorder(_cvSel, 'up'); return; }
+    const down = ev.target.closest('[data-cv-sp="movedown"]');
+    if(down){ cvReorder(_cvSel, 'down'); return; }
+  });
+}
+/* ---- Reordenar objetos (mantiene el orden y la organización) ----
+   Mueve el elemento dentro de su contenedor: arriba = más temprano en el
+   documento (mayor prioridad visual), abajo = later. Funciona sobre el
+   contenedor padre de la capa. */
+function cvReorder(objId, dir){
+  const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(objId) + '"]');
+  if(!layer) return;
+  const parent = layer.parentElement;
+  if(!parent) return;
+  if(dir === 'up'){
+    const prev = layer.previousElementSibling;
+    if(prev) parent.insertBefore(layer, prev);
+  } else {
+    const next = layer.nextElementSibling;
+    if(next) parent.insertBefore(next, layer);
+  }
+  toast(dir === 'up' ? 'Objeto movido arriba' : 'Objeto movido abajo', 'ok');
+}
+/* ---- Escribe texto editado en siteConfig (con ruta) ---- */
 function siteInlineWriteText(path, text){
   if(!siteConfig) siteConfig = {};
   const parts = path.split('.');
@@ -11919,14 +12517,13 @@ function siteInlineWriteText(path, text){
     cur = cur[parts[i]];
   }
   cur[parts[parts.length-1]] = String(text == null ? '' : text).trim();
-  /* Sincronizar el input del editor lateral */
   const inputId = 'sf_' + path.replace(/\./g, '__');
   const inp = document.getElementById(inputId);
   if(inp && inp.value !== cur[parts[parts.length-1]]){
     inp.value = cur[parts[parts.length-1]];
   }
 }
-/* Abre el selector para reemplazar una imagen de la vista previa */
+/* ---- Subir imagen a Storage desde la vista previa ---- */
 function siteInlinePickImage(path){
   const inp = document.createElement('input');
   inp.type = 'file';
@@ -11943,7 +12540,8 @@ function siteInlinePickImage(path){
       const url = await ref.getDownloadURL();
       siteInlineWriteText(path, url);
       refreshSitePreview();
-      toast('Imagen actualizada', 'ok');
+      toast('Imagen subida a Storage ✓ (guardando…)', 'ok');
+      siteLiveAutoSave();
     }catch(e){
       console.error(e);
       toast('No se pudo subir la imagen: ' + (e && e.message ? e.message : 'error'), 'err');
