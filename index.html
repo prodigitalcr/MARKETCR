@@ -10613,13 +10613,7 @@ function renderPlanConfigUI(){
    Solo si el superadmin lo habilitó para su plan (por defecto: DESTACADO)
    y lo incluyó en la lista de negocios autorizados (si la lista existe). */
 function canUseBuscarClientes(){
-  let cfg = planConfig;
-  if(!cfg){
-    try{
-      const c = DEFAULT_PLAN_CONFIG;
-      cfg = c;
-    }catch(e){ cfg = DEFAULT_PLAN_CONFIG; }
-  }
+  let cfg = planConfig || (window.__planConfigLoaded ? planConfig : DEFAULT_PLAN_CONFIG);
   const plan = getActivePlanId();
   const minPlan = (cfg && cfg.buscarClientesPlanOnly) || 'destacado';
   const planOk = !PLAN_RANK[minPlan] || (PLAN_RANK[plan] || 1) >= PLAN_RANK[minPlan];
@@ -10632,6 +10626,8 @@ function canUseBuscarClientes(){
   return true;
 }
 async function openBuscarClientes(){
+  /* Asegurar que planConfig esté cargado (font: Firestore real, no defaults) */
+  try{ if(!planConfig && typeof loadPlanConfig === 'function') await loadPlanConfig(); }catch(e){}
   if(!canUseBuscarClientes()){
     toast('"Buscar clientes" es exclusivo del plan Destacado y solo está habilitado en tu negocio si el superadmin lo autorizó.', 'err');
     return;
@@ -11662,34 +11658,33 @@ function renderSiteFull(){
     + '<div class="sv-hero-media">' + (heroImg && !imgRemoved(heroImg) ? '<img' + svEdImg('hero.image') + ' src="' + esc(heroImg) + '" alt="' + esc(name) + '" loading="lazy">' : '<div style="aspect-ratio:4/3.2;border-radius:26px;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.3)"></div>')
     + '</div>'
     + '</div></section>';
-  /* VIDEOS: vertical tipo historia (grande) + horizontal HD — por enlace de
-     YouTube o archivo .mp4. Si no se cargan, no se muestra la sección. */
+  /* VIDEOS: 1 vertical tipo historia (9:16) + hasta 2 horizontales (16:9).
+     Cada uno acepta enlace de YouTube o video .mp4 subido a Storage sin
+     perder calidad. Si no se cargan, no se muestra la sección. */
   const vvUrl = (c.videoVertical || '').trim();
   const vhUrl = (c.videoHorizontal || '').trim();
-  if(vvUrl || vhUrl){
+  const vh2Url = (c.videoHorizontal2 || '').trim();
+  const vidCount = (vvUrl?1:0) + (vhUrl?1:0) + (vh2Url?1:0);
+  if(vidCount){
+    const vidEl = function(u, ratio, label, emoji){
+      const embed = youtubeEmbedUrl(u);
+      return '<div class="' + (ratio === '9/16' ? 'sv-video-v' : 'sv-video-h') + '" style="width:100%">'
+        + '<div style="aspect-ratio:' + ratio + ';border-radius:18px;overflow:hidden;background:#111;box-shadow:0 18px 40px rgba(0,0,0,.25)">'
+        + (embed
+            ? '<iframe src="' + esc(embed) + '" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>'
+            : '<video src="' + esc(u) + '" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>')
+        + '</div>'
+        + '<p style="text-align:center;font-size:12.5px;color:#64748B;margin-top:8px">' + emoji + ' ' + esc(label) + '</p></div>';
+    };
+    const gridCols = (vvUrl && (vhUrl || vh2Url)) ? '1fr 1.6fr' : '1fr';
     html += '<section class="sv-sec sv-sec-alt" id="svVideos"><div class="sv-inner">'
       + '<div class="sv-sec-head"><div class="sv-eyebrow">Videos</div><h2 class="sv-h2">Conocé más de nosotros</h2></div>'
-      + '<div class="sv-videos-grid" style="display:grid;grid-template-columns:' + (vvUrl && vhUrl ? '1fr 1.6fr' : '1fr') + ';gap:20px;align-items:start">';
-    if(vvUrl){
-      const embedV = youtubeEmbedUrl(vvUrl);
-      html += '<div class="sv-video-v" style="max-width:380px;margin:0 auto;width:100%">'
-        + '<div style="aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:#111;box-shadow:0 18px 40px rgba(0,0,0,.25)">'
-        + (embedV
-            ? '<iframe src="' + esc(embedV) + '" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>'
-            : '<video src="' + esc(vvUrl) + '" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>')
-        + '</div>'
-        + '<p style="text-align:center;font-size:12.5px;color:#64748B;margin-top:8px">📱 Video vertical</p></div>';
-    }
-    if(vhUrl){
-      const embedH = youtubeEmbedUrl(vhUrl);
-      html += '<div class="sv-video-h" style="width:100%">'
-        + '<div style="aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#111;box-shadow:0 18px 40px rgba(0,0,0,.25)">'
-        + (embedH
-            ? '<iframe src="' + esc(embedH) + '" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>'
-            : '<video src="' + esc(vhUrl) + '" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>')
-        + '</div>'
-        + '<p style="text-align:center;font-size:12.5px;color:#64748B;margin-top:8px">🎬 Video horizontal HD</p></div>';
-    }
+      + '<div class="sv-videos-grid" style="display:grid;grid-template-columns:' + gridCols + ';gap:20px;align-items:start">';
+    if(vvUrl) html += vidEl(vvUrl, '9/16', 'Video vertical', '📱');
+    /* Los verticales y horizontales se apilan; si hay 2 horizontales sin vertical, van en 2 columnas */
+    if(!vvUrl && vhUrl && vh2Url) html += '</div><div class="sv-videos-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-top:20px">';
+    if(vhUrl) html += vidEl(vhUrl, '16/9', 'Video horizontal 1', '🎬');
+    if(vh2Url) html += vidEl(vh2Url, '16/9', 'Video horizontal 2', '🎬');
     html += '</div></div></section>';
   }
   /* BENEFICIOS */
@@ -11885,6 +11880,15 @@ function cvAutoDetectLayers(){
     el.style.cursor = 'move';
     cvWrapTools(el, id);
   });
+  /* 5) ICONOS DEL PIE DE PÁGINA (redes sociales) editables/movibles */
+  root.querySelectorAll('.sv-footer .sv-social, .sv-social-row .sv-social').forEach(function(el){
+    if(el.closest('[data-obj]')) return;
+    const id = 'cvfic' + (++_cvObjSeq);
+    el.setAttribute('data-obj', id);
+    el.setAttribute('data-way', 'icon');
+    el.style.cursor = 'move';
+    cvWrapTools(el, id);
+  });
   /* Aplicar estilos guardados del canvas */
   root.querySelectorAll('[data-obj]').forEach(layer => {
     const st = siteCanvasGet(layer.dataset.obj);
@@ -12006,15 +12010,20 @@ function loadSiteDemo(){
   if(btn) showPanel('site', btn);
 }
 function siteFeaturedCard(p){
+  /* Botón COMPRAR → WhatsApp con el pedido (o la tienda si hay productId) */
   const buy = p.productId ? '<a class="sv-btn sv-btn-dark" href="' + esc(siteStoreUrl() + '&p=' + encodeURIComponent(p.productId)) + '">Comprar</a>'
     : '<a class="sv-btn sv-btn-dark" href="' + esc(waSite('Hola, quiero comprar "' + p.name + '" (' + (p.price || '') + ').')) + '" target="_blank" rel="noopener">Comprar</a>';
-  const info = p.productId ? '<a class="sv-btn sv-btn-ghost" href="' + esc(siteStoreUrl() + '&p=' + encodeURIComponent(p.productId)) + '">Ver producto</a>'
-    : '<a class="sv-btn sv-btn-ghost" href="' + esc(waSite('Hola, quiero más información de "' + p.name + '".')) + '" target="_blank" rel="noopener">Ver producto</a>';
+  /* Botón VER EN TIENDA → lleva al catálogo de la tienda */
+  const info = '<a class="sv-btn sv-btn-ghost" href="' + esc(siteStoreUrl() + (p.productId ? ('&p=' + encodeURIComponent(p.productId)) : '')) + '" target="_blank" rel="noopener">Ver en tienda</a>';
+  /* Botón 3: ENLACE PERSONALIZABLE — el admin define la URL y el texto desde
+     el editor en vivo (deja el campo p.link vacío para ocultarlo). */
+  const linkBtn = (p.link && String(p.link).trim())
+    ? '<a class="sv-btn sv-btn-ghost sv-btn-custom" href="' + esc(p.link) + '" target="_blank" rel="noopener" style="border-color:var(--site-acc);color:var(--site-pd)">' + esc(p.linkLabel || 'Descubrir') + '</a>'
+    : '';
   return '<div class="sv-card"><div class="sv-card-media">' + (p.tag ? '<span class="sv-tag">' + esc(p.tag) + '</span>' : '') + simg(p.image, p.name, '') + '</div>'
     + '<div class="sv-card-body"><h3>' + esc(p.name) + '</h3><p class="sv-card-desc">' + esc(p.desc || '') + '</p>'
     + '<div class="sv-price-row">' + (p.old ? '<span class="sv-price-old">' + esc(p.old) + '</span>' : '') + '<span class="sv-price">' + esc(p.price || '') + '</span></div>'
-    + '<div class="sv-card-actions">' + info + buy
-    + '<a class="sv-btn sv-btn-ghost" style="padding:10px;flex:0 0 auto" href="' + esc(waSite('Hola, quiero información de "' + p.name + '".')) + '" target="_blank" rel="noopener" aria-label="WhatsApp">' + si('wa') + '</a>'
+    + '<div class="sv-card-actions">' + buy + info + linkBtn
     + '</div></div></div>';
 }
 function submitSiteForm(f){
@@ -12120,9 +12129,10 @@ const SITE_EDITOR_SIMPLE = [
     { k:'hero.sub', l:'Subtítulo', t:'textarea' },
     { k:'hero.image', l:'Imagen de portada (URL)', t:'url' }
   ]},
-  { g:'🎬 Videos', f:[
-    { k:'videoVertical', l:'Video VERTICAL tipo historia (YouTube o .mp4)', t:'url', h:'Formato 9:16 grande. Pegá el enlace de YouTube (https://youtube.com/watch?v=...) o .mp4' },
-    { k:'videoHorizontal', l:'Video HORIZONTAL en alta calidad (YouTube o .mp4)', t:'url', h:'Formato 16:9 HD. Pegá el enlace de YouTube (https://youtube.com/watch?v=...) o .mp4' }
+  { g:'🎬 Videos de la portada', f:[
+    { k:'videoVertical', l:'Video VERTICAL (9:16) — YouTube o .mp4', t:'url', h:'Formato historia. Pegá un enlace de YouTube o el archivo .mp4 que subiste' },
+    { k:'videoHorizontal', l:'Video HORIZONTAL 1 (16:9) — YouTube o .mp4', t:'url', h:'Formato HD. Pegá un enlace de YouTube o el archivo .mp4 que subiste' },
+    { k:'videoHorizontal2', l:'Video HORIZONTAL 2 (16:9) — YouTube o .mp4', t:'url', h:'Segundo video horizontal. Pegá un enlace de YouTube o el archivo .mp4 que subiste' }
   ]},
   { g:'Oferta especial', f:[
     { k:'offer.name', l:'Producto en oferta', t:'text' },
@@ -12162,7 +12172,7 @@ const SITE_EDITOR_SIMPLE = [
 const SITE_EDITOR_ROWS = [
   { k:'benefits', l:'Beneficios (propuesta de valor)', about:'La sección que se ve bajo la portada', cols:['icon','title','desc'], heads:['Icono (leaf, truck, chat, cart…)','Título','Descripción'] },
   { k:'categories', l:'Categorías', about:'Se conectan al catálogo real de la tienda', cols:['name','desc','image','tag'], heads:['Nombre','Descripción','Imagen (URL)','Etiqueta (opcional)'] },
-  { k:'featured', l:'Productos destacados', about:'Se muestran en el sitio. Si ponés el ID del producto real, los botones llevan a su ficha', cols:['name','desc','price','old','image','tag','productId'], heads:['Nombre','Descripción','Precio','Precio anterior','Imagen (URL)','Etiqueta','ID de producto en tienda'] },
+  { k:'featured', l:'Productos destacados', about:'Se muestran en el sitio. Si ponés el ID del producto real, los botones llevan a su ficha. En el botón ENLACE definís la URL y el texto que el admin personaliza', cols:['name','desc','price','old','image','tag','productId','link','linkLabel'], heads:['Nombre','Descripción','Precio','Precio anterior','Imagen (URL)','Etiqueta','ID de producto','Enlace personalizado (URL)','Texto del enlace'] },
   { k:'whyUs', l:'Por qué elegirnos', about:'Razones de confianza', cols:['icon','title','desc'], heads:['Icono','Título','Descripción'] },
   { k:'testimonials', l:'Testimonios', about:'Comentarios de clientes', cols:['name','photo','comment','stars'], heads:['Nombre','Foto (URL, opcional)','Comentario','Estrellas (1-5)'] }
 ];
@@ -12176,6 +12186,47 @@ function siteEditorFieldHTML(f, val, pf){
   const isImg = f.t === 'url' && /(image|photo|logoUrl)$/.test(f.k || pf);
   const up = isImg ? '<div class="sf-img"><button class="sf-up" type="button" title="Subir foto (JPG o PNG)" onclick="sitePickImage(\'' + id + '\')">&#128247;</button><img class="sf-preview" src="' + valS + '" alt="" loading="lazy" onerror="this.style.display=\'none\'"></div>' : '';
   return '<div class="sf-field"><label>' + esc(f.l) + '</label>' + up + '<input type="' + (f.t||'text') + '" id="' + id + '" value="' + valS + '">' + (f.h ? '<div class="sf-hint">' + esc(f.h) + '</div>' : '') + '</div>';
+}
+/* Botón "Subir video" para los campos de video del editor del landing.
+   Sube el archivo de video a Storage SIN perder calidad (se guarda tal cual)
+   y deja la URL pública en el input correspondiente. */
+function siteEditorVideoUploadBtn(key){
+  if(!key || ['videoVertical','videoHorizontal','videoHorizontal2'].indexOf(key) === -1) return '';
+  const id = 'sf_' + key.replace(/\./g,'__');
+  return '<button type="button" class="btn-ghost" style="width:auto;padding:7px 12px;font-size:12.5px;margin-top:6px" onclick="siteUploadVideo(\'' + id + '\')">🎥 Subir video (.mp4)</button>';
+}
+function siteUploadVideo(target){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'video/mp4,video/webm,video/*';
+  inp.onchange = async function(){
+    const f = inp.files && inp.files[0];
+    if(!f) return;
+    if(!/video\/(mp4|webm|quicktime|mov)/i.test((f.type||'')) && !/\.(mp4|webm|mov)$/i.test((f.name||''))){
+      toast('Subí un video en formato .mp4, .webm o .mov', 'err'); return;
+    }
+    if(f.size > 180 * 1024 * 1024){ toast('El video es muy pesado (máx 180 MB). Comprimilo antes o usá un enlace de YouTube.', 'err'); return; }
+    toast('Subiendo video… (sin perder calidad)', 'ok');
+    try{
+      if(typeof firebase === 'undefined' || !firebase.storage) throw new Error('Storage no disponible');
+      const ext = (f.name.match(/\.[a-z0-9]+$/i) || ['.mp4'])[0].toLowerCase();
+      const name = 'sites/' + (TENANT_ID || 'x') + '/vid-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6) + ext;
+      const ref = firebase.storage().ref(name);
+      /* Se sube el archivo ORIGINAL (sin recodificar) para no perder calidad */
+      await ref.put(f, { contentType: f.type || 'video/mp4', cacheControl: 'public,max-age=31536000' });
+      const url = await ref.getDownloadURL();
+      const el = document.getElementById(target);
+      if(el) el.value = url;
+      siteConfig = sitePreserveLive(readSiteEditor());
+      siteDirty = true;
+      siteLiveAutoSave();
+      toast('Video subido a Storage ✓ (guardando…)', 'ok');
+    }catch(e){
+      console.error(e);
+      toast('No se pudo subir el video: ' + ((e && e.message) || 'error'), 'err');
+    }
+  };
+  inp.click();
 }
 function loadSiteEditor(){
   /* ANTES de regenerar: volcar lo escrito en los inputs actuales a siteConfig
@@ -12194,13 +12245,18 @@ function loadSiteEditor(){
     html = siteThemesHTML();
     html += SITE_EDITOR_SIMPLE.map(function(grp){
       return '<div class="site-grp"><h4>' + esc(grp.g) + '</h4>'
-        + '<div class="f-row" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">' + grp.f.map(function(f){ return siteEditorFieldHTML(f, siteGet(c, f.k), f.k); }).join('') + '</div></div>';
+        + '<div class="f-row" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">' + grp.f.map(function(f){ return siteEditorFieldHTML(f, siteGet(c, f.k), f.k) + siteEditorVideoUploadBtn(f.k); }).join('') + '</div></div>';
     }).join('');
     html += '<div class="site-grp"><h4>Tipos de iconos disponibles</h4><div class="hint">Usalos en Beneficios y en “Por qué elegirnos”.</div><div style="display:flex;gap:8px;flex-wrap:wrap">' + SITE_EDITOR_ICONS.map(function(i){ return '<span style="display:inline-flex;align-items:center;gap:5px;background:#F7F9FB;border:1px solid #E8EDF2;border-radius:9px;padding:6px 10px;font-size:12px;font-weight:600">' + sk(i) + esc(i) + '</span>'; }).join('') + '</div></div>';
   } else if(siteSectionTab === 'listas'){
     html = SITE_EDITOR_ROWS.map(siteRowEditorHTML).join('');
   } else if(siteSectionTab === 'galeria'){
-    html = '<div class="site-grp"><h4>Galería de imágenes</h4><div class="hint">Subí fotos (JPG o PNG) con el botón de cámara 📷 o pegá la URL de una imagen. Una fila por foto, se muestran como grid ampliable.</div>' + renderSiteUrlRows(c.gallery || [])
+    html = '<div class="site-grp"><h4>Galería de imágenes</h4><div class="hint">Subí fotos (JPG o PNG) con el botón de cámara 📷 o pegá la URL de una imagen. Una fila por foto, se muestran como grid ampliable.</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+      + '<button class="btn-export" type="button" onclick="pickGalleryFolder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Subir carpeta de fotos</button>'
+      + '<button class="btn-ghost" type="button" onclick="pickGalleryPhotos()">Subir varias fotos</button>'
+      + '</div>'
+      + renderSiteUrlRows(c.gallery || [])
       + '<div class="sf-more"><button class="btn-ghost" type="button" style="width:auto;padding:9px 16px" onclick="addSiteUrlRow()">+ Más campos</button></div></div>';
   }
   root.innerHTML = html;
@@ -12259,6 +12315,64 @@ function addSiteUrlRow(){
 function renderSiteUrlRows(urls){
   const boxStr = urls.map(function(u, n){ return '<div class="sf-row" id="grow_' + n + '" style="grid-template-columns:1fr auto;align-items:center"><span class="sf-imgc"><input type="url" id="grow_' + n + '_url" value="' + esc(u) + '" placeholder="https://…/foto.jpg"><img class="sf-preview" src="' + esc(u) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'"></span><span style="display:flex;gap:6px;align-items:center"><button class="sf-up" type="button" style="width:auto;padding:6px 10px;font-size:13px" title="Subir foto (JPG o PNG)" onclick="sitePickImage(\'grow_' + n + '_url\')">&#128247;</button><button class="btn-ghost" type="button" style="width:auto;padding:7px 11px;color:var(--danger);font-weight:700" onclick="document.getElementById(\'grow_' + n + '\').remove()">Quitar</button></span></div>'; }).join('');
   return '<div id="sfList_gallery">' + boxStr + '</div>';
+}
+/* Seleccionar una CARPETA completa de fotos para la galería: se suben todas
+   a Storage (cada una se comprime pero sin perder demasiada calidad) y se
+   agregan automáticamente como filas. */
+function pickGalleryFolder(){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/jpeg,image/png';
+  inp.multiple = true;
+  inp.webkitdirectory = true;
+  inp.onchange = function(){ uploadGalleryFiles(inp.files, 'carpeta'); };
+  inp.click();
+}
+function pickGalleryPhotos(){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/jpeg,image/png';
+  inp.multiple = true;
+  inp.onchange = function(){ uploadGalleryFiles(inp.files, 'fotos'); };
+  inp.click();
+}
+async function uploadGalleryFiles(fileList, kind){
+  if(!fileList || !fileList.length) return;
+  const files = Array.prototype.slice.call(fileList).filter(function(f){ return /image\/(jpeg|png)/i.test((f.type||'')) || /\.(jpe?g|png)$/i.test(f.name||''); });
+  if(!files.length){ toast('No se encontraron imágenes JPG o PNG', 'err'); return; }
+  if(files.length > 40){ toast('Máximo 40 fotos por carga. Seleccioná una carpeta con menos archivos.', 'err'); return; }
+  toast('Subiendo ' + files.length + ' foto' + (files.length > 1 ? 's' : '') + '…', 'ok');
+  const created = [];
+  for(let i = 0; i < files.length; i++){
+    try{
+      const blob = await resizeSiteImage(files[i], 1600, 0.88);
+      if(typeof firebase === 'undefined' || !firebase.storage) throw new Error('Storage no disponible');
+      const name = 'sites/' + (TENANT_ID || 'x') + '/gal-' + Date.now() + '-' + i + '-' + Math.random().toString(36).slice(2, 6) + (blob.type === 'image/png' ? '.png' : '.jpg');
+      const ref = firebase.storage().ref(name);
+      await ref.put(blob, { contentType: blob.type, cacheControl: 'public,max-age=31536000' });
+      created.push(await ref.getDownloadURL());
+    }catch(e){ console.warn('Foto ' + (i+1) + ' falló:', e); }
+  }
+  if(!created.length){ toast('Ninguna foto se pudo subir (revisá permisos de Storage)', 'err'); return; }
+  /* Agregar cada una como fila nueva en la lista de galería */
+  const gallery = siteDeep(siteConfig && siteConfig.gallery ? siteConfig.gallery : []);
+  created.forEach(function(u){ gallery.push(u); });
+  siteConfig.gallery = gallery;
+  /* Regenerar las filas del editor (el contenedor es sfList_gallery) */
+  const box = document.getElementById('sfList_gallery');
+  if(box){ box.innerHTML = ''; gallery.forEach(function(u, n){ box.appendChild(siteGalleryRowEl(u, n)); }); }
+  siteDirty = true;
+  siteLiveAutoSave();
+  toast('Agregadas ' + created.length + ' foto' + (created.length > 1 ? 's' : '') + ' a la galería ✓', 'ok');
+}
+/* Crea el elemento DOM de una fila de galería (reutilizable) */
+function siteGalleryRowEl(u, n){
+  const el = document.createElement('div');
+  el.id = 'grow_' + n;
+  el.className = 'sf-row';
+  el.style.cssText = 'grid-template-columns:1fr auto;align-items:center';
+  el.innerHTML = '<span class="sf-imgc"><input type="url" id="grow_' + n + '_url" value="' + esc(u) + '" placeholder="https://…/foto.jpg"><img class="sf-preview" src="' + esc(u) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'"></span><span style="display:flex;gap:6px;align-items:center"><button class="sf-up" type="button" style="width:auto;padding:6px 10px;font-size:13px" title="Subir foto (JPG o PNG)" onclick="sitePickImage(\'grow_' + n + '_url\')">&#128247;</button><button class="btn-ghost" type="button" style="width:auto;padding:7px 11px;color:var(--danger);font-weight:700" onclick="document.getElementById(\'grow_' + n + '\').remove()">Quitar</button></span>';
+  return el;
 }
 function readSiteEditor(){
   if(!siteConfig) siteConfig = {};
@@ -12483,6 +12597,7 @@ function sitePreserveLive(cfg){
     });
     if(siteConfig.videoVertical && !cfg.videoVertical) cfg.videoVertical = siteConfig.videoVertical;
     if(siteConfig.videoHorizontal && !cfg.videoHorizontal) cfg.videoHorizontal = siteConfig.videoHorizontal;
+    if(siteConfig.videoHorizontal2 && !cfg.videoHorizontal2) cfg.videoHorizontal2 = siteConfig.videoHorizontal2;
     if(siteConfig.businessName && !cfg.businessName) cfg.businessName = siteConfig.businessName;
     if(siteConfig.tagline && !cfg.tagline) cfg.tagline = siteConfig.tagline;
     if(siteConfig.logoUrl && !cfg.logoUrl) cfg.logoUrl = siteConfig.logoUrl;
@@ -12561,6 +12676,22 @@ function enableSiteInlineEditing(){
     if(!siteLiveEdit) return;
     const layer = ev.target.closest('[data-obj]');
     if(!layer) return;
+    /* Iconos del pie de página (redes): doble clic para cambiar la URL */
+    if(layer.classList.contains('sv-social')){
+      ev.preventDefault();
+      const cur = layer.getAttribute('href') || '';
+      const n = prompt('URL del enlace de este icono (red social):', cur);
+      if(n !== null && n.trim()){
+        layer.setAttribute('href', n.trim());
+        /* Guardar en el canvas del objeto para que persista tras re-render */
+        const st = siteCanvasGet(layer.dataset.obj);
+        st.href = n.trim();
+        siteDirty = true;
+        siteLiveAutoSave();
+        toast('Enlace del icono actualizado ✓', 'ok');
+      }
+      return;
+    }
     const txt = layer.querySelector('[data-cv="text"]');
     if(txt){
       txt.contentEditable = 'true';
@@ -12583,6 +12714,9 @@ function enableSiteInlineEditing(){
   }, true);
   root.addEventListener('click', function(ev){
     if(!siteLiveEdit) return;
+    /* En modo edición, los enlaces (<a>) de capas NO navegan: se editan. */
+    const a = ev.target.closest('[data-obj] a, [data-obj][href]');
+    if(a){ ev.preventDefault(); ev.stopPropagation(); return; }
     /* Si el objeto se acaba de mover (drag), NO abrir el selector de imagen */
     if(_cvMoved) return;
     const img = ev.target.closest('img[data-cv="image"]');
@@ -12691,6 +12825,12 @@ function cvSelect(objId){
     const hex = sh.colorHex || '#000000';
     shc.value = /^#[0-9a-f]{6}$/i.test(hex) ? hex : '#000000';
   }
+  /* Enlace del objeto: sincronizar el campo */
+  const lEl = sp.querySelector('[data-cv-sp="link"]');
+  if(lEl){
+    const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(objId) + '"]');
+    lEl.value = st.link || (layer && layer.getAttribute('data-link')) || '';
+  }
 }
 function cvSelectReset(){ cvSelect(null); }
 /* ---- Drag: mover (translate), size (w/h), rotar ---- */
@@ -12774,6 +12914,11 @@ function cvApply(layer, st){
   layer.style.transform = t.length ? t.join(' ') : 'none';
   if(st.w) layer.style.width = st.w + 'px';
   if(st.h && st.h > 0) layer.style.height = st.h + 'px';
+  /* Enlace del objeto: aplicar el href guardado en el canvas (p. ej. iconos
+     del pie de página editados con doble clic). */
+  if(layer.tagName === 'A' && st.href) layer.setAttribute('href', st.href);
+  if(st.link) layer.setAttribute('data-link', st.link);
+  else if(layer.getAttribute('data-link')) layer.removeAttribute('data-link');
   /* Texto: estilos tipográficos */
   const tx = layer.querySelector('[data-cv="text"]');
   if(tx){
@@ -12820,6 +12965,9 @@ function ensureCvStylePanel(){
       '<button class="sp-btn" data-cv-sp="movedown" title="Bajar objeto (mantiene el orden)">⬇️ Abajo</button>' +
       '<button class="sp-btn" data-cv-sp="delobj" title="Eliminar objeto">🗑️</button>' +
     '</div>' +
+    '<h5 style="margin-top:6px">🔗 Enlace del objeto</h5>' +
+    '<div class="sp-row"><input type="url" data-cv-sp="link" placeholder="https://… (opcional)" style="flex:1;background:#0F172A;color:#fff;border:1px solid #334155;border-radius:8px;padding:6px 8px;font-size:12px;outline:none"></div>' +
+    '<div class="hint" style="font-size:10.5px;color:#6B7280;margin-top:2px">Si ponés un enlace, al hacer clic en este objeto (en la página publicada) se abrirá esa URL.</div>' +
     '<h5 style="margin-top:6px">🌫️ Sombra</h5>' +
     '<div class="sp-row">' +
       '<label style="font-size:11px;color:#9CA3AF">X</label><input type="number" data-cv-sp="shx" min="-50" max="50" step="1" style="width:48px">' +
@@ -12838,6 +12986,7 @@ function ensureCvStylePanel(){
       '<button class="sp-btn" data-cv-sp="addtext">TEXT</button>' +
       '<button class="sp-btn" data-cv-sp="addimg">📷</button>' +
       '<button class="sp-btn" data-cv-sp="added">● Círculo</button>' +
+      '<button class="sp-btn" data-cv-sp="addlink">🔗 Enlace</button>' +
     '</div>';
   document.body.appendChild(sp);
   sp.addEventListener('input', function(ev){
@@ -12849,6 +12998,26 @@ function ensureCvStylePanel(){
     else if(k === 'color') st.color = ev.target.value;
     else if(k === 'font') st.font = ev.target.value;
     else if(k === 'align') st.align = ev.target.value;
+    else if(k === 'link'){
+      /* Enlace del objeto superpuesto: al hacer clic en la página publicada
+         abre esa URL. Se guarda en st.link (para overlays) o en canvas. */
+      st.link = ev.target.value.trim();
+      const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(_cvSel) + '"]');
+      if(layer){
+        if(st.link){
+          if(siteConfig.overlays && siteConfig.overlays[_cvSel]){
+            layer.style.cursor = 'pointer';
+            layer.setAttribute('data-link', st.link);
+          }
+        } else {
+          layer.removeAttribute('data-link');
+          if(siteConfig.overlays && siteConfig.overlays[_cvSel]) layer.style.cursor = '';
+        }
+      }
+      siteDirty = true;
+      siteLiveAutoSave();
+      return;
+    }
     else if(k === 'text'){
       /* Editar el contenido del texto desde el panel (como editor web) */
       const layer = document.querySelector('#siteRoot [data-obj="' + CSS.escape(_cvSel) + '"]');
@@ -12925,6 +13094,8 @@ function ensureCvStylePanel(){
     if(addI){ cvAddOverlay('image'); return; }
     const addE = ev.target.closest('[data-cv-sp="added"]');
     if(addE){ cvAddOverlay('ellipse'); return; }
+    const addL = ev.target.closest('[data-cv-sp="addlink"]');
+    if(addL){ cvAddOverlay('link'); return; }
   });
 }
 /* ---- Agregar OBJETOS SUPERPUESTOS (texto, imagen, círculo) al landing ----
@@ -12939,9 +13110,11 @@ function cvAddOverlay(kind){
   const id = 'ov' + Date.now().toString(36);
   const ov = siteConfig.overlays[id] = {
     kind: kind,
-    x: 60, y: 60, w: 180, h: (kind === 'image' ? 135 : 60), rotate: 0,
-    font: 'Georgia', fontSize: 28, color: '#17202A', bold: true, italic: false, align: 'left',
-    text: (kind === 'text' ? 'Nuevo texto' : ''),
+    x: 60, y: 60, w: (kind === 'image' || kind === 'link') ? 200 : 180, h: (kind === 'image' ? 150 : (kind === 'link' ? 48 : 60)), rotate: 0,
+    font: 'Inter', fontSize: 16, color: '#ffffff', bold: true, italic: false, align: 'center',
+    text: (kind === 'text' ? 'Nuevo texto' : (kind === 'link' ? 'Ir al enlace' : '')),
+    link: '',
+    bg: (kind === 'link' ? '#17202A' : ''),
     shadow: { offX: 0, offY: 4, blur: 12, color: 'rgba(0,0,0,.35)', enabled: true }
   };
   sceneBuildOverlay(id);
@@ -12970,9 +13143,16 @@ function sceneBuildOverlay(id){
       : '<div data-cv="image" style="width:100%;height:100%;background:#E5E7EB;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px" onclick="event.stopPropagation();cvAddOverlayImage(\'' + id + '\')">📷</div>');
   } else if(ov.kind === 'ellipse'){
     el.innerHTML = '<div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#BE185D)"></div>';
+  } else if(ov.kind === 'link'){
+    /* OBJETO ENLACE: parece un botón y abre la URL definida (ov.link).
+       En la vista pública se vuelve clickable para navegar (data-link). */
+    el.innerHTML = '<div data-cv="text" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:' + esc(ov.bg || '#17202A') + ';border-radius:10px;color:' + esc(ov.color || '#fff') + ';font-family:' + esc(ov.font || 'Inter') + ',sans-serif;font-size:' + (ov.fontSize||16) + 'px;font-weight:700;cursor:pointer">' + esc(ov.text || 'Ir al enlace') + '</div>';
   } else {
     el.innerHTML = '<div data-cv="text">' + esc(ov.text || 'Texto') + '</div>';
   }
+  /* Cualquier objeto superpuesto puede tener un enlace (data-link) que se
+     abre al hacer clic en la vista pública. */
+  if(ov.link) el.setAttribute('data-link', ov.link);
   el.appendChild(cvToolSpan('cv-t-r'));
   el.appendChild(cvToolSpan('cv-t-r2'));
   el.appendChild(cvToolSpan('cv-t-r3'));
@@ -13144,6 +13324,16 @@ function siteReveal(){
   });
 }
 bindSiteLiveInputs();
+/* Clic en objetos superpuestos con enlace (OVerlays) en la vista pública:
+   si el objeto tiene data-link, se abre la URL. No aplica en edición. */
+document.addEventListener('click', function(ev){
+  if(ev.target.closest('.cv-tool')) return;
+  const ov = ev.target.closest('.cv-overlay-obj[data-link]');
+  if(ov && !document.body.classList.contains('site-live-edit')){
+    ev.preventDefault();
+    window.open(ov.getAttribute('data-link'), '_blank', 'noopener');
+  }
+});
 /* ---------- CREACIÓN AUTOMÁTICA DE LA LANDING ----------
    La plataforma arma la landing con la INFORMACIÓN REAL de la tienda:
    nombre, eslogan, logo, WhatsApp, categorías, productos y precios. */
