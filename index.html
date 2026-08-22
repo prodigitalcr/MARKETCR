@@ -1494,10 +1494,19 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
 /* Fondo dinámico (HTML) detrás del contenido del selector */
 .ts-dynamic-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .ts-dynamic-bg iframe{width:100%;height:100%;border:0;pointer-events:none;display:block}
+/* Fondo de imagen con movimiento (Ken Burns): sutil zoom + desplazamiento */
+.ts-bg-motion{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.ts-bg-motion img{width:100%;height:100%;object-fit:cover;animation:tsKenBurns 22s ease-in-out infinite alternate;will-change:transform}
+@keyframes tsKenBurns{
+  from{transform:scale(1) translate(0,0)}
+  to{transform:scale(1.12) translate(-1.5%,-1.5%)}
+}
 .tenant-selector{z-index:999}
 .tenant-selector .ts-inner{z-index:2}
 /* Overlay suave sobre el fondo para legibilidad del contenido */
 .tenant-selector::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(165deg,rgba(11,61,33,.62),rgba(10,45,28,.5) 55%,rgba(8,38,24,.62));pointer-events:none}
+/* Con imagen de fondo (Ken Burns) el overlay es más suave para lucirla */
+.tenant-selector[data-bg="1"]::before{background:linear-gradient(165deg,rgba(11,61,33,.5),rgba(10,45,28,.4) 55%,rgba(8,38,24,.5))}
 .tenant-selector[data-dyn="1"]{background:transparent}
 .tenant-selector[data-dyn="1"]::before{opacity:.4}
 .ts-leaf{position:absolute;top:-40px;right:-30px;width:260px;height:260px;opacity:.10;pointer-events:none}
@@ -3425,16 +3434,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <input class="f-input" id="saLandSubtitle" placeholder="Explorá las tiendas y profesionales de la plataforma…">
       </div>
       <div class="f-group" style="margin-top:10px">
-        <label>Imagen de fondo del hero (URL, opcional)</label>
-        <div class="sf-img"><button class="sf-up" type="button" title="Subir imagen" onclick="sitePickImage('saLandHero')">📷</button><img class="sf-preview" id="saLandHeroPrev" src="" alt="" loading="lazy" onerror="this.style.display='none'"></div>
-        <input class="f-input" id="saLandHero" placeholder="https://…/portada.jpg">
-      </div>
-      <div class="f-group" style="margin-top:8px">
-        <label>Subir imagen en ALTA RESOLUCIÓN (se comprime menos)</label>
-        <button type="button" class="btn-export" style="width:auto;padding:8px 14px;font-size:12.5px" onclick="pickHighResLandingHero()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>Subir fondo en alta resolución
-        </button>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Compresión mínima (máx 4000px, calidad alta). Ideal para fondos grandes sin pixelar.</div>
+        <label>Imagen de fondo del hero</label>
+        <div class="sf-img"><button class="sf-up" type="button" title="Subir imagen de fondo" onclick="pickHighResLandingHero()">📷</button><img class="sf-preview" id="saLandHeroPrev" src="" alt="" loading="lazy" onerror="this.style.display='none'"></div>
+        <input class="f-input" id="saLandHero" placeholder="https://…/portada.jpg (o subila con el botón 📷)">
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Subila con el botón 📷: se guarda en alta resolución (hasta 4000px, sin pixelar) y al mostrarse tendrá un efecto de movimiento suave (Ken Burns).</div>
       </div>
       <div class="f-group" style="margin-top:10px">
         <label>Fondo dinámico (archivo HTML) — opcional, va detrás del contenido</label>
@@ -10706,14 +10709,35 @@ function applyLandingConfig(){
     msg.style.display = 'inline-block';
   }
   /* Aplicar colores e imagen de fondo al contenedor */
-  if(l.heroImage){
-    ts.style.background = 'url("' + l.heroImage + '") center/cover no-repeat, linear-gradient(165deg,#0B3D21 0%,#0F5A30 55%,#0C4426 100%)';
-  }
+  applyLandingBgMotion(l);
   /* Color de acento y título sobre variables CSS */
   ts.style.setProperty('--yellow', (l.accentColor || '#FFD100'));
   ts.style.setProperty('--ts-title-color', (l.titleColor || '#FFFFFF'));
   /* Fondo dinámico (HTML) */
   applyDynamicBg(l);
+}
+/* Fondo con efecto Ken Burns (movimiento suave de zoom/desplazamiento).
+   Se inyecta como <img> animado detrás del contenido del selector. */
+function applyLandingBgMotion(l){
+  l = l || (planConfig && planConfig.landing) || DEFAULT_PLAN_CONFIG.landing || {};
+  const ts = document.getElementById('tenantSelector');
+  if(!ts) return;
+  let bg = document.getElementById('tsBgMotion');
+  if(l.heroImage){
+    if(!bg){
+      bg = document.createElement('div');
+      bg.id = 'tsBgMotion';
+      bg.className = 'ts-bg-motion';
+      /* insertar detrás del contenido, delante del fondo dinámico */
+      ts.insertBefore(bg, ts.firstChild);
+    }
+    bg.innerHTML = '<img src="' + esc(l.heroImage) + '" alt="">';
+    bg.style.display = '';
+    ts.setAttribute('data-bg', '1');
+  } else {
+    if(bg){ bg.style.display = 'none'; }
+    ts.removeAttribute('data-bg');
+  }
 }
 
 /* Subir imagen de fondo en ALTA RESOLUCIÓN (compresión mínima) */
@@ -10808,10 +10832,31 @@ function applyDynamicBg(l){
     f.setAttribute('loading', 'lazy');
     f.src = url;
     holder.appendChild(f);
+    /* Guardar referencia para enviarle el mouse (las partículas siguen el
+       cursor aunque el iframe tenga pointer-events:none). */
+    window.__tsDynFrame = f;
+    bindTsDynMouse();
     if(ts) ts.setAttribute('data-dyn', '1');
   } else {
     if(ts) ts.removeAttribute('data-dyn');
+    window.__tsDynFrame = null;
   }
+}
+/* Envía la posición del mouse (relativa al iframe) al fondo dinámico.
+   El iframe tiene pointer-events:none, así que el padre captura el mouse. */
+let _tsDynMouseBound = false;
+function bindTsDynMouse(){
+  if(_tsDynMouseBound) return;
+  _tsDynMouseBound = true;
+  document.addEventListener('mousemove', function(ev){
+    const f = window.__tsDynFrame;
+    const holder = document.getElementById('tsDynamicBg');
+    if(!f || !holder || !f.contentWindow) return;
+    const r = holder.getBoundingClientRect();
+    try{
+      f.contentWindow.postMessage({ tx: ev.clientX - r.left, ty: ev.clientY - r.top }, '*');
+    }catch(e){}
+  });
 }
 
 /* Negocios autorizados para "Buscar clientes": checkboxes pintados desde
@@ -13808,11 +13853,13 @@ async function bootPlatform(){
      activar modo automáticamente (sin necesidad de ?superadmin=1) */
   const user = auth.currentUser;
   const isSuperAdminByEmail = user && window.SUPERADMIN_EMAILS?.includes(user.email);
-  /* Superadmin por email SOLO si NO hay una tienda específica (?tienda=slug).
-     Si hay tienda en la URL, se carga esa tienda normal — así los enlaces
-     "Ver" / "Administrar" no redirigen al panel maestro. El superadmin puede
-     volver al panel con ?superadmin=1. */
-  if(isSuperAdminByEmail && !TENANT_ID){
+  /* Superadmin por email SOLO si la URL NO pide una tienda específica
+     (sin ?tienda= en absoluto). Si ?tienda= existe (aunque esté vacío),
+     se muestra SIEMPRE el landing principal con los negocios — así el enlace
+     ?tienda= nunca abre el panel maestro. El superadmin accede al panel con
+     ?superadmin=1. */
+  const urlHasTenant = new URLSearchParams(location.search).has('tienda');
+  if(isSuperAdminByEmail && !urlHasTenant){
     initSuperadminMode();
     return;
   }
@@ -13825,6 +13872,11 @@ async function bootPlatform(){
     return;
   }
   if(!TENANT_ID){
+    /* ?tienda= presente pero vacío → SIEMPRE el landing principal.
+       Limpiar cualquier estado de superadmin que pudiera haber quedado. */
+    isSuperadminMode = false;
+    isSuperadminSession = false;
+    document.body.classList.remove('superadmin-mode');
     renderTenantSelector();
     return;
   }
