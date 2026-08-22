@@ -1039,22 +1039,22 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 .sv-social{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--site-soft);color:var(--site-pd);transition:.18s;cursor:pointer}
 .sv-social:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(23,32,42,.14)}
 .sv-social svg{width:17px;height:17px}
-/* ----- footer ----- */
-.sv-footer{background:#0E1420;color:#B9C2CF;margin-top:20px}
-.sv-footer-inner{max-width:1200px;margin:0 auto;padding:64px 24px 30px;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px}
-.sv-f-brand{display:flex;align-items:center;gap:11px;color:#fff;font-weight:800;font-size:17px;margin-bottom:12px}
-.sv-f-logo{width:38px;height:38px;border-radius:10px;object-fit:cover}
-.sv-f-logo-ph{width:38px;height:38px;border-radius:10px;background:var(--site-p);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:16px}
-.sv-footer p{font-size:14px;line-height:1.6;color:#9AA6B5;margin:0}
-.sv-f-col h4{color:#fff;font-size:14px;letter-spacing:.6px;text-transform:uppercase;margin:0 0 14px}
-.sv-f-col a{display:flex;gap:8px;align-items:center;color:#9AA6B5;text-decoration:none;font-size:14px;padding:5px 0}
-.sv-f-col a:hover{color:#fff;gap:11px}
-.sv-footer-social{display:flex;gap:10px}
-.sv-footer-social .sv-social{background:rgba(255,255,255,.08);color:#fff}
-.sv-f-legal{border-top:1px solid rgba(255,255,255,.08);margin-top:44px;padding-top:22px;display:flex;flex-wrap:wrap;gap:10px 26px;align-items:center;justify-content:space-between;font-size:13px;color:#7E8A99}
-.sv-f-legal a{color:#7E8A99;text-decoration:none}
-.sv-f-legal a:hover{color:#fff}
-.sv-f-marketcr{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:7px 14px;font-weight:600;color:#D7DEE8}
+/* ----- footer (sutil y pequeño, color editable) ----- */
+#siteView{--footer-bg:#0E1420;--footer-text:#9AA6B5;--footer-strong:#D7DEE8;--footer-accent:var(--site-acc)}
+.sv-footer{background:var(--footer-bg);color:var(--footer-text);margin-top:20px;font-size:13px}
+.sv-footer-inner{max-width:1200px;margin:0 auto;padding:36px 24px 20px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:32px}
+.sv-f-brand{display:flex;align-items:center;gap:9px;color:var(--footer-strong);font-weight:800;font-size:15px;margin-bottom:8px}
+.sv-f-logo{width:30px;height:30px;border-radius:8px;object-fit:cover}
+.sv-f-logo-ph{width:30px;height:30px;border-radius:8px;background:var(--site-p);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+.sv-footer p{font-size:12.5px;line-height:1.55;color:var(--footer-text);margin:0}
+.sv-f-col h4{color:var(--footer-strong);font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;margin:0 0 10px}
+.sv-f-col a{display:flex;gap:7px;align-items:center;color:var(--footer-text);text-decoration:none;font-size:12.5px;padding:3px 0}
+.sv-f-col a:hover{color:var(--footer-strong)}
+.sv-footer-social{display:none}
+.sv-f-legal{border-top:1px solid rgba(255,255,255,.07);margin-top:26px;padding-top:14px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--footer-text);opacity:.85}
+.sv-f-legal a{color:var(--footer-text);text-decoration:none}
+.sv-f-legal a:hover{color:var(--footer-strong)}
+.sv-f-marketcr{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:5px 11px;font-weight:600;color:var(--footer-accent);font-size:11.5px}
 /* ----- modal galería + legal ----- */
 .sv-lightbox{position:fixed;inset:0;background:rgba(10,16,26,.92);z-index:90;display:none;align-items:center;justify-content:center;padding:24px}
 .sv-lightbox.show{display:flex}
@@ -11192,7 +11192,8 @@ const SITE_DEFAULTS = {
   },
   footer: {
     about: 'Tu espacio a un mensaje de distancia. Productos de calidad, entrega a domicilio y atención personalizada.',
-    notice: 'Comercio asociado a MARKET CR'
+    notice: 'Comercio asociado a MARKET CR',
+    bg: '#0E1420', text: '#9AA6B5', strong: '#D7DEE8', accent: '#FFD100'
   }
 };
 /* ==================== TEMAS PREESTABLECIDOS (5 plantillas) ====================
@@ -11623,6 +11624,11 @@ function renderSiteFull(){
     v.style.setProperty('--site-p', c.primaryColor || '#1B7A43');
     v.style.setProperty('--site-pd', c.secondaryColor || '#0F5A30');
     v.style.setProperty('--site-acc', c.accentColor || '#FFD100');
+    /* Colores del pie de página (editables por el administrador) */
+    if(c.footer && c.footer.bg) v.style.setProperty('--footer-bg', c.footer.bg);
+    if(c.footer && c.footer.text) v.style.setProperty('--footer-text', c.footer.text);
+    if(c.footer && c.footer.strong) v.style.setProperty('--footer-strong', c.footer.strong);
+    if(c.footer && c.footer.accent) v.style.setProperty('--footer-accent', c.footer.accent);
   }
   const heroImg = c.hero.image;
   const nav = '<a href="#svHero">Inicio</a><a href="#svAbout">Nosotros</a><a href="#svProducts">Productos</a><a href="#svCats">Categorías</a><a href="#svContact">Contacto</a>';
@@ -11791,21 +11797,15 @@ function renderSiteFull(){
     + '<p>' + esc(c.footer.about || c.about.text) + '</p></div>'
     + '<div class="sv-f-col"><h4>Navegación</h4><a href="#svHero">Inicio</a><a href="#svAbout">Nosotros</a><a href="#svProducts">Productos</a><a href="#svContact">Contacto</a></div>'
     + '<div class="sv-f-col"><h4>Contacto</h4>'
-    + (wa ? '<a href="' + esc(waSite('Hola.')) + '" target="_blank" rel="noopener">' + si('wa') + esc(wa) + '</a>' : '')
-    + (c.contact.phone ? '<a href="tel:' + esc(c.contact.phone) + '">' + si('phone') + esc(c.contact.phone) + '</a>' : '')
-    + (c.contact.email ? '<a href="mailto:' + esc(c.contact.email) + '">' + si('mail') + esc(c.contact.email) + '</a>' : '')
-    + (c.contact.address ? '<a href="#svContact">' + si('pin') + esc(c.contact.address) + '</a>' : '')
+    + (wa ? '<a href="' + esc(waSite('Hola.')) + '" target="_blank" rel="noopener">' + esc(wa) + '</a>' : '')
+    + (c.contact.phone ? '<a href="tel:' + esc(c.contact.phone) + '">' + esc(c.contact.phone) + '</a>' : '')
+    + (c.contact.email ? '<a href="mailto:' + esc(c.contact.email) + '">' + esc(c.contact.email) + '</a>' : '')
+    + (c.contact.address ? '<a href="#svContact">' + esc(c.contact.address) + '</a>' : '')
     + '</div>'
-    + '<div class="sv-f-col"><h4>Redes</h4><div class="sv-footer-social">'
-    + (c.contact.whatsapp ? '<a class="sv-social" href="' + esc(waSite('Hola.')) + '" target="_blank" rel="noopener" aria-label="WhatsApp">' + si('wa') + '</a>' : '')
-    + (c.contact.facebook ? '<a class="sv-social" href="' + esc(c.contact.facebook) + '" target="_blank" rel="noopener" aria-label="Facebook">' + si('fb') + '</a>' : '')
-    + (c.contact.instagram ? '<a class="sv-social" href="' + esc(c.contact.instagram) + '" target="_blank" rel="noopener" aria-label="Instagram">' + si('ig') + '</a>' : '')
-    + (c.contact.tiktok ? '<a class="sv-social" href="' + esc(c.contact.tiktok) + '" target="_blank" rel="noopener" aria-label="TikTok">' + si('tik') + '</a>' : '')
-    + '</div></div>'
     + '</div>'
     + '<div class="sv-footer-inner" style="padding-top:0"><div class="sv-f-legal" style="width:100%">'
     + '<span><a href="javascript:openSiteLegal(0)">Política de privacidad</a> · <a href="javascript:openSiteLegal(1)">Términos y condiciones</a> · © ' + new Date().getFullYear() + ' ' + esc(name) + '</span>'
-    + (c.footer.notice ? '<span class="sv-f-marketcr">' + si('globe') + esc(c.footer.notice) + '</span>' : '')
+    + (c.footer.notice ? '<span class="sv-f-marketcr">' + esc(c.footer.notice) + '</span>' : '')
     + '</div></div></footer>';
   root.innerHTML = html;
   applySiteSEO(c);
@@ -12153,7 +12153,11 @@ const SITE_EDITOR_SIMPLE = [
     { k:'cta.title', l:'Mensaje del CTA final', t:'text' },
     { k:'cta.sub', l:'Subtexto', t:'text' },
     { k:'footer.about', l:'Descripción del footer', t:'textarea' },
-    { k:'footer.notice', l:'Nota de MARKET CR', t:'text' }
+    { k:'footer.notice', l:'Nota de MARKET CR', t:'text' },
+    { k:'footer.bg', l:'Color de fondo del pie', t:'color', h:'El fondo del pie de página (oscuro por defecto)' },
+    { k:'footer.text', l:'Color del texto del pie', t:'color' },
+    { k:'footer.strong', l:'Color de títulos / logo', t:'color' },
+    { k:'footer.accent', l:'Color de acento del pie', t:'color' }
   ]},
   { g:'Contacto y redes', f:[
     { k:'contact.whatsapp', l:'WhatsApp (números, ej: 50688886666)', t:'text', h:'Vacío = usa el de Configuraciones' },
