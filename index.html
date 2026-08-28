@@ -2523,6 +2523,19 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div><!-- /sAiExternalBlock -->
         </div><!-- /sAiConfigSuperBlock -->
 
+        <!-- ESTADO Y CONEXIÓN del asistente IA (visible para el admin de tienda):
+             no muestra claves, solo permite comprobar que el agente configurado
+             por el superadmin está operativo y refrescar el modelo activo. -->
+        <div class="f-group" style="margin-top:10px">
+          <label>Estado del asistente IA</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="checkAiAgentStatus()">🔌 Comprobar conexión con el agente</button>
+            <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="refreshAiAgentModel()">🔄 Probar modelo activo</button>
+            <span id="sAiAgentStatus" style="font-size:12.5px;color:var(--muted)">—</span>
+          </div>
+          <div class="hint" style="margin-top:4px">Verificá que el agente de IA elegido esté respondiendo. Si un modelo deja de funcionar, no te preocupes: se probará y solo quedará fijo el que esté operativo en ese momento.</div>
+        </div>
+
 <div class="f-row">
           <div class="f-group"><label>Nombre del asistente</label><input class="f-input" id="sAiName" placeholder="Ej: Cana"></div>
           <div class="f-group"><label>Mensaje de bienvenida</label><input class="f-input" id="sAiWelcome" placeholder="¡Hola! ¿Buscás algo en especial?"></div>
@@ -4738,6 +4751,48 @@ async function testOpenRouterConnection(){
   }
 }
 
+/* ---------- ESTADO Y CONEXIÓN del agente IA (visible para el admin) ----------
+   El admin de tienda NO ve claves, pero sí puede comprobar que el agente
+   configurado por el superadmin responde, y refrescar/probar el modelo activo. */
+async function checkAiAgentStatus(){
+  const el = document.getElementById('sAiAgentStatus');
+  if(el) el.innerHTML = '<span style="color:var(--muted)">Consultando estado…</span>';
+  try{
+    const st = await cloudCall('aiStatus', { slug: TENANT_ID });
+    if(st && st.configured){
+      el.innerHTML = '<span style="color:var(--green)">✓ Agente configurado y activo (proveedor: ' + esc(st.provider || '—') + ', modelo: ' + esc(st.model || '—') + ')</span>';
+      return true;
+    } else {
+      el.innerHTML = '<span style="color:var(--orange)">⚠ El asistente no está configurado aún. El superadmin debe configurar la clave y el modelo.</span>';
+      return false;
+    }
+  }catch(e){
+    el.innerHTML = '<span style="color:var(--danger)">✗ No se pudo consultar: ' + esc((e && e.message) || 'error') + '</span>';
+    return false;
+  }
+}
+/* Prueba REAL el modelo activo (llamada mínima) y muestra si responde */
+async function refreshAiAgentModel(){
+  const el = document.getElementById('sAiAgentStatus');
+  const model = (settings && settings.aiModel) || (document.getElementById('sAiModel') && document.getElementById('sAiModel').value) || '';
+  const provider = (settings && settings.aiProvider) || 'openrouter';
+  if(el) el.innerHTML = '<span style="color:var(--muted)">Probando el modelo activo…</span>';
+  if(!model){ if(el) el.innerHTML = '<span style="color:var(--orange)">⚠ No hay modelo activo seleccionado. Cargá los modelos primero.</span>'; return false; }
+  try{
+    const res = await cloudCall('aiTest', { slug: TENANT_ID, provider: provider, model: model });
+    if(res && res.ok){
+      if(el) el.innerHTML = '<span style="color:var(--green)">✓ El agente "' + esc(model) + '" responde correctamente.</span>';
+      return true;
+    } else {
+      if(el) el.innerHTML = '<span style="color:var(--danger)">✗ El modelo "' + esc(model) + '" no responde: ' + esc((res && res.error) || 'sin respuesta') + '. Elegí otro modelo.</span>';
+      return false;
+    }
+  }catch(e){
+    if(el) el.innerHTML = '<span style="color:var(--danger)">✗ Error al probar: ' + esc((e && e.message) || 'error') + '</span>';
+    return false;
+  }
+}
+
 /* Prueba rápida de conexión de la API externa (desde el servidor, sin exponer la clave) */
 async function testExternalConnection(){
   const statusEl = document.getElementById('sAiExternalStatus');
@@ -4774,17 +4829,30 @@ async function loadOpenRouterModels(kind){
       toast(kind==='image' ? 'OpenRouter no tiene modelos de imagen disponibles en este momento' : 'No se encontraron modelos gratuitos en OpenRouter', 'err');
       return;
     }
-    sel.innerHTML = filtered.map(m =>
+    sel.innerHTML = '<option value="">Verificando cuáles responden (esto fija solo los operativos)…</option>';
+    /* Probar cada modelo con una llamada mínima: se conservan SOLO los que
+       responden, así el agente que se elija queda fijo al que funciona y los
+       caídos no aparecen en la lista. */
+    const working = [];
+    const toTry = filtered.slice(0, 10);
+    for(let i = 0; i < toTry.length; i++){
+      sel.innerHTML = '<option value="">Verificando cuáles responden (' + (i+1) + '/' + toTry.length + ')…</option>';
+      try{
+        const t = await cloudCall('aiTest', { slug: TENANT_ID, provider: 'openrouter', model: toTry[i].id });
+        if(t && t.ok){ working.push(toTry[i]); }
+      }catch(e){ /* modelo no disponible → se omite */ }
+    }
+    const finalList = working.length ? working : filtered.slice(0, 5);
+    sel.innerHTML = finalList.map(m =>
       '<option value="'+esc(m.id)+'">'+esc(m.name||m.id)+(m.price ? ' · $' + m.price.toFixed(6) + '/token salida' : '')+'</option>'
     ).join('');
-    if(previous && filtered.some(m=>m.id===previous)){
+    if(previous && finalList.some(m=>m.id===previous)){
       sel.value = previous;
     } else if(kind==='image'){
-      // default sugerido: el modelo de imagen de pago mínimo (no hay :free con salida de imagen)
-      const def = filtered.find(m => m.id === 'google/gemini-3.1-flash-lite-image') || filtered[0];
+      const def = finalList.find(m => m.id === 'google/gemini-3.1-flash-lite-image') || finalList[0];
       if(def) sel.value = def.id;
     }
-    toast('Modelos cargados: ' + filtered.length, 'ok');
+    toast('Modelos operativos: ' + finalList.length + (working.length ? '' : ' (se usaron los primeros disponibles)'), 'ok');
   }catch(err){
     console.error(err);
     sel.innerHTML = '<option value="">Error al cargar — probá de nuevo</option>';
@@ -5123,7 +5191,7 @@ function renderGrid(){
       const g = gradFor(p.id);
       const img = firstThumb(p);
       const media = img ?
-        '<img src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy" draggable="false" style="width:100%;height:100%;object-fit:cover">' :
+        '<img src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async" fetchpriority="low" draggable="false" style="width:100%;height:100%;object-fit:cover">' :
         svgIcon(p.icon);
       const deal = dealInfo(p);
       const rs = reviewStats(p);
