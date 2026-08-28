@@ -5225,6 +5225,7 @@ function uberClear(){
   ['uberDist','uberTime','uberPrice'].forEach(function(id){ const el=document.getElementById(id); if(el) el.textContent='—'; });
   const g = document.getElementById('uberGoBtn'); if(g) g.disabled = true;
 }
+/* Perfiles de demanda (multiplicador sobre la tarifa base) */
 async function uberComputeRoute(){
   if(!_uberA || !_uberB){ return; }
   try{
@@ -10976,7 +10977,7 @@ const DEFAULT_PLAN_CONFIG = {
        El negocio además debe tener plan Profesional o superior para verlo).
      - uberTariff: tarifas para el estimado simbólico (colones). */
   uberQuoteAllowed: [],
-  uberTariff: { base: 250, perKm: 350, perMin: 5 },
+  uberTariff: { base: 400, perKm: 550, perMin: 6 },
   /* UBICACIÓN FIJA (origen) por negocio para el cotizador: { slug: {lat,lng,label} }.
      La configura el superadministrador. */
   uberLocations: {}
@@ -11451,9 +11452,9 @@ function renderSaUberClientsChoices(){
 function loadUberConfigFields(){
   const id = function(x){ return document.getElementById(x); };
   const t = (planConfig && planConfig.uberTariff) || DEFAULT_PLAN_CONFIG.uberTariff || {};
-  if(id('saUberBase')) id('saUberBase').value = t.base || 250;
-  if(id('saUberPerKm')) id('saUberPerKm').value = t.perKm || 350;
-  if(id('saUberPerMin')) id('saUberPerMin').value = t.perMin || 5;
+  if(id('saUberBase')) id('saUberBase').value = t.base || 400;
+  if(id('saUberPerKm')) id('saUberPerKm').value = t.perKm || 550;
+  if(id('saUberPerMin')) id('saUberPerMin').value = t.perMin || 6;
 }
 /* Ubicaciones fijas de negocio (origen) — un input por negocio autorizado */
 function renderSaUberLocationsChoices(){
