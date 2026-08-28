@@ -230,6 +230,11 @@ body.no-scroll{overflow:hidden}
 .wa-float{position:fixed;bottom:22px;right:22px;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(37,211,102,.4);z-index:60;transition:.2s}
 .wa-float:hover{transform:scale(1.08)}
 .wa-float svg{width:30px;height:30px;color:#fff}
+/* Botón flotante del cotizador de mensajería Uber Flash */
+.uber-float{position:fixed;bottom:22px;right:86px;display:flex;align-items:center;gap:7px;background:#000;color:#fff;border-radius:999px;padding:10px 16px;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer;z-index:60;text-decoration:none}
+.uber-float:hover{transform:scale(1.05);background:#1a1a1a}
+.uber-float svg{width:19px;height:19px;color:#FFD100}
+@media (max-width:480px){.uber-float{right:70px;padding:9px 13px;font-size:12px}}
 
 .story-float{position:fixed;bottom:22px;left:22px;width:190px;aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:#111;box-shadow:0 10px 28px rgba(0,0,0,.35);z-index:59;display:none}
 .story-float.show{display:block}
@@ -607,7 +612,7 @@ textarea.f-input{resize:vertical;min-height:70px}
 /* ============ ADMIN ============ */
 #adminView{display:none;position:fixed;inset:0;background:var(--bg);z-index:200}
 body.in-admin #adminView{display:flex}
-body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float{display:none}
+body.in-admin #storeView,body.in-admin .wa-float,body.in-admin .story-float,body.in-admin .uber-float{display:none}
 .adm-sidebar{width:230px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0}
 .adm-brand-wrap{position:relative;border-bottom:1px solid var(--line)}
 .adm-brand{padding:18px;display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;cursor:pointer;transition:.15s}
@@ -1537,7 +1542,7 @@ body.in-admin .ai-float,body.in-admin .ai-panel{display:none}
   padding:64px 24px 90px;
 }
 body.selector-mode .tenant-selector{display:block}
-body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .ai-float,body.selector-mode .ai-panel{display:none}
+body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .uber-float,body.selector-mode .ai-float,body.selector-mode .ai-panel{display:none}
 .ts-inner{max-width:1180px;margin:0 auto;color:#fff;position:relative;display:flex;flex-direction:column;min-height:calc(100vh - 154px)}
 /* Fondo dinámico (HTML) detrás del contenido del selector */
 .ts-dynamic-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
@@ -1600,7 +1605,7 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .a
 /* ============ SUPERADMINISTRADOR (vista maestra de toda la plataforma) ============ */
 #superadminView{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto}
 body.superadmin-mode #superadminView{display:block}
-body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.superadmin-mode .wa-float,body.superadmin-mode .ai-float,body.superadmin-mode .ai-panel{display:none}
+body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.superadmin-mode .wa-float,body.superadmin-mode .uber-float,body.superadmin-mode .ai-float,body.superadmin-mode .ai-panel{display:none}
 .sa-wrap{max-width:1200px;margin:0 auto;padding:28px 24px 90px}
 .sa-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:14px;flex-wrap:wrap}
 .sa-header h1{font-family:var(--font-display);font-size:26px;font-weight:600}
@@ -1877,6 +1882,11 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 
 <a class="wa-float" id="waFloat" target="_blank" title="Escríbenos por WhatsApp" onclick="trackWAClick()">
   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-6.1c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.4-3c-.3-.4 0-.5.2-.8l.4-.5c.1-.2.1-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.9.9-1.1 2.2-.2 3.9a11.6 11.6 0 0 0 4.5 4.2c1.7.8 2.4.9 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.1-.5-.2z"/></svg>
+</a>
+<!-- Botón cotizador de mensajería Uber (visible si la tienda lo tiene activado) -->
+<a class="uber-float" id="uberFloat" style="display:none" onclick="openUberQuote()" title="Cotizar mensajería con Uber Flash">
+  <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+  <span>Mensajería</span>
 </a>
 
 <!-- ================= ASISTENTE DE COMPRAS IA ================= -->
@@ -2395,6 +2405,20 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <h4><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>WhatsApp del negocio</h4>
         <div class="desc">A este número llegarán los comprobantes de pago y consultas de clientes. Incluí el código de país (506 para Costa Rica).</div>
         <div class="f-group"><label>Número de WhatsApp (con código de país)</label><input class="f-input" id="sWa" placeholder="Ej: 50688888888" inputmode="tel"></div>
+      </div>
+
+      <div class="settings-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Ubicación del negocio</h4>
+        <div class="desc">Ingresá la dirección de tu negocio. Sirve para que el cliente calcule su ruta hasta tu local y para el cotizador de mensajería (origen del viaje).</div>
+        <div class="f-row">
+          <div class="f-group"><label>Dirección</label><input class="f-input" id="sUberAddress" placeholder="Ej: 100 m este del parque central, San José"></div>
+          <div class="f-group"><label>Buscar ubicación</label><button type="button" class="btn-export" style="width:auto;padding:9px 14px;font-size:12.5px" onclick="geocodeMyStore()">🔎 Buscar coordenadas</button></div>
+        </div>
+        <div class="f-row">
+          <div class="f-group" style="max-width:140px"><label>Latitud</label><input class="f-input" id="sUberLat" placeholder="9.9333"></div>
+          <div class="f-group" style="max-width:140px"><label>Longitud</label><input class="f-input" id="sUberLng" placeholder="-84.0999"></div>
+          <div class="hint" style="align-self:center">Escrito automáticamente al buscar la dirección. También podés copiarlas de Google Maps.</div>
+        </div>
       </div>
 
       <div class="settings-card">
@@ -3475,6 +3499,22 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <label style="font-size:12.5px;font-weight:700">Negocios autorizados (vacío = todos los que cumplan el plan)</label>
           <div id="saBuscarClientsList" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px"></div>
           <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Marcá a qué negocios le compartís esta herramienta. Si no marcás ninguno, la usan todos los que tienen el plan elegido.</div>
+        </div>
+      </div>
+      <div class="f-group" style="margin-top:14px">
+        <label style="font-size:12.5px;font-weight:700">🛵 Cotizador de mensajería Uber Flash (negocios autorizados)</label>
+        <div id="saUberClientsList" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px"></div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Los negocios marcados (con plan Profesional o superior) tendrán el botón "Mensajería" con mapa y estimado de Uber Flash. Si no marcás ninguno, no se activa en ningún negocio.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <div class="f-group" style="flex:1;min-width:110px"><label>Tarifa base ₡</label><input class="f-input" id="saUberBase" type="number" min="0" value="400"></div>
+          <div class="f-group" style="flex:1;min-width:110px"><label>Por km ₡</label><input class="f-input" id="saUberPerKm" type="number" min="0" value="550"></div>
+          <div class="f-group" style="flex:1;min-width:110px"><label>Por minuto ₡</label><input class="f-input" id="saUberPerMin" type="number" min="0" value="6"></div>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Ajustá las tarifas promedio para el estimado simbólico que ve el cliente.</div>
+        <div style="margin-top:10px">
+          <label style="font-size:12.5px;font-weight:700">📍 Ubicación fija del negocio (origen del viaje)</label>
+          <div id="saUberLocationsList" style="margin-top:8px;display:grid;gap:8px"></div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Pegá la dirección y presioná "Buscar" para fijar el origen. Es la ubicación de <b>retiro/pickup</b> que verá el cliente al cotizar.</div>
         </div>
       </div>
       <div id="saPlanConfigWrap" style="margin-top:12px">
@@ -5012,6 +5052,226 @@ function checkBasePath(){ // utilidad mínima
 function goToLandingRoot(){
   location.href = location.origin + checkBasePath() + '?tienda=';
 }
+
+/* ================= COTIZADOR DE MENSAJERÍA UBER FLASH =================
+   El cliente marca punto A (origen) y punto B (destino) en un mapa moderno
+   (Leaflet + OpenStreetMap, sin necesidad de API key). Se calcula la ruta
+   real (OSRM) y un estimado simbólico del costo de Uber Flash tarifado por
+   km + tarifa base. Botón final para ir a la app de Uber a realizar el viaje.
+   Disponible SOLO si la tienda lo tiene activado (superadmin) y plan >=
+   Profesional. */
+let _uberMap = null, _uberMode = 'A', _uberA = null, _uberB = null, _uberMarkers = {}, _uberRoute = null, _uberLeafCssOk = false, _uberOrigin = null;
+const UBER_TARIFF_DEFAULT = { base: 250, perKm: 350, perMin: 5 }; // colones aprox.
+let _uberTariff = UBER_TARIFF_DEFAULT;
+/* Ubicación fija del negocio (origen), definida por el administrador de la
+   tienda (settings.uberLocation). Por compatibilidad, si no existe, se usa
+   la que pudo configurar el superadmin (platform/config.uberLocations[slug]). */
+function uberOrigin(){
+  /* 1) Ubicación que ingresó el propio administrador de la tienda */
+  if(settings && settings.uberLocation && settings.uberLocation.lat && settings.uberLocation.lng){
+    return {
+      lat: settings.uberLocation.lat,
+      lng: settings.uberLocation.lng,
+      label: settings.uberLocation.address || (settings.storeName || 'Negocio'),
+      address: settings.uberLocation.address || ''
+    };
+  }
+  /* 2) Fallback: dirección del negocio en settings (solo address, sin coords) */
+  if(settings && settings.address){
+    return { lat: '', lng: '', address: settings.address, label: settings.address };
+  }
+  /* 3) Compatibilidad: ubicación configurada por el superadmin */
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  if(cfg && cfg.uberLocations && cfg.uberLocations[TENANT_ID]){
+    const o = cfg.uberLocations[TENANT_ID];
+    if(o.lat && o.lng) return { lat: o.lat, lng: o.lng, label: o.address || settings && settings.storeName, address: o.address || '' };
+  }
+  return null;
+}
+function uberIsEnabled(){
+  const cfg = planConfig || (window.__planConfigLoaded ? planConfig : DEFAULT_PLAN_CONFIG);
+  const allowed = (cfg && cfg.uberQuoteAllowed) || [];
+  if(!allowed.length) return false;
+  if(allowed.indexOf(TENANT_ID || '') === -1) return false;
+  const plan = getActivePlanId();
+  const rank = PLAN_RANK[plan] || 1;
+  if(rank < (PLAN_RANK['profesional'] || 2)) return false;
+  /* Cargar tarifas si el superadmin las cambió */
+  if(cfg && cfg.uberTariff) _uberTariff = cfg.uberTariff;
+  return true;
+}
+function ubQuery(){ /* mapa Leaflet (lazy) */ }
+function loadLeaflet(cb){
+  if(typeof L !== 'undefined'){ cb(); return; }
+  if(!_uberLeafCssOk){
+    _uberLeafCssOk = true;
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+  }
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  s.onload = cb;
+  document.head.appendChild(s);
+}
+function openUberQuote(){
+  const m = document.getElementById('uberQuoteModal');
+  if(!m) return;
+  if(!uberIsEnabled()){ toast('Este negocio no tiene activado el cotizador de mensajería.', 'err'); return; }
+  m.classList.add('show');
+  /* Mostrar nombre del negocio en el botón de compartir y en el origen */
+  const name = settings && settings.storeName ? settings.storeName : 'el negocio';
+  const shareBtn = document.getElementById('uberShareBtn');
+  if(shareBtn) shareBtn.innerHTML = '📍 Compartir ubicación de <b>' + esc(name) + '</b>';
+  const bizName = document.getElementById('uberBizName');
+  if(bizName) bizName.textContent = name;
+  loadLeaflet(function(){
+    try{
+      if(!_uberMap){
+        _uberMap = L.map('uberMap').setView(['9.944', '-84.111'], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(_uberMap);
+        _uberMap.on('click', function(e){ uberSetPoint(e.latlng.lat, e.latlng.lng); });
+      } else {
+        _uberMap.invalidateSize();
+      }
+      /* Ubicación fija del negocio (origen) */
+      const o = uberOrigin();
+      if(o && o.lat && o.lng){
+        _uberOrigin = { lat: parseFloat(o.lat), lng: parseFloat(o.lng), label: o.label || 'Punto de recogida' };
+        _uberA = _uberOrigin;
+        _uberMarkers['A'] = L.circleMarker([_uberA.lat, _uberA.lng], { radius: 10, color: '#fff', weight: 3, fillColor: '#1B7A43', fillOpacity: 1 }).addTo(_uberMap);
+        L.marker([_uberA.lat, _uberA.lng]).addTo(_uberMap).bindPopup('<b>' + esc(settings && settings.storeName ? settings.storeName : 'Negocio') + '</b><br>' + esc(o.label || 'Punto de recogida')).openPopup();
+        _uberMap.setView([_uberA.lat, _uberA.lng], 14);
+        const oi = document.getElementById('uberOriginInfo');
+        if(oi) oi.textContent = '📍 Origen: ' + (o.label || (settings && settings.storeName ? settings.storeName : 'Negocio'));
+      } else if(o && o.address){
+        /* Solo hay dirección: geocodificarla automáticamente */
+        const oi = document.getElementById('uberOriginInfo');
+        if(oi) oi.textContent = '📍 Origen: ' + o.address + ' (buscando coordenadas…)';
+        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(o.address))
+          .then(function(r){ return r.json(); })
+          .then(function(data){
+            if(data && data[0]){
+              _uberOrigin = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), label: o.address };
+              _uberA = _uberOrigin;
+              _uberMarkers['A'] = L.circleMarker([_uberA.lat, _uberA.lng], { radius: 10, color: '#fff', weight: 3, fillColor: '#1B7A43', fillOpacity: 1 }).addTo(_uberMap);
+              L.marker([_uberA.lat, _uberA.lng]).addTo(_uberMap).bindPopup('<b>' + esc(settings && settings.storeName ? settings.storeName : 'Negocio') + '</b><br>' + esc(o.address)).openPopup();
+              _uberMap.setView([_uberA.lat, _uberA.lng], 14);
+            } else {
+              if(oi) oi.textContent = '📍 Origen: ' + o.address + ' (no se encontraron coordenadas)';
+            }
+          }).catch(function(){});
+      } else {
+        const oi = document.getElementById('uberOriginInfo');
+        if(oi) oi.textContent = '📍 Origen: (el negocio aún no configuró su ubicación)';
+      }
+    }catch(e){ console.error(e); toast('No se pudo cargar el mapa', 'err'); }
+  });
+  uberClear();
+}
+function closeUberQuote(){
+  const m = document.getElementById('uberQuoteModal');
+  if(m) m.classList.remove('show');
+}
+function uberSetPoint(lat, lng){
+  /* El destino siempre es el punto que marca el cliente (GPS o clic) */
+  const key = 'B';
+  if(_uberMarkers[key]) _uberMap.removeLayer(_uberMarkers[key]);
+  _uberMarkers[key] = L.circleMarker([lat, lng], { radius: 10, color: '#fff', weight: 3, fillColor: '#DC2626', fillOpacity: 1 }).addTo(_uberMap);
+  _uberB = { lat, lng };
+  uberComputeRoute();
+}
+function uberUseMyLocation(){
+  if(!navigator.geolocation){ toast('Tu navegador no soporta geolocalización', 'err'); return; }
+  toast('Obteniendo tu ubicación…', 'ok');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    _uberMap.setView([lat, lng], 15);
+    uberSetPoint(lat, lng);
+    toast('Ubicación fijada como destino ✓', 'ok');
+  }, function(err){
+    console.error(err);
+    toast('No se pudo obtener tu ubicación: ' + (err.message || 'error'), 'err');
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
+function shareBusinessLocation(){
+  const o = _uberOrigin;
+  const name = settings && settings.storeName ? settings.storeName : 'el negocio';
+  const uberAddr = (settings && settings.uberLocation && settings.uberLocation.address) || (settings && settings.address) || '';
+  if(o && o.lat && o.lng && !isNaN(o.lat) && !isNaN(o.lng)){
+    const label = 'Ubicación de ' + name;
+    window.open('https://www.google.com/maps?q=' + o.lat + ',' + o.lng + '(' + encodeURIComponent(label) + ')', '_blank', 'noopener');
+    toast('Ubicación de ' + name + ' lista para compartir ✓', 'ok');
+  } else if(uberAddr){
+    window.open('https://www.google.com/maps/search/' + encodeURIComponent(uberAddr), '_blank', 'noopener');
+    toast('Abriendo mapa con la dirección del negocio', 'ok');
+  } else {
+    toast('El negocio no configuró su ubicación', 'err');
+  }
+}
+function uberClear(){
+  _uberB = null; _uberRoute = null;
+  if(_uberMap){
+    if(_uberMarkers.B) _uberMap.removeLayer(_uberMarkers.B);
+    _uberMarkers.B = null;
+    /* restaurar el marcador de origen si existe */
+    const o = uberOrigin();
+    if(o && !_uberMarkers.A){
+      _uberA = { lat: parseFloat(o.lat), lng: parseFloat(o.lng) };
+      _uberMarkers.A = L.circleMarker([_uberA.lat, _uberA.lng], { radius: 10, color: '#fff', weight: 3, fillColor: '#1B7A43', fillOpacity: 1 }).addTo(_uberMap);
+    }
+  }
+  ['uberDist','uberTime','uberPrice'].forEach(function(id){ const el=document.getElementById(id); if(el) el.textContent='—'; });
+  const g = document.getElementById('uberGoBtn'); if(g) g.disabled = true;
+}
+async function uberComputeRoute(){
+  if(!_uberA || !_uberB){ return; }
+  try{
+    const r = await fetch('https://router.project-osrm.org/route/v1/driving/' + _uberA.lng + ',' + _uberA.lat + ';' + _uberB.lng + ',' + _uberB.lat + '?overview=full&geometries=geojson');
+    const j = await r.json();
+    if(j && j.routes && j.routes[0]){
+      _uberRoute = j.routes[0];
+      const distKm = (_uberRoute.distance / 1000);
+      const mins = Math.round(_uberRoute.duration / 60);
+      /* Estimado simbólico Uber Flash: base + por km + por minuto */
+      const est = _uberTariff.base + distKm * _uberTariff.perKm + mins * _uberTariff.perMin;
+      document.getElementById('uberDist').textContent = distKm.toFixed(1) + ' km';
+      document.getElementById('uberTime').textContent = mins + ' min';
+      document.getElementById('uberPrice').textContent = fmt(Math.round(est));
+      const g = document.getElementById('uberGoBtn');
+      if(g) g.disabled = false;
+      /* dibujar la ruta en el mapa */
+      const geo = _uberRoute.geometry;
+      if(geo && geo.coordinates){
+        if(_uberRoute._line) _uberMap.removeLayer(_uberRoute._line);
+        _uberRoute._line = L.polyline(geo.coordinates.map(function(c){ return [c[1], c[0]]; }), { color: '#7C3AED', weight: 5, opacity: .8 }).addTo(_uberMap);
+        _uberMap.fitBounds(_uberRoute._line.getBounds(), { padding: [30,30] });
+      }
+    } else {
+      throw new Error('Sin ruta');
+    }
+  }catch(e){
+    document.getElementById('uberDist').textContent = '—';
+    document.getElementById('uberPrice').textContent = '—';
+    toast('No se pudo calcular la ruta', 'err');
+  }
+}
+function goUberRide(){
+  if(!_uberA || !_uberB){ toast('Fijá tu ubicación o destino en el mapa', 'err'); return; }
+  /* Deep link a UBER: pickup = negocio (origen), dropoff = cliente (destino) */
+  const url = 'https://m.uber.com/launch?action=ride&pickup[latitude]=' + _uberA.lat + '&pickup[longitude]=' + _uberA.lng + '&dropoff[latitude]=' + _uberB.lat + '&dropoff[longitude]=' + _uberB.lng + '&pickup[formatted_address]=' + encodeURIComponent(settings && settings.storeName ? settings.storeName : 'Negocio') + '&dropoff[formatted_address]=Mi ubicación';
+  window.open(url, '_blank', 'noopener');
+}
+/* Mostrar/ocultar el botón flotante del cotizador según plan y activación */
+async function refreshUberFloat(){
+  const b = document.getElementById('uberFloat');
+  if(!b) return;
+  try{ if(!planConfig && typeof loadPlanConfig === 'function') await loadPlanConfig(); }
+  catch(e){}
+  const activo = uberIsEnabled();
+  b.style.display = activo ? 'flex' : 'none';
+}
 function renderHeader(){
   document.getElementById('brandName').textContent = settings.storeName;
   const logoHTML = settings.logoUrl ? '<img src="' + esc(settings.logoUrl) + '" alt="Logo">' : logoSVG;
@@ -5029,6 +5289,7 @@ function renderHeader(){
     '<span class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span class="dot-open">Abierto</span> · ' + esc(settings.hours) + '</span>' +
     '<span class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>' + esc(settings.shipping) + '</span>';
   document.getElementById('shipHint').textContent = settings.shipping;
+  refreshUberFloat();
 }
 function renderChips(){
   const cats = ['Todos'].concat(settings.categories);
@@ -8322,6 +8583,9 @@ function loadSettingsForm(){
   document.getElementById('profFieldsWrap').style.display = settings.tipo === 'profesional' ? '' : 'none';
   document.getElementById('sSinpe').value = settings.sinpe;
   document.getElementById('sWa').value = settings.whatsapp;
+  document.getElementById('sUberAddress').value = (settings.uberLocation && settings.uberLocation.address) || '';
+  document.getElementById('sUberLat').value = (settings.uberLocation && settings.uberLocation.lat) || '';
+  document.getElementById('sUberLng').value = (settings.uberLocation && settings.uberLocation.lng) || '';
   document.getElementById('sWebLabel').value = settings.websiteLabel||'Sitio web';
   document.getElementById('sWebUrl').value = settings.websiteUrl||'';
   document.getElementById('sBingoLabel').value = settings.bingoLabel||'Bingo de Plantas';
@@ -9089,7 +9353,14 @@ aiEnabled: document.getElementById('sAiEnabled').checked,
     landingImages: bizImages.map(u=>u.trim()).filter(Boolean),
     tipo: document.getElementById('sTipoProf').checked ? 'profesional' : '',
     categoria: document.getElementById('sCategoriaProf').value.trim(),
-    servicios: document.getElementById('sServiciosProf').value.split(',').map(s=>s.trim()).filter(Boolean)
+    servicios: document.getElementById('sServiciosProf').value.split(',').map(s=>s.trim()).filter(Boolean),
+    /* Ubicación del negocio (origen del cotizador de mensajería) — la ingresa el
+       propio administrador de la tienda. */
+    uberLocation: {
+      address: document.getElementById('sUberAddress').value.trim(),
+      lat: document.getElementById('sUberLat').value.trim(),
+      lng: document.getElementById('sUberLng').value.trim()
+    }
   };
 try{
     await saveSettingsToDB(data);
@@ -10699,7 +10970,16 @@ const DEFAULT_PLAN_CONFIG = {
     text: 'Al contratar un plan de PRO.DIGITAL aceptás pagar la tarifa mensual indicada mediante SINPE Móvil. El plan se activa una vez verificado el comprobante por el equipo. Los precios y características pueden actualizarse; la renovación es automática y podés cancelar antes del próximo vencimiento siguiendo las políticas de la plataforma.',
     pdf: '',
     plans: {}
-  }
+  },
+  /* COTIZADOR DE MENSAJERÍA UBER FLASH:
+     - uberQuoteAllowed: slugs autorizados por el superadmin (vacío = ninguno.
+       El negocio además debe tener plan Profesional o superior para verlo).
+     - uberTariff: tarifas para el estimado simbólico (colones). */
+  uberQuoteAllowed: [],
+  uberTariff: { base: 250, perKm: 350, perMin: 5 },
+  /* UBICACIÓN FIJA (origen) por negocio para el cotizador: { slug: {lat,lng,label} }.
+     La configura el superadministrador. */
+  uberLocations: {}
 };
 
 let planConfig = null;
@@ -10746,6 +11026,31 @@ async function savePlanConfig(){
     if(el.value) allowed.push(el.value);
   });
   planConfig.buscarClientesAllowed = allowed;
+  /* Cotizador Uber Flash: negocios autorizados + tarifas */
+  const uAllowed = [];
+  document.querySelectorAll('#saUberClientsList input:checked').forEach(function(el){
+    if(el.value) uAllowed.push(el.value);
+  });
+  planConfig.uberQuoteAllowed = uAllowed;
+  const uT = planConfig.uberTariff = planConfig.uberTariff || {};
+  const num = function(x){ return Math.max(0, parseFloat(document.getElementById(x) && document.getElementById(x).value) || 0); };
+  uT.base = num('saUberBase');
+  uT.perKm = num('saUberPerKm');
+  uT.perMin = num('saUberPerMin');
+  /* Guardar ubicación fija (origen) por negocio autorizado */
+  const uLocs = planConfig.uberLocations = planConfig.uberLocations || {};
+  uAllowed.forEach(function(slug){
+    const addrEl = document.getElementById('saUberLoc_' + slug);
+    const latEl = document.getElementById('saUberLat_' + slug);
+    const lngEl = document.getElementById('saUberLng_' + slug);
+    if(addrEl || latEl || lngEl){
+      const a = addrEl ? addrEl.value.trim() : '';
+      const lat = latEl ? latEl.value : '';
+      const lng = lngEl ? lngEl.value : '';
+      if((lat && lng) || a){ uLocs[slug] = { address: a, lat: lat, lng: lng }; }
+      else delete uLocs[slug];
+    }
+  });
   const inputs = wrap.querySelectorAll('[data-plan-field]');
   const newPlans = [];
   const newPeriods = [];
@@ -11125,6 +11430,80 @@ function renderSaBuscarClientesChoices(){
       '<input type="checkbox" value="' + esc(slug) + '"' + (allowed.indexOf(slug) !== -1 ? ' checked' : '') + ' style="width:15px;height:15px"> ' + esc(name) + '</label>';
   }).join('');
 }
+/* Negocios autorizados para el cotizador de mensajería Uber Flash */
+function renderSaUberClientsChoices(){
+  const list = document.getElementById('saUberClientsList');
+  if(!list) return;
+  const allowed = (planConfig && planConfig.uberQuoteAllowed) || [];
+  const tenants = (typeof _saTenants !== 'undefined' && _saTenants) ? _saTenants : [];
+  if(!tenants.length){
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted)">Cargando lista de negocios…</div>';
+    return;
+  }
+  list.innerHTML = tenants.map(function(t){
+    const slug = t.id || '';
+    const name = (t.nombre || t.storeName || slug);
+    return '<label style="display:inline-flex;align-items:center;gap:6px;background:#F7F9FB;border:1px solid #E8EDF2;border-radius:9px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer">' +
+      '<input type="checkbox" value="' + esc(slug) + '"' + (allowed.indexOf(slug) !== -1 ? ' checked' : '') + ' style="width:15px;height:15px"> ' + esc(name) + '</label>';
+  }).join('');
+}
+/* Cargar tarifas y ubicaciones del cotizador en el panel */
+function loadUberConfigFields(){
+  const id = function(x){ return document.getElementById(x); };
+  const t = (planConfig && planConfig.uberTariff) || DEFAULT_PLAN_CONFIG.uberTariff || {};
+  if(id('saUberBase')) id('saUberBase').value = t.base || 250;
+  if(id('saUberPerKm')) id('saUberPerKm').value = t.perKm || 350;
+  if(id('saUberPerMin')) id('saUberPerMin').value = t.perMin || 5;
+}
+/* Ubicaciones fijas de negocio (origen) — un input por negocio autorizado */
+function renderSaUberLocationsChoices(){
+  const box = document.getElementById('saUberLocationsList');
+  if(!box) return;
+  const allowed = (planConfig && planConfig.uberQuoteAllowed) || [];
+  const locs = (planConfig && planConfig.uberLocations) || {};
+  const tenants = (typeof _saTenants !== 'undefined' && _saTenants) ? _saTenants : [];
+  const auths = tenants.filter(function(t){ return allowed.indexOf(t.id) !== -1; });
+  if(!auths.length){ box.innerHTML = '<div style="font-size:12px;color:var(--muted)">Primero marcá los negocios autorizados arriba.</div>'; return; }
+  box.innerHTML = auths.map(function(t){
+    const slug = t.id || '';
+    const name = (t.nombre || t.storeName || slug);
+    const loc = locs[slug] || {};
+    return '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+      '<b style="font-size:12px;min-width:120px">' + esc(name) + '</b>' +
+      '<input class="f-input" id="saUberLoc_' + esc(slug) + '" placeholder="Dirección del negocio (ej: EBAIS La Carpio, San José)" value="' + esc(loc.address || '') + '" style="flex:1;min-width:200px">' +
+      '<button type="button" class="btn-ghost" style="width:auto;padding:8px 12px;font-size:12px" onclick="geocodeUberLoc(\'' + esc(slug) + '\')">🔎 Buscar</button>' +
+      '<input class="f-input" id="saUberLat_' + esc(slug) + '" value="' + esc(loc.lat || '') + '" placeholder="lat" style="width:90px;padding:8px 10px">' +
+      '<input class="f-input" id="saUberLng_' + esc(slug) + '" value="' + esc(loc.lng || '') + '" placeholder="lng" style="width:90px;padding:8px 10px">' +
+      '</div>';
+  }).join('');
+}
+/* Geocodificar una dirección usando Nominatim (OSM) y llenar dos inputs */
+function geocodeAddr(addr, latId, lngId){
+  if(!addr){ toast('Escribí la dirección primero', 'err'); return; }
+  toast('Buscando ubicación…', 'ok');
+  fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr))
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data && data[0]){
+        document.getElementById(latId).value = data[0].lat;
+        document.getElementById(lngId).value = data[0].lon;
+        toast('Ubicación encontrada: ' + (data[0].display_name || '').slice(0, 60), 'ok');
+      } else { toast('No se encontró esa dirección', 'err'); }
+    })
+    .catch(function(){ toast('No se pudo buscar la dirección', 'err'); });
+}
+/* Geocodificar la ubicación del negocio (panel superadmin, por slug) */
+function geocodeUberLoc(slug){
+  const addrEl = document.getElementById('saUberLoc_' + slug);
+  if(!addrEl) return;
+  geocodeAddr(addrEl.value.trim(), 'saUberLat_' + slug, 'saUberLng_' + slug);
+}
+/* Geocodificar la ubicación del negocio (panel del admin de tienda) */
+function geocodeMyStore(){
+  const addrEl = document.getElementById('sUberAddress');
+  if(!addrEl) return;
+  geocodeAddr(addrEl.value.trim(), 'sUberLat', 'sUberLng');
+}
 function renderPlanConfigUI(){
   const wrap = document.getElementById('saPlanConfigWrap');
   if(!wrap || !planConfig) return;
@@ -11135,6 +11514,9 @@ function renderPlanConfigUI(){
   const bpEl = document.getElementById('saBuscarPlanOnly');
   if(bpEl && planConfig.buscarClientesPlanOnly) bpEl.value = planConfig.buscarClientesPlanOnly;
   renderSaBuscarClientesChoices();
+  renderSaUberClientsChoices();
+  loadUberConfigFields();
+  renderSaUberLocationsChoices();
   let html = '<div style="display:grid;gap:16px">';
   html += '<div><b style="font-size:14px">Planes disponibles</b><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:8px">';
   planConfig.plans.forEach((p,i)=>{
@@ -14352,6 +14734,38 @@ bootPlatform();
 /* La primera vez que el administrador entre y presione "Guardar cambios" en
    Configuraciones, se crea el documento tenants/{slug}/settings/store en Firestore. */
 </script>
+
+<!-- Modal: Cotizador de mensajería Uber Flash -->
+<div class="modal" id="uberQuoteModal" style="z-index:320">
+  <div class="modal-bg" onclick="closeUberQuote()"></div>
+  <div class="modal-card" style="max-width:680px">
+    <div class="modal-head">
+      <h3>🛵 Cotizar mensajería (Uber Flash)</h3>
+      <button class="close-x" onclick="closeUberQuote()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">El origen es la ubicación de <b id="uberBizName">el negocio</b>. Tocá <b>📲 Usar mi ubicación</b> para fijar el destino y ver el estimado de <b>Uber Flash</b>. También podés hacer clic en el mapa para elegir el destino.</p>
+      <div id="uberMap" style="width:100%;height:320px;border-radius:14px;overflow:hidden;border:1px solid var(--line)"></div>
+      <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn-dark" style="width:auto;padding:9px 14px;flex:1" onclick="uberUseMyLocation()">📲 Usar mi ubicación</button>
+        <button class="btn-ghost" style="width:auto;padding:9px 14px" onclick="uberClear()">🔄 Reiniciar</button>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px" id="uberOriginInfo">📍 Origen: —</div>
+      <div class="sum-box" style="margin:14px 0">
+        <div class="sum-line"><span>Distancia aproximada</span><span id="uberDist">—</span></div>
+        <div class="sum-line"><span>Tiempo estimado</span><span id="uberTime">—</span></div>
+        <div class="sum-line grand"><span>Estimado Uber Flash</span><span id="uberPrice">—</span></div>
+      </div>
+      <p class="hint" id="uberNote" style="text-align:center;font-size:11.5px">*Es un <b>estimado simbólico</b> basado en tarifas promedio. El precio final lo define Uber según zona y demanda del momento.</p>
+      <button class="btn-primary" id="uberGoBtn" style="width:100%" onclick="goUberRide()" disabled>
+        🚗 Realizar mi viaje en Uber
+      </button>
+      <button class="btn-ghost" id="uberShareBtn" style="width:100%;margin-top:8px" onclick="shareBusinessLocation()">
+        📍 Compartir ubicación de NOMBRE DEL NEGOCIO
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal: Pagar membresía -->
 <div class="modal" id="memPaymentModal" style="z-index:300">
