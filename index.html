@@ -3526,6 +3526,9 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <button class="btn-dark" style="width:auto;padding:10px 18px" onclick="openPlanTermsEditor()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9.5 14.5 12 17l2.5-2.5"/></svg>Editar información y términos de planes
         </button>
+        <button class="btn-ghost" style="width:auto;padding:10px 18px" onclick="openStripeDashboard()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;display:inline-block;vertical-align:-2px;margin-right:5px"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Ver estado de mi cuenta de pagos
+        </button>
       </div>
     </div>
 
@@ -10980,7 +10983,14 @@ const DEFAULT_PLAN_CONFIG = {
   uberTariff: { base: 400, perKm: 550, perMin: 6 },
   /* UBICACIÓN FIJA (origen) por negocio para el cotizador: { slug: {lat,lng,label} }.
      La configura el superadministrador. */
-  uberLocations: {}
+  uberLocations: {},
+  /* PAGOS INTERNACIONALES:
+     - payLinks: { planId: 'https://...' } — enlaces de cobro por plan que crea
+       el superadmin en SU plataforma de pagos (PayPal.me, Payoneer "Request a
+       Payment", Wise, o Stripe si lo consigue). El negocio paga desde ese enlace.
+     - payDash: URL del panel/página de su cuenta para ver el estado de cuenta. */
+  payLinks: {},
+  payDash: ''
 };
 
 let planConfig = null;
@@ -11078,6 +11088,14 @@ async function savePlanConfig(){
   // mergear con existentes para no perder ids/nombres
   planConfig.plans.forEach((p,i)=>{ if(newPlans[i]) Object.assign(p, newPlans[i]); });
   planConfig.periods.forEach((p,i)=>{ if(newPeriods[i]) Object.assign(p, newPeriods[i]); });
+  /* Guardar enlaces de pago internacional por plan + panel de la cuenta */
+  const sLinks = planConfig.payLinks = planConfig.payLinks || {};
+  planConfig.plans.forEach(function(p){
+    const el = document.getElementById('saStripeLink_' + p.id);
+    if(el) sLinks[p.id] = el.value.trim();
+  });
+  const dashEl = document.getElementById('saStripeDashboard');
+  if(dashEl) planConfig.payDash = dashEl.value.trim();
   try{
     await db.collection('platform').doc('config').set(planConfig, {merge:true});
     toast('Configuración de planes guardada', 'ok');
@@ -11090,6 +11108,12 @@ function resetPlanConfigDefaults(){
   planConfig = JSON.parse(JSON.stringify(DEFAULT_PLAN_CONFIG));
   renderPlanConfigUI();
   toast('Valores restaurados (recordá guardar)', 'ok');
+}
+/* Abre el dashboard de Stripe del superadmin (ver estado de cuenta).
+   Si no hay URL configurada, abre la página de PayPal. */
+function openStripeDashboard(){
+  const url = (planConfig && planConfig.payDash) ? planConfig.payDash.trim() : 'https://www.paypal.com/';
+  window.open(url, '_blank', 'noopener');
 }
 /* ---------- LANDING PRINCIPAL: guardar y cargar la portada del selector ---------- */
 async function saveLandingConfig(){
@@ -11541,6 +11565,22 @@ function renderPlanConfigUI(){
       '</div>';
   });
   html += '</div></div>';
+  /* PAGOS INTERNACIONALES (superadmin): enlaces por plan + panel de su cuenta */
+  html += '<div><b style="font-size:14px">💳 Pagos internacionales (PayPal / Payoneer / Wise)</b>' +
+    '<div style="font-size:12px;color:var(--muted);margin:4px 0 8px">Para cobrar fuera de Costa Rica, creá un enlace de cobro en tu cuenta de <b>PayPal</b> (paypal.me o "Request Money"), <b>Payoneer</b> (Request a Payment) o <b>Wise</b>, y pegá el enlace por plan. Los negocios verán el botón "Pagar con PayPal / tarjeta" además del SINPE. También podés agregar el enlace a tu cuenta para ver tu estado.</div>' +
+    planConfig.plans.map(function(p){
+      const link = (planConfig.payLinks && planConfig.payLinks[p.id]) || '';
+      return '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">' +
+        '<b style="font-size:12px;min-width:110px">' + esc(p.name) + '</b>' +
+        '<input class="f-input" id="saStripeLink_' + esc(p.id) + '" placeholder="https://paypal.me/tu-usuario | https://payoneer.com/..." value="' + esc(link) + '" style="flex:1;min-width:220px">' +
+        '</div>';
+    }).join('') +
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">' +
+      '<b style="font-size:12px;min-width:110px">Tu cuenta / estado</b>' +
+      '<input class="f-input" id="saStripeDashboard" placeholder="https://www.paypal.com/ | https://www.payoneer.com/" value="' + esc((planConfig.payDash || '')) + '" style="flex:1;min-width:220px">' +
+      '<a class="btn-ghost" style="width:auto;padding:8px 12px;font-size:12px" href="' + esc((planConfig.payDash || '#')) + '" target="_blank" rel="noopener">Abrir mi cuenta →</a>' +
+    '</div>' +
+  '</div>';
   html += '</div>';
   wrap.innerHTML = html;
   loadLandingConfigFields();
@@ -11823,8 +11863,49 @@ async function openMembershipPaymentModal(){
     return '<option value="'+p.id+'" data-months="'+p.months+'" data-discount="'+p.discount+'" data-total="'+total+'">'+esc(p.label)+' — '+fmt(total)+ (p.discount>0?' (ahorrás '+p.discount+'%)':'') +'</option>';
   }).join('');
   updateMemPayTotal();
+  /* Mostrar el botón de pago internacional si el superadmin configuró un link
+     de cobro (PayPal.me, Payoneer, Wise…) para este plan. */
+  const stripeBtn = document.getElementById('memStripeBtn');
+  if(stripeBtn){
+    const link = (cfg.payLinks && cfg.payLinks[currentPlan.id]) || '';
+    const enabled = !!link;
+    stripeBtn.style.display = enabled ? 'block' : 'none';
+    stripeBtn.href = link || '#';
+    if(enabled) stripeBtn.setAttribute('data-link', link);
+  }
   /* Mostrar los términos y condiciones (texto del superadmin + PDF opcional) */
   renderMembershipTermsLink();
+}
+/* Abre el enlace de pago de Stripe del plan (lo configura el superadmin).
+   Registra el pago como pendiente para que el superadmin lo apruebe. */
+function payWithStripe(){
+  const btn = document.getElementById('memStripeBtn');
+  if(!btn) return;
+  const link = btn.getAttribute('data-link');
+  if(!link){ toast('El superadmin aún no configuró el pago internacional para este plan', 'err'); return; }
+  const sel = document.getElementById('memPayPeriod');
+  const opt = sel && sel.options[sel.selectedIndex];
+  const periodId = opt ? opt.value : 'monthly';
+  /* Registrar intento de pago internacional en la colección de pagos */
+  try{
+    const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+    const t = TENANT_DATA || {};
+    const currentPlan = cfg.plans.find(p=>p.id===t.membershipPlan) || cfg.plans[0];
+    const months = opt ? parseInt(opt.dataset.months)||1 : 1;
+    tenantRef().collection('membershipPayments').add({
+      amount: (opt ? parseInt(opt.dataset.total)||0 : currentPlan.price),
+      period: periodId, months: months,
+      plan: currentPlan.id, planName: currentPlan.name,
+      method: 'PayPal internacional', status: 'pendiente',
+      date: new Date().toISOString(), reference: 'Pago internacional'
+    }).catch(function(e){ console.warn('No se registró el pago:', e); });
+  }catch(e){ console.warn('No se registró el pago:', e); }
+  /* Marcar pendiente de aprobación para que el superadmin active el plan */
+  try{
+    tenantRef().set({ planApprovalStatus: 'pendiente', estadoPago: 'pendiente' }, { merge:true }).catch(()=>{});
+  }catch(e){}
+  window.open(link, '_blank', 'noopener');
+  toast('Abriendo el enlace de pago… completá el pago para que te activemos el plan.', 'ok');
 }
 function closeMemPaymentModal(){ document.getElementById('memPaymentModal').classList.remove('show'); resetMemPayForm(); }
 /* Muestra el texto/enlace de los términos en el modal de pago */
@@ -14810,6 +14891,9 @@ bootPlatform();
         </label>
       </div>
       <button class="btn-primary" id="memPayConfirmBtn" onclick="processMembershipPayment()">Confirmar pago</button>
+      <button class="btn-export" id="memStripeBtn" style="width:100%;margin-top:8px;display:none" onclick="payWithStripe()">
+        💳 Pagar con PayPal / tarjeta (internacional)
+      </button>
       <p class="hint" style="text-align:center;margin-top:8px">Al confirmar se registra tu pago y se extiende tu membresía. El comprobante lo verificamos manualmente.</p>
     </div>
   </div>
