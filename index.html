@@ -1722,6 +1722,9 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 </head>
 <body>
 
+<!-- SDK de PayPal (bolsones de pago alojados) — se carga 1 sola vez por página -->
+<script src="https://www.paypal.com/sdk/js?client-id=BAAJONAw-87NQh8DWWyPrGWNQNj8qnMnWgFNh8jgqtSB34M5kuncUoUd2ODCggi8UU09yjjIqo3EcS8Cug&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
+
 
 <!-- ================= SELECTOR DE NEGOCIOS (ESTILO TREINTA) =================
      Se muestra cuando la URL no trae "?tienda=slug" (o el slug no existe /
@@ -10989,8 +10992,17 @@ const DEFAULT_PLAN_CONFIG = {
        el superadmin en SU plataforma de pagos (PayPal.me, Payoneer "Request a
        Payment", Wise, o Stripe si lo consigue). El negocio paga desde ese enlace.
      - payDash: URL del panel/página de su cuenta para ver el estado de cuenta. */
+  /* BOTONES DE PAGO PAYPAL HOSTED BUTTONS (plan → período → botón):
+     - Emprendedor: mensual YUZDRC8347WRL · trimestral EHXRKLZU2BTG2 · anual 6WUEDY8WY389C
+     - Profesional: mensual M3LSVWWH7ZUF8 · trimestral F7JYKDKJGS8DE · anual KAPMX24JYSXLQ
+     - Destacado:   mensual KX7ZAR7GSUNY2 · trimestral HZABGRZHKJ6YG · anual 5T7XHNPYY5JDG */
   payLinks: {},
-  payDash: ''
+  payDash: '',
+  paypalButtons: {
+    emprendedor: { monthly: 'YUZDRC8347WRL', quarterly: 'EHXRKLZU2BTG2', yearly: '6WUEDY8WY389C' },
+    profesional: { monthly: 'M3LSVWWH7ZUF8', quarterly: 'F7JYKDKJGS8DE', yearly: 'KAPMX24JYSXLQ' },
+    destacado:   { monthly: 'KX7ZAR7GSUNY2', quarterly: 'HZABGRZHKJ6YG', yearly: '5T7XHNPYY5JDG' }
+  }
 };
 
 let planConfig = null;
@@ -11840,6 +11852,12 @@ function resetMemPayForm(){
   document.getElementById('memPayRef').value = '';
   const a = document.getElementById('memAcceptTerms');
   if(a) a.checked = false;
+  const sinpe = document.getElementById('memMethodSinpe');
+  if(sinpe){ sinpe.checked = true; }
+  _paypalRendered = false;
+  const pc = document.getElementById('paypalContainer');
+  if(pc) pc.innerHTML = '';
+  if(typeof toggleMemPayMethod === 'function') toggleMemPayMethod();
 }
 
 async function openMembershipPaymentModal(){
@@ -11851,61 +11869,61 @@ async function openMembershipPaymentModal(){
   if(!currentPlan){ toast('No se pudo determinar tu plan', 'err'); closeMemPaymentModal(); return; }
 
   document.getElementById('memPayPlan').value = currentPlan.name + ' — ' + fmt(currentPlan.price) + '/mes';
-  const sinpeBox = document.getElementById('memPaySinpeBox');
-  const sinpeNum = (cfg.platformSinpe || '').trim();
-  if(sinpeBox){
-    if(sinpeNum){ document.getElementById('memPaySinpeNum').textContent = sinpeNum; sinpeBox.style.display = 'flex'; }
-    else { sinpeBox.style.display = 'none'; }
-  }
   const periodSel = document.getElementById('memPayPeriod');
   periodSel.innerHTML = cfg.periods.filter(p=>p.active).map(p=>{
     const total = Math.round(currentPlan.price * p.months * (1 - p.discount/100));
     return '<option value="'+p.id+'" data-months="'+p.months+'" data-discount="'+p.discount+'" data-total="'+total+'">'+esc(p.label)+' — '+fmt(total)+ (p.discount>0?' (ahorrás '+p.discount+'%)':'') +'</option>';
   }).join('');
   updateMemPayTotal();
-  /* Mostrar el botón de pago internacional si el superadmin configuró un link
-     de cobro (PayPal.me, Payoneer, Wise…) para este plan. */
-  const stripeBtn = document.getElementById('memStripeBtn');
-  if(stripeBtn){
-    const link = (cfg.payLinks && cfg.payLinks[currentPlan.id]) || '';
-    const enabled = !!link;
-    stripeBtn.style.display = enabled ? 'block' : 'none';
-    stripeBtn.href = link || '#';
-    if(enabled) stripeBtn.setAttribute('data-link', link);
-  }
+  /* SINPE exclusivo si hay número configurado */
+  const sinpeBox = document.getElementById('memPaySinpeBox');
+  if(sinpeBox){ document.getElementById('memPaySinpeNum').textContent = (cfg.platformSinpe || '').trim(); sinpeBox.style.display = (cfg.platformSinpe || '').trim() ? 'flex' : 'none'; }
+  toggleMemPayMethod();
   /* Mostrar los términos y condiciones (texto del superadmin + PDF opcional) */
   renderMembershipTermsLink();
 }
-/* Abre el enlace de pago de Stripe del plan (lo configura el superadmin).
-   Registra el pago como pendiente para que el superadmin lo apruebe. */
-function payWithStripe(){
-  const btn = document.getElementById('memStripeBtn');
-  if(!btn) return;
-  const link = btn.getAttribute('data-link');
-  if(!link){ toast('El superadmin aún no configuró el pago internacional para este plan', 'err'); return; }
+/* Cambia entre SINPE (Costa Rica) y PayPal (internacional) */
+function toggleMemPayMethod(){
+  const isPaypal = document.getElementById('memMethodPaypal') && document.getElementById('memMethodPaypal').checked;
+  const sinpeWrap = document.getElementById('memSinpeWrap');
+  const paypalWrap = document.getElementById('memPaypalWrap');
+  const confirmBtn = document.getElementById('memPayConfirmBtn');
+  if(sinpeWrap) sinpeWrap.style.display = isPaypal ? 'none' : 'block';
+  if(paypalWrap) paypalWrap.style.display = isPaypal ? 'block' : 'none';
+  if(confirmBtn) confirmBtn.style.display = isPaypal ? 'none' : 'block';
+  if(isPaypal) renderPaypalButton();
+}
+/* Renderiza el botón de pago de PayPal del plan activo (button alojado). */
+let _paypalRendered = '';
+function renderPaypalButton(){
+  const box = document.getElementById('paypalContainer');
+  if(!box) return;
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const t = TENANT_DATA || {};
+  const currentPlan = cfg.plans.find(p=>p.id===t.membershipPlan) || cfg.plans[0];
+  /* Período elegido (monthly / quarterly / yearly) */
   const sel = document.getElementById('memPayPeriod');
-  const opt = sel && sel.options[sel.selectedIndex];
-  const periodId = opt ? opt.value : 'monthly';
-  /* Registrar intento de pago internacional en la colección de pagos */
-  try{
-    const cfg = planConfig || DEFAULT_PLAN_CONFIG;
-    const t = TENANT_DATA || {};
-    const currentPlan = cfg.plans.find(p=>p.id===t.membershipPlan) || cfg.plans[0];
-    const months = opt ? parseInt(opt.dataset.months)||1 : 1;
-    tenantRef().collection('membershipPayments').add({
-      amount: (opt ? parseInt(opt.dataset.total)||0 : currentPlan.price),
-      period: periodId, months: months,
-      plan: currentPlan.id, planName: currentPlan.name,
-      method: 'PayPal internacional', status: 'pendiente',
-      date: new Date().toISOString(), reference: 'Pago internacional'
-    }).catch(function(e){ console.warn('No se registró el pago:', e); });
-  }catch(e){ console.warn('No se registró el pago:', e); }
-  /* Marcar pendiente de aprobación para que el superadmin active el plan */
-  try{
-    tenantRef().set({ planApprovalStatus: 'pendiente', estadoPago: 'pendiente' }, { merge:true }).catch(()=>{});
-  }catch(e){}
-  window.open(link, '_blank', 'noopener');
-  toast('Abriendo el enlace de pago… completá el pago para que te activemos el plan.', 'ok');
+  const periodId = sel && sel.value ? sel.value : 'monthly';
+  const buttons = (cfg.paypalButtons) || DEFAULT_PLAN_CONFIG.paypalButtons || {};
+  const planBtns = buttons[currentPlan.id] || {};
+  const btnId = planBtns[periodId];
+  if(!btnId){ box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Este plan/período no tiene botón de PayPal configurado.</div>'; return; }
+  if(_paypalRendered === btnId) return; // ya renderizado (no re-renderizar en vano)
+  /* Marcar en progreso para evitar re-render durante el wait del SDK */
+  box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Cargando botón de PayPal…</div>';
+  const doRender = function(){
+    box.innerHTML = '';
+    _paypalRendered = btnId;
+    try{
+      if(typeof paypal === 'undefined' || !paypal.HostedButtons){
+        box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Cargando SDK de PayPal…</div>';
+        setTimeout(renderPaypalButton, 600);
+        return;
+      }
+      paypal.HostedButtons({ hostedButtonId: btnId }).render('#paypalContainer');
+    }catch(e){ console.error(e); box.innerHTML = '<div style="font-size:12px;color:var(--danger);text-align:center;padding:10px">No se pudo mostrar el botón de PayPal.</div>'; }
+  };
+  doRender();
 }
 function closeMemPaymentModal(){ document.getElementById('memPaymentModal').classList.remove('show'); resetMemPayForm(); }
 /* Muestra el texto/enlace de los términos en el modal de pago */
@@ -11957,6 +11975,9 @@ function updateMemPayTotal(){
     discRow.style.display = 'none';
   }
   document.getElementById('memPayTotal').textContent = fmt(base);
+  /* Si el admin pagará por PayPal, re-renderizar el botón del período elegido */
+  const isPaypal = document.getElementById('memMethodPaypal') && document.getElementById('memMethodPaypal').checked;
+  if(isPaypal && typeof renderPaypalButton === 'function') renderPaypalButton();
 }
 
 async function processMembershipPayment(){
@@ -11967,6 +11988,9 @@ async function processMembershipPayment(){
   const months = parseInt(opt.dataset.months) || 1;
   const amount = parseInt(opt.dataset.total) || 0;
   const reference = document.getElementById('memPayRef').value.trim();
+  /* Si eligió PayPal, debe usar el botón de PayPal (no el flujo SINPE) */
+  const isPaypal = document.getElementById('memMethodPaypal') && document.getElementById('memMethodPaypal').checked;
+  if(isPaypal){ toast('Paga con el botón de PayPal que aparece arriba.', 'err'); return; }
 
   /* Exigir aceptar los términos y condiciones antes de confirmar */
   const acceptEl = document.getElementById('memAcceptTerms');
@@ -14859,30 +14883,37 @@ bootPlatform();
     <div class="modal-body">
       <div class="f-group"><label>Plan actual</label><input class="f-input" id="memPayPlan" readonly></div>
       <div class="f-group"><label>Período de pago</label><select class="f-input" id="memPayPeriod" onchange="updateMemPayTotal()"></select></div>
-      <div class="sinpe-preview" id="memPaySinpeBox" style="display:none">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
-        <span>Transferí por SINPE Móvil al <b id="memPaySinpeNum">—</b></span>
-      </div>
-      <div class="sum-box" style="margin:14px 0">
-        <div class="sum-line"><span>Precio base</span><span id="memPayBase">₡0</span></div>
-        <div class="sum-line" id="memPayDiscountRow" style="color:#B45309"><span>Descuento por período</span><span id="memPayDiscount">−₡0</span></div>
-        <div class="sum-line grand"><span>Total a pagar</span><span id="memPayTotal">₡0</span></div>
-      </div>
-      <input type="file" id="memPayProofInput" accept="image/*" style="display:none" onchange="onMemPayProofChosen(this)">
-      <div class="f-group"><label>Referencia / comprobante (opcional)</label><input class="f-input" id="memPayRef" placeholder="Número de SINPE o referencia"></div>
-      <div class="f-group">
-        <label>Comprobante de pago <span class="req">*</span></label>
-        <div class="logo-upload-row" id="memPayProofRow">
-          <span class="logo-preview" id="memPayProofPreview" style="cursor:pointer;width:90px;height:90px;border-radius:12px" onclick="document.getElementById('memPayProofInput').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:36px;height:36px"><path d="M12 16V4m0 0 4 4m-4-4-4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-          </span>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <button type="button" class="btn-ghost" style="width:auto;padding:9px 16px" onclick="document.getElementById('memPayProofInput').click()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px"><path d="M12 16V4m0 0 4 4m-4-4-4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Subir foto del SINPE
-            </button>
-            <span style="font-size:12px;color:var(--muted)" id="memPayProofHint">Tocá el recuadro o el botón para subir el comprobante</span>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-top:10px;cursor:pointer">
+        <input type="radio" name="memPayMethod" value="sinpe" id="memMethodSinpe" checked style="width:16px;height:16px" onchange="toggleMemPayMethod()"> Pagar por <b>SINPE Móvil</b> (Costa Rica)
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:700;margin:6px 0 4px;cursor:pointer">
+        <input type="radio" name="memPayMethod" value="paypal" id="memMethodPaypal" style="width:16px;height:16px" onchange="toggleMemPayMethod()"> Pagar por <b>PayPal</b> (internacional)
+      </label>
+      <div id="memSinpeWrap">
+        <div class="sinpe-preview" id="memPaySinpeBox" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+          <span>Transferí por SINPE Móvil al <b id="memPaySinpeNum">—</b></span>
+        </div>
+        <input type="file" id="memPayProofInput" accept="image/*" style="display:none" onchange="onMemPayProofChosen(this)">
+        <div class="f-group"><label>Referencia / comprobante (opcional)</label><input class="f-input" id="memPayRef" placeholder="Número de SINPE o referencia"></div>
+        <div class="f-group">
+          <label>Comprobante de pago <span class="req">*</span></label>
+          <div class="logo-upload-row" id="memPayProofRow">
+            <span class="logo-preview" id="memPayProofPreview" style="cursor:pointer;width:90px;height:90px;border-radius:12px" onclick="document.getElementById('memPayProofInput').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:36px;height:36px"><path d="M12 16V4m0 0 4 4m-4-4-4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+            </span>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <button type="button" class="btn-ghost" style="width:auto;padding:9px 16px" onclick="document.getElementById('memPayProofInput').click()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px"><path d="M12 16V4m0 0 4 4m-4-4-4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Subir foto del SINPE
+              </button>
+              <span style="font-size:12px;color:var(--muted)" id="memPayProofHint">Tocá el recuadro o el botón para subir el comprobante</span>
+            </div>
           </div>
         </div>
+      </div>
+      <div id="memPaypalWrap" style="display:none">
+        <div class="hint" style="margin-bottom:10px">Completá el pago con PayPal para activar tu plan. Así podés pagar desde cualquier país.</div>
+        <div id="paypalContainer" style="width:100%"></div>
       </div>
       <div class="f-group" id="memTermsWrap" style="margin-top:6px">
         <label class="sf-check" style="align-items:flex-start;gap:8px">
@@ -14890,11 +14921,13 @@ bootPlatform();
           <span style="font-size:12.5px;color:var(--muted);line-height:1.45">Acepto los <b style="color:var(--ink)">términos y condiciones</b> del servicio<span id="memTermsLink"></span></span>
         </label>
       </div>
-      <button class="btn-primary" id="memPayConfirmBtn" onclick="processMembershipPayment()">Confirmar pago</button>
-      <button class="btn-export" id="memStripeBtn" style="width:100%;margin-top:8px;display:none" onclick="payWithStripe()">
-        💳 Pagar con PayPal / tarjeta (internacional)
-      </button>
-      <p class="hint" style="text-align:center;margin-top:8px">Al confirmar se registra tu pago y se extiende tu membresía. El comprobante lo verificamos manualmente.</p>
+      <div class="sum-box" style="margin:8px 0">
+        <div class="sum-line"><span>Precio base</span><span id="memPayBase">₡0</span></div>
+        <div class="sum-line" id="memPayDiscountRow" style="color:#B45309"><span>Descuento por período</span><span id="memPayDiscount">−₡0</span></div>
+        <div class="sum-line grand"><span>Total a pagar</span><span id="memPayTotal">₡0</span></div>
+      </div>
+      <button class="btn-primary" id="memPayConfirmBtn" onclick="processMembershipPayment()">Confirmar pago por SINPE</button>
+      <p class="hint" style="text-align:center;margin-top:8px">El SINPE es para Costa Rica. Para pagar desde otro país usá <b>PayPal</b>.</p>
     </div>
   </div>
 </div>
