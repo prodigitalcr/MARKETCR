@@ -2445,6 +2445,13 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
             </select>
           </div>
         </div>
+        <div class="f-row" style="margin-top:10px">
+          <div class="f-group" style="flex:1;min-width:220px">
+            <label>Email de tu cuenta PayPal (para recibir el pago del carrito)</label>
+            <input class="f-input" id="sPaypalEmail" type="email" placeholder="Ej: micuenta@ejemplo.com">
+            <div class="hint" style="margin-top:4px">Con PayPal <b>Checkout</b>, el comprador paga y el dinero llega a esta cuenta (debe ser una cuenta PayPal <b>empresarial/verificada</b> que pueda recibir).</div>
+          </div>
+        </div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Los precios se ingresan en la divisa elegida. Si cambiás la divisa, revisá que los precios de tus productos estén en esa moneda.</div>
       </div>
 
@@ -3813,6 +3820,7 @@ const DEFAULT_SETTINGS = {
   currency:'CRC', // CRC (colones ₡) | USD (dólares $) | EUR (euros €) — se usa en todo
   payMethodLabel:'SINPE', // nombre del método de pago local (editable; en otros países puede ser otro)
   paypalMe:'', // usuario de PayPal.me del negocio (pago del carrito por tarjeta por el cliente)
+  paypalEmail:'', // email de PayPal del negocio (para que el checkout dirija el pago a su cuenta)
   paypalCurrency:'USD', // divisa en la que cobra el cliente por PayPal.me
   whatsapp:'50688888888',
   categories:['Plantas','Productos','Servicios'],
@@ -6589,15 +6597,16 @@ async function convertCurrency(amount, from, to){
   var fallback = from === 'CRC' ? 0.00026 : (from === 'EUR' ? 1.08 : 1);
   return amount * fallback;
 }
-/* Pago del pedido con PayPal: cobra el monto EXACTO de la factura del carrito.
-   - Si el NEGOCIO configuró su PayPal.Me, se abre su enlace con el monto exacto
-     (el dinero llega a la cuenta del administrador).
-   - Si no, se usa un botón de PayPal Checkout (llega a la cuenta del client-id). */
+/* Pago del pedido con PayPal CHECKOUT: el SERVIDOR crea la orden (la clave y el
+   secreto PayPal nunca van al navegador), dirige el pago a la cuenta del negocio,
+   y el cliente aprueba con el botón de PayPal. Cobra el monto EXACTO de la factura. */
 function payOrderCard(){
   const user = (settings && settings.paypalMe) ? settings.paypalMe.trim() : '';
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
   const userFinal = user || (cfg.paymeUser || '').trim();
-  if(!userFinal){ toast('Este negocio no tiene configurado el pago con tarjeta.', 'err'); return; }
+  if(!userFinal && !(settings && settings.paypalEmail)){
+    toast('Este negocio no tiene configurado el pago con tarjeta.', 'err'); return;
+  }
   const t = cartTotals();
   if(!t.count){ toast('Tu canasta está vacía', 'err'); return; }
   const local = (settings && settings.currency) || 'CRC';
@@ -6608,57 +6617,70 @@ function payOrderCard(){
   convertCurrency(amount, local, cur).then(function(converted){
     const amountFinal = Number(converted).toFixed(2);
     if(btn){ btn.textContent = '💳 Pagar ' + amountFinal + ' ' + cur + ' con PayPal'; btn.disabled = false; }
-    if(user){
-      /* 1º: enlace de PayPal.Me del negocio → el dinero llega a SU cuenta */
+    if(user || !(settings && settings.paypalEmail)){
+      /* Opción simple con PayPal.Me (llega a la cuenta del admin) */
       const url = 'https://www.paypal.com/paypalme/' + encodeURIComponent(user) + '?amount=' + amountFinal + '&currency=' + encodeURIComponent(cur);
       window.open(url, '_blank', 'noopener');
       toast('Abriendo pago por ' + amountFinal + ' ' + cur + '…', 'ok');
     } else {
-      /* 2º: respaldo con botón de checkout (cuenta del client-id) */
-      renderPaypalCheckout(userFinal, amountFinal, cur);
+      /* Checkout real: crear la orden en el servidor y cobrar el monto exacto */
+      renderPaypalCheckout(settings.paypalEmail, amountFinal, cur);
     }
   }).catch(function(){
     if(btn){ btn.disabled = false; btn.textContent = '💳 Pagar con tarjeta (PayPal)'; }
     toast('No se pudo convertir la moneda. Probá de nuevo.', 'err');
   });
 }
-/* Renderiza un Smart Button de PayPal que cobra el monto exacto (checkout) */
-function renderPaypalCheckout(payee, amount, currency){
+/* Renderiza un Smart Button de PayPal que cobra el monto exacto (CHECKOUT).
+   La orden la crea el SERVIDOR (paypalCreateOrder), no el navegador, para no
+   exponer el secreto. El pago se dirige a la cuenta del negocio (payeeEmail). */
+function renderPaypalCheckout(payeeEmail, amount, currency){
   const box = document.getElementById('paypalCheckoutBox');
   if(!box) return;
+  box.style.display = 'block';
   box.innerHTML = '';
   if(typeof paypal === 'undefined' || !paypal.Buttons){
     box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Cargando botón de PayPal…</div>';
-    setTimeout(function(){ renderPaypalCheckout(payee, amount, currency); }, 600);
+    setTimeout(function(){ renderPaypalCheckout(payeeEmail, amount, currency); }, 600);
     return;
   }
   try{
     var btn = paypal.Buttons({
       style: { layout:'vertical', label:'paypal', shape:'rect', color:'blue' },
       createOrder: function(data, actions){
-        /* PayPal se registra a nombre del negocio (payee_email no aplica en
-           SDK JS libre; se cobra a la cuenta del cliente-id configurado). */
-        return actions.order.create({
-          purchase_units: [{
-            description: 'Pago de factura — ' + (settings.storeName||'Tienda'),
-            amount: { currency_code: currency, value: amount }
-          }]
+        /* Pedir la orden al servidor (sin exponer secretos) */
+        return cloudCallPublic('paypalCreateOrder', { amount: parseFloat(amount), currency: currency, description: 'Pago de factura — ' + (settings.storeName||'Tienda'), payeeEmail: payeeEmail }).then(function(res){
+          if(!res || !res.orderId){ return actions.reject(); }
+          return res.orderId;
         });
       },
       onApprove: function(data, actions){
-        return actions.order.capture().then(function(details){
-          toast('✅ Pago aprobado por PayPal. ¡Gracias!', 'ok');
-          try{
-            /* Marcar que el pedido se pagó por PayPal (si hay pedido abierto) */
-            if(lastOrder && lastOrder.number){
-              ordersCol.doc(lastOrder.number).update({ checkPayMethod:'PayPal', payStatus:'pagado' }).catch(function(){});
-            }
-          }catch(e){}
+        return cloudCallPublic('paypalCaptureOrder', { orderId: data.orderID }).then(function(res){
+          if(res && res.status){
+            toast('✅ Pago aprobado por PayPal. ¡Gracias!', 'ok');
+            try{
+              if(lastOrder && lastOrder.number){ ordersCol.doc(lastOrder.number).update({ payMethod:'PayPal', payStatus:'pagado', payBy: res.payerEmail||'' }).catch(function(){}); }
+            }catch(e){}
+          } else { toast('El pago quedó pendiente de verificación.', 'warn'); }
         });
       }
     });
     btn.render('#paypalCheckoutBox');
   }catch(e){ console.error(e); box.innerHTML = '<div style="font-size:12px;color:var(--danger);text-align:center;padding:10px">No se pudo cargar el botón de PayPal.</div>'; }
+}
+/* Llamada a Cloud Function SIN requerir sesión (la usa el cliente al pagar). */
+async function cloudCallPublic(name, data){
+  try{
+    const fn = cloudFns.httpsCallable(name);
+    const res = await fn(data || {});
+    return res.data;
+  }catch(e){
+    console.error('cloudCallPublic error [' + name + ']:', e);
+    var msg = (e && e.message) || 'error';
+    if(msg.indexOf('internal') !== -1 || msg.indexOf('INTERNAL') !== -1) msg = 'Error del servidor de pago. Revisá logs.';
+    toast('No se pudo completar el pago: ' + msg, 'err');
+    return null;
+  }
 }
 /* Actualiza el botón de tarjeta con el monto convertido según el carrito */
 function refreshCheckoutCardBtn(){
@@ -8850,6 +8872,7 @@ function loadSettingsForm(){
   document.getElementById('sCurrency').value = settings.currency || 'CRC';
   document.getElementById('sPayMethodLabel').value = settings.payMethodLabel || 'SINPE';
   document.getElementById('sPaypalMe').value = settings.paypalMe || '';
+  document.getElementById('sPaypalEmail').value = settings.paypalEmail || '';
   document.getElementById('sPaypalCurrency').value = settings.paypalCurrency || 'USD';
   document.getElementById('sWa').value = settings.whatsapp;
   document.getElementById('sUberAddress').value = (settings.uberLocation && settings.uberLocation.address) || '';
@@ -9590,6 +9613,7 @@ const cats = document.getElementById('sCats').value.split(',').map(s=>s.trim()).
       raw = raw.replace(/^https?:\/\/(www\.)?paypal\.(com|me)\/paypalme\//i,'').replace(/^https?:\/\/(www\.)?paypal\.me\//i,'').replace(/[?#].*$/,'').replace(/^\/+|\/+$/g,'');
       return raw.replace(/@/g,'');
     })(),
+    paypalEmail: document.getElementById('sPaypalEmail').value.trim(),
     paypalCurrency: ['USD','EUR','CRC'].includes(document.getElementById('sPaypalCurrency').value) ? document.getElementById('sPaypalCurrency').value : 'USD',
     websiteUrl:document.getElementById('sWebUrl').value.trim(),
     websiteLabel:document.getElementById('sWebLabel').value.trim() || 'Sitio web',
