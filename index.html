@@ -11026,6 +11026,10 @@ async function loadPlanConfig(){
   try{
     const snap = await db.collection('platform').doc('config').get();
     if(snap.exists) planConfig = Object.assign({}, DEFAULT_PLAN_CONFIG, snap.data());
+    /* El mapeo de los botones de PayPal (plan→período→botón) siempre se
+       restaura desde DEFAULT, porque el documento guardado puede tener la
+       estructura vieja/plana que rompería la selección por período. */
+    planConfig.paypalButtons = JSON.parse(JSON.stringify(DEFAULT_PLAN_CONFIG.paypalButtons));
   }catch(e){
     console.warn('loadPlanConfig error, usando defaults:', e);
   }
@@ -11891,7 +11895,11 @@ function toggleMemPayMethod(){
   if(sinpeWrap) sinpeWrap.style.display = isPaypal ? 'none' : 'block';
   if(paypalWrap) paypalWrap.style.display = isPaypal ? 'block' : 'none';
   if(confirmBtn) confirmBtn.style.display = isPaypal ? 'none' : 'block';
-  if(isPaypal) renderPaypalButton();
+  if(isPaypal){
+    renderPaypalButton();
+    /* Registrar el pago por PayPal en el historial (para aprobación del superadmin) */
+    if(typeof registerPaypalPayment === 'function') registerPaypalPayment();
+  }
 }
 /* Renderiza el botón de pago de PayPal del plan activo (button alojado). */
 let _paypalRendered = '';
@@ -11908,22 +11916,55 @@ function renderPaypalButton(){
   const planBtns = buttons[currentPlan.id] || {};
   const btnId = planBtns[periodId];
   if(!btnId){ box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Este plan/período no tiene botón de PayPal configurado.</div>'; return; }
-  if(_paypalRendered === btnId) return; // ya renderizado (no re-renderizar en vano)
-  /* Marcar en progreso para evitar re-render durante el wait del SDK */
-  box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Cargando botón de PayPal…</div>';
-  const doRender = function(){
-    box.innerHTML = '';
-    _paypalRendered = btnId;
-    try{
-      if(typeof paypal === 'undefined' || !paypal.HostedButtons){
-        box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Cargando SDK de PayPal…</div>';
-        setTimeout(renderPaypalButton, 600);
-        return;
-      }
-      paypal.HostedButtons({ hostedButtonId: btnId }).render('#paypalContainer');
-    }catch(e){ console.error(e); box.innerHTML = '<div style="font-size:12px;color:var(--danger);text-align:center;padding:10px">No se pudo mostrar el botón de PayPal.</div>'; }
+  if(_paypalRendered === btnId) return; // ya renderizado
+  _paypalRendered = btnId;
+  box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:14px">Cargando botón de PayPal…</div>';
+  /* Fallback: si en unos segundos el SDK no renderiza, ofrecer enlace directo */
+  const fallbackLink = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=' + encodeURIComponent(btnId);
+  const showFallback = function(){
+    box.innerHTML = '<a class="btn-export" href="' + fallbackLink + '" target="_blank" rel="noopener" style="width:100%;padding:12px 16px;justify-content:center">💳 Pagar con PayPal (abrir enlace de pago)</a>';
   };
-  doRender();
+  let done = false;
+  const tryRender = function(){
+    if(done) return;
+    if(typeof paypal !== 'undefined' && paypal.HostedButtons){
+      done = true;
+      box.innerHTML = '';
+      try{ paypal.HostedButtons({ hostedButtonId: btnId }).render('#paypalContainer'); }
+      catch(e){ console.error(e); showFallback(); }
+      return;
+    }
+    setTimeout(tryRender, 300);
+  };
+  tryRender();
+  /* Tope de espera: si a los 4s todavía no cargó, mostrar el enlace directo */
+  setTimeout(function(){ if(!done){ box.innerHTML = ''; showFallback(); } }, 4000);
+}
+/* Registra el pago por PayPal en el historial del negocio para que el
+   superadmin pueda verlo en su panel y aprobarlo. El pago de PayPal lo cobra
+   directamente PayPal; acá solo registramos la intención/estado pendiente. */
+async function registerPaypalPayment(){
+  try{
+    const sel = document.getElementById('memPayPeriod');
+    const opt = sel && sel.options[sel.selectedIndex];
+    const periodId = opt ? opt.value : 'monthly';
+    const months = opt ? parseInt(opt.dataset.months)||1 : 1;
+    const amount = opt ? parseInt(opt.dataset.total)||0 : 0;
+    const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+    const t = TENANT_DATA || {};
+    const currentPlan = cfg.plans.find(p=>p.id===t.membershipPlan) || cfg.plans[0];
+    const periodCfg = (cfg.periods || []).find(p=>p.id===periodId) || {label:periodId};
+    await tenantRef().collection('membershipPayments').add({
+      date: new Date().toISOString(),
+      amount, period: periodId, periodLabel: periodCfg.label, months: months,
+      plan: currentPlan.id, planName: currentPlan.name,
+      status: 'pendiente', method: 'PayPal',
+      reference: 'Pago PayPal',
+      proofImage: ''
+    });
+    await tenantRef().set({ planApprovalStatus: 'pendiente', estadoPago: 'pendiente' }, { merge:true });
+    console.info('Pago PayPal registrado (pendiente de aprobación)');
+  }catch(e){ console.warn('No se pudo registrar el pago PayPal:', e); }
 }
 function closeMemPaymentModal(){ document.getElementById('memPaymentModal').classList.remove('show'); resetMemPayForm(); }
 /* Muestra el texto/enlace de los términos en el modal de pago */
