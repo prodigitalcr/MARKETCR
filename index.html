@@ -2456,6 +2456,34 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </div>
 
       <div class="settings-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6M12 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>Notificación de pagos por WhatsApp</h4>
+        <div class="desc">Cuando un cliente paga su factura, recibís un aviso con el número de factura y el nombre del cliente. Configurá aquí tu proveedor de WhatsApp.</div>
+        <div class="f-row" style="margin-top:6px">
+          <div class="f-group"><label>Proveedor de WhatsApp</label>
+            <select class="f-input" id="sWaProvider" onchange="onBizWaProviderChange()">
+              <option value="twilio">Twilio</option>
+              <option value="meta">Meta WhatsApp Cloud API</option>
+            </select>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:2px">Estas claves se guardan en el servidor (nunca en el navegador). El aviso llega al WhatsApp del negocio.</div>
+        <div id="sBizWaTwilio">
+          <div class="f-row" style="margin-top:8px">
+            <div class="f-group"><label>Account SID (Twilio)</label><input class="f-input" id="sWaSid" autocomplete="off" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"></div>
+            <div class="f-group"><label>Auth Token (Twilio)</label><input class="f-input" id="sWaAuth" type="password" autocomplete="off" placeholder="****************************"></div>
+          </div>
+          <div class="f-group"><label>Número WhatsApp Twilio (sandbox)</label><input class="f-input" id="sWaFrom" placeholder="whatsapp:+14155238886"></div>
+          <div class="hint" style="margin-top:4px">Probá con el número de sandbox. Para producción, usá un número Twilio verificado y configurá el webhook.</div>
+        </div>
+        <div id="sBizWaMeta" style="display:none">
+          <div class="f-row" style="margin-top:8px">
+            <div class="f-group"><label>Token de acceso (Meta Cloud API)</label><input class="f-input" id="sWaToken" type="password" autocomplete="off" placeholder="EAAG..."></div>
+            <div class="f-group"><label>Phone Number ID (Meta)</label><input class="f-input" id="sWaPhoneId" placeholder="123456789012345"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card">
         <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Ubicación del negocio</h4>
         <div class="desc">Ingresá la dirección de tu negocio. Sirve para que el cliente calcule su ruta hasta tu local y para el cotizador de mensajería (origen del viaje).</div>
         <div class="f-row">
@@ -6407,18 +6435,33 @@ const UBER_STEPS = [
 ];
 
 async function submitOrder(){
+  const order = await createOrderFromCart();
+  if(order) showInvoice(order);
+}
+
+/* Número de factura en formato F-AAAAMMDD-##### (igual al de createOrderFromCart) */
+function dateOrderNumber(){
+  const n = new Date();
+  return 'F-' + n.getFullYear() + String(n.getMonth()+1).padStart(2,'0') + String(n.getDate()).padStart(2,'0') + '-' + String(Date.now()).slice(-5);
+}
+
+/* Crea y guarda la factura a partir de los datos del carrito, la registra en
+   Firestore y la deja en `lastOrder`. Devuelve la factura o null si falta algo.
+   La usan tanto el pago local (SINPE) como el checkout con tarjeta (PayPal),
+   de modo que el cobro PayPal SIEMPRE coincida con el total de la factura. */
+async function createOrderFromCart(){
   const name = document.getElementById('cName').value.trim();
   const phone = document.getElementById('cPhone').value.trim();
   const email = document.getElementById('cEmail').value.trim();
   const address = document.getElementById('cAddress').value.trim();
   const notes = document.getElementById('cNotes').value.trim();
   const delivery = document.querySelector('input[name="delivery"]:checked').value;
-  if(!name){ toast('Ingresá tu nombre completo', 'err'); return; }
-  if(!phone || waDigits(phone).length < 8){ toast('Ingresá un teléfono válido', 'err'); return; }
-  if(!address){ toast('Ingresá tu dirección o ubicación', 'err'); return; }
+  if(!name){ toast('Ingresá tu nombre completo', 'err'); return null; }
+  if(!phone || waDigits(phone).length < 8){ toast('Ingresá un teléfono válido', 'err'); return null; }
+  if(!address){ toast('Ingresá tu dirección o ubicación', 'err'); return null; }
 
   const t = cartTotals();
-  if(!t.count){ toast('Tu canasta está vacía', 'err'); return; }
+  if(!t.count){ toast('Tu canasta está vacía', 'err'); return null; }
 
   const items = Object.keys(cart).map(key => {
     const info = cartLineInfo(key);
@@ -6442,13 +6485,13 @@ async function submitOrder(){
   }catch(e){
     toast('No se pudo registrar el pedido. Intentá de nuevo.', 'err');
     console.error(e);
-    return;
+    return null;
   }
   lastOrder = order;
   markProductsAsOrdered(items.map(it=>it.id));
 
   cart = {}; updateCartUI(); renderGrid();
-  showInvoice(order);
+  return order;
 }
 
 /* ---------- reseñas escritas por el cliente ---------- */
@@ -6535,6 +6578,7 @@ return '<div class="inv-head">' +
         (order.discountAmt ? '<div class="row" style="color:#B45309"><span>Descuento global (' + (order.discountPercent||0) + '%)</span><span>−' + fmt(order.discountAmt) + '</span></div>' : '') +
         '<div class="row"><span>IVA (' + settings.iva + '%)</span><span>' + fmt(order.iva) + '</span></div>' +
         '<div class="row tt"><span>TOTAL</span><span>' + fmt(order.total) + '</span></div>' +
+        '<div class="row" id="invUsdRow" style="color:var(--blue);font-size:12px"><span>Equivalente USD (BCCR)</span><span id="invUsd">…</span></div>' +
       '</div>' +
     '</div>' +
     '<div class="sinpe-box">' +
@@ -6550,6 +6594,22 @@ function showInvoice(order){
   document.getElementById('coTitle').textContent = 'Factura ' + order.number;
   document.getElementById('coStep1').style.display = 'none';
   document.getElementById('coStep2').style.display = 'block';
+  /* Equivalente en dólares (tipo de cambio BCCR en tiempo real) */
+  try{
+    var local = (settings && settings.currency) || 'CRC';
+    if(local !== 'USD'){
+      convertCurrency(order.total || 0, local, 'USD').then(function(usd){
+        var el = document.getElementById('invUsd');
+        if(el) el.textContent = '$' + Number(usd).toFixed(2);
+        var row = document.getElementById('invUsdRow');
+        if(row) row.style.display = '';
+      }).catch(function(){
+        var row = document.getElementById('invUsdRow'); if(row) row.style.display = 'none';
+      });
+    } else {
+      var row2 = document.getElementById('invUsdRow'); if(row2) row2.style.display = 'none';
+    }
+  }catch(e){}
 
   // mensaje de WhatsApp con la factura + espacio para comprobante
   const lines = [];
@@ -6571,20 +6631,42 @@ function showInvoice(order){
   const waURL = 'https://wa.me/' + waDigits(settings.whatsapp) + '?text=' + encodeURIComponent(lines.join('\n'));
   document.getElementById('waReceiptBtn').onclick = () => { window.open(waURL, '_blank'); };
 }
-/* ================= CONVERSIÓN DE DIVISA (local → divisa PayPal) =================
-   Usa la API gratuita https://api.frankfurter.app (sin clave) para convertir el
-   monto de la moneda local del negocio (settings.currency) a la divisa en la
-   que cobra el administrador (paypalCurrency). Cachea la tasa por país origen.
-   Si la API falla, usa una tasa de respaldo configurable. */
+/* ================= CONVERSIÓN DE DIVISA (local → divisa PayPal / dólares) =================
+   Usa en TIEMPO REAL el tipo de cambio del Banco Central de Costa Rica (BCCR).
+   Orden de fuentes:
+     1) Tasa FORZADA por el superadmin (planConfig.fxRates['CRC:USD']).
+     2) API del BCCR (indicador de referencia, sin clave).
+     3) API frankfurter.app (market).
+     4) Tasa de respaldo por defecto.
+   Todas las tasas quedan cacheadas para no llamar a la API en cada cálculo. */
 let _fx = {}; // { 'CRC:USD': 0.00026 }
-function _fxRate(from, to){
-  var key = (from||'CRC') + ':' + (to||'USD');
-  if(_fx[key]) return _fx[key];
+function _fxRate(from, to){ var k=(from||'CRC')+':'+(to||'USD'); if(_fx[k]) return _fx[k]; return null; }
+/* Tasa de cambio CRC→USD del BCCR (referencia de venta). Devuelve colones por USD o null. */
+async function bccrRate(){
+  try{
+    var r = await fetch('https://api.hacienda.go.cr/indicadores/tc/venta', { headers: { 'Accept':'application/json' } });
+    var j = await r.json();
+    if(j && j.valores && j.valores[0] && j.valores[0].valor) return parseFloat(j.valores[0].valor);
+  }catch(e){ console.warn('BCCR no disponible:', e); }
   return null;
 }
 async function convertCurrency(amount, from, to){
   from = from || 'CRC'; to = to || 'USD';
   if(from === to) return amount;
+  /* 1) Tasa forzada por el superadmin (si existe) */
+  var cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  var manualKey = (from||'') + ':' + (to||'');
+  if(cfg && cfg.fxRates && cfg.fxRates[manualKey]) return amount * parseFloat(cfg.fxRates[manualKey]);
+  /* 2) BCCR en tiempo real para CRC→USD y USD→CRC */
+  if((from === 'CRC' && to === 'USD') || (from === 'USD' && to === 'CRC')){
+    var crcUsd = await bccrRate();
+    if(crcUsd){
+      _fx['CRC:USD'] = 1 / crcUsd; // USD = 1 / colones por dólar
+      _fx['USD:CRC'] = crcUsd;
+      return amount * _fx[from + ':' + to];
+    }
+  }
+  /* 3) Caché y frankfurter para el resto */
   try{
     var cached = _fxRate(from, to);
     if(cached != null) return amount * cached;
@@ -6592,8 +6674,8 @@ async function convertCurrency(amount, from, to){
     var j = await r.json();
     var rate = j && j.rates && j.rates[to];
     if(rate){ _fx[from + ':' + to] = rate; return amount * rate; }
-  }catch(e){ console.warn('No se pudo obtener la tasa de cambio:', e); }
-  /* Respaldo: si no hay tasa, usar una por defecto */
+  }catch(e){ console.warn('Fx error:', e); }
+  /* 4) Respaldo por defecto */
   var fallback = from === 'CRC' ? 0.00026 : (from === 'EUR' ? 1.08 : 1);
   return amount * fallback;
 }
@@ -6601,59 +6683,79 @@ async function convertCurrency(amount, from, to){
    secreto PayPal nunca van al navegador), dirige el pago a la cuenta del negocio,
    y el cliente aprueba con el botón de PayPal. Cobra el monto EXACTO de la factura. */
 function payOrderCard(){
-  const user = (settings && settings.paypalMe) ? settings.paypalMe.trim() : '';
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
-  const userFinal = user || (cfg.paymeUser || '').trim();
-  if(!userFinal && !(settings && settings.paypalEmail)){
+  const hasEmail = !!(settings && settings.paypalEmail);
+  const hasMe = !!(settings && settings.paypalMe) || !!(cfg.paymeUser && String(cfg.paymeUser).trim());
+  if(!hasEmail && !hasMe){
     toast('Este negocio no tiene configurado el pago con tarjeta.', 'err'); return;
   }
-  const t = cartTotals();
-  if(!t.count){ toast('Tu canasta está vacía', 'err'); return; }
-  const local = (settings && settings.currency) || 'CRC';
-  const cur = (settings && settings.paypalCurrency) || (cfg.paymeCurrency || 'USD');
-  const amount = t.total || 0;
-  const btn = document.getElementById('cCardBtn');
-  if(btn){ btn.textContent = '💳 Convirtiendo a ' + cur + '…'; btn.disabled = true; }
-  convertCurrency(amount, local, cur).then(function(converted){
-    const amountFinal = Number(converted).toFixed(2);
-    if(btn){ btn.textContent = '💳 Pagar ' + amountFinal + ' ' + cur + ' con PayPal'; btn.disabled = false; }
-    if(user || !(settings && settings.paypalEmail)){
-      /* Opción simple con PayPal.Me (llega a la cuenta del admin) */
-      const url = 'https://www.paypal.com/paypalme/' + encodeURIComponent(user) + '?amount=' + amountFinal + '&currency=' + encodeURIComponent(cur);
-      window.open(url, '_blank', 'noopener');
-      toast('Abriendo pago por ' + amountFinal + ' ' + cur + '…', 'ok');
-    } else {
-      /* Checkout real: crear la orden en el servidor y cobrar el monto exacto */
-      renderPaypalCheckout(settings.paypalEmail, amountFinal, cur);
-    }
-  }).catch(function(){
-    if(btn){ btn.disabled = false; btn.textContent = '💳 Pagar con tarjeta (PayPal)'; }
-    toast('No se pudo convertir la moneda. Probá de nuevo.', 'err');
+  /* CREAR LA FACTURA PRIMERO: así el cobro coincide con el total de la factura
+     y se guarda el número (lastOrder) para la descripción y la notificación. */
+  createOrderFromCart().then(function(order){
+    if(!order){ const btn = document.getElementById('cCardBtn'); if(btn){ btn.textContent = '💳 Pagar el monto exacto con tarjeta (PayPal)'; btn.disabled = false; } return; }
+    const local = (settings && settings.currency) || 'CRC';
+    const cur = (settings && settings.paypalCurrency) || (cfg.paymeCurrency || 'USD');
+    const amount = order.total || 0;                 // TOTAL DE LA FACTURA (no del carrito)
+    const facturaNum = order.number || '';
+    const btn = document.getElementById('cCardBtn');
+    if(btn){ btn.textContent = '💳 Convirtiendo a ' + cur + '…'; btn.disabled = true; }
+    convertCurrency(amount, local, cur).then(function(converted){
+      const amountFinal = Number(converted).toFixed(2);
+      if(btn){ btn.textContent = '💳 Pagar ' + amountFinal + ' ' + cur + ' con PayPal'; btn.disabled = false; }
+      /* Si el negocio definió un email PayPal (Checkout real): usamos el botón
+         de Checkout, que confirma y notifica automáticamente el pago. Si no hay
+         email, caemos a PayPal.Me con monto dinámico (respaldo, sin confirmación
+         automática). El checkout también abre PayPal.Me si la API falla. */
+      if(settings && settings.paypalEmail){
+        renderPaypalCheckout(settings.paypalEmail, amountFinal, cur, facturaNum);
+      } else {
+        openPaypalMeDynamic(amountFinal, cur);
+      }
+    }).catch(function(){
+      if(btn){ btn.disabled = false; btn.textContent = '💳 Pagar con tarjeta (PayPal)'; }
+      toast('No se pudo convertir la moneda. Probá de nuevo.', 'err');
+    });
   });
 }
+/* Abre un enlace PayPal.Me con el monto dinámico del pago. Usa el usuario
+   configurado por el negocio (paypalMe) o, si no, el del superadmin (paymeUser).
+   Garantiza que SIEMPRE se muestre el monto a pagar, sin depender del Checkout API. */
+function openPaypalMeDynamic(amount, currency){
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const me = (settings && settings.paypalMe ? String(settings.paypalMe).trim() : '') ||
+             (cfg.paymeUser ? String(cfg.paymeUser).trim() : '');
+  if(!me){ toast('No hay PayPal.Me configurado. Contactá al administrador.', 'warn'); return; }
+  const amt = Number(amount || 0).toFixed(2);
+  const cur = currency || (cfg.paymeCurrency || 'USD');
+  const url = 'https://www.paypal.com/paypalme/' + encodeURIComponent(me) + '?amount=' + amt + '&currency=' + encodeURIComponent(cur);
+  window.open(url, '_blank', 'noopener');
+  toast('Abriendo pago de ' + amt + ' ' + cur + '…', 'ok');
+}
+
 /* Renderiza un Smart Button de PayPal que cobra el monto exacto (CHECKOUT).
    La orden la crea el SERVIDOR (paypalCreateOrder), no el navegador, para no
    exponer el secreto. El pago se dirige a la cuenta del negocio (payeeEmail). */
-function renderPaypalCheckout(payeeEmail, amount, currency){
+function renderPaypalCheckout(payeeEmail, amount, currency, facturaNum){
   const box = document.getElementById('paypalCheckoutBox');
   if(!box) return;
   box.style.display = 'block';
   box.innerHTML = '';
   if(typeof paypal === 'undefined' || !paypal.Buttons){
     box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Cargando botón de PayPal…</div>';
-    setTimeout(function(){ renderPaypalCheckout(payeeEmail, amount, currency); }, 600);
+    setTimeout(function(){ renderPaypalCheckout(payeeEmail, amount, currency, facturaNum); }, 600);
     return;
   }
   try{
     var btn = paypal.Buttons({
       style: { layout:'vertical', label:'paypal', shape:'rect', color:'blue' },
       createOrder: function(data, actions){
-        /* Pedir la orden al servidor (sin exponer secretos) */
-        return cloudCallPublic('paypalCreateOrder', { amount: parseFloat(amount), currency: currency, description: 'Pago de factura — ' + (settings.storeName||'Tienda'), payeeEmail: payeeEmail }).then(function(res){
+        /* Pedir la orden al servidor (sin exponer secretos) con el monto de la factura */
+        var desc = 'Pago de factura ' + (facturaNum ? facturaNum : dateOrderNumber()) + ' — ' + (settings.storeName||'Tienda');
+        return cloudCallPublic('paypalCreateOrder', { amount: parseFloat(amount), currency: currency, description: desc, payeeEmail: payeeEmail }).then(function(res){
           if(!res || !res.orderId){
-            /* FALLBACK: si el checkout no se puede crear, abrir el enlace de pago del superadmin */
-            toast('Abriendo enlace seguro de pago…', 'ok');
-            window.open('https://www.paypal.com/ncp/payment/PXZBAVMCHJ22W', '_blank', 'noopener');
+            /* FALLBACK: abrir PayPal.Me con el monto dinámico para que el cliente
+               pague el importe exacto aunque el Checkout API no esté disponible. */
+            openPaypalMeDynamic(amount, currency);
             return actions.reject();
           }
           if(res.payeeApplied === false){
@@ -6663,7 +6765,11 @@ function renderPaypalCheckout(payeeEmail, amount, currency){
         });
       },
       onApprove: function(data, actions){
-        return cloudCallPublic('paypalCaptureOrder', { orderId: data.orderID }).then(function(res){
+        var orderInfo = null;
+        try{
+          if(lastOrder){ orderInfo = { number: lastOrder.number, total: lastOrder.total, customer: lastOrder.customer }; }
+        }catch(e){}
+        return cloudCallPublic('paypalCaptureOrder', { orderId: data.orderID, slug: TENANT_ID, orderInfo: orderInfo }).then(function(res){
           if(res && res.status){
             toast('✅ Pago aprobado por PayPal. ¡Gracias!', 'ok');
             try{
@@ -6708,8 +6814,12 @@ function refreshCheckoutCardBtn(){
     const cur = (settings && settings.paypalCurrency) || (cfg.paymeCurrency || 'USD');
     const t = cartTotals();
     if(t && t.count){
-      convertCurrency(t.total || 0, local, cur).then(function(conv){
-        if(!b.disabled) b.textContent = '💳 Pagar ' + Number(conv).toFixed(2) + ' ' + cur + ' con PayPal';
+      const totalLocal = t.total || 0;
+      convertCurrency(totalLocal, local, cur).then(function(conv){
+        if(!b.disabled){
+          /* Mostrar el total en moneda local + equivalente en dólares */
+          b.textContent = '💳 Pagar ' + fmt(totalLocal) + ' ≈ ' + Number(conv).toFixed(2) + ' ' + cur + ' con PayPal';
+        }
       }).catch(function(){});
     }
   }
@@ -8866,6 +8976,34 @@ async function refreshMaskedAiKeys(){
   }
 }
 
+/* Carga la config de WhatsApp de pagos del negocio desde privateSettings */
+async function loadBizWhatsappConfig(){
+  try{
+    const snap = await privateSettingsRef.get();
+    const p = (snap.exists && snap.data()) || {};
+    const wpr = document.getElementById('sWaProvider');
+    if(wpr) wpr.value = p.waProvider || 'twilio';
+    const sid = document.getElementById('sWaSid');
+    if(sid) sid.value = p.waSid || '';
+    const auth = document.getElementById('sWaAuth');
+    if(auth) auth.value = p.waAuth || '';
+    const from = document.getElementById('sWaFrom');
+    if(from) from.value = p.waFrom || 'whatsapp:+14155238886';
+    const tok = document.getElementById('sWaToken');
+    if(tok) tok.value = p.waToken || '';
+    const ph = document.getElementById('sWaPhoneId');
+    if(ph) ph.value = p.waPhoneId || '';
+    onBizWaProviderChange();
+  }catch(e){ console.warn('No se pudo cargar config WhatsApp del negocio:', e && e.message); }
+}
+/* Muestra/oculta el bloque Twilio/Meta según el proveedor (negocio) */
+function onBizWaProviderChange(){
+  var v = document.getElementById('sWaProvider') ? document.getElementById('sWaProvider').value : 'twilio';
+  var tw = document.getElementById('sBizWaTwilio');
+  var meta = document.getElementById('sBizWaMeta');
+  if(tw) tw.style.display = v === 'meta' ? 'none' : 'block';
+  if(meta) meta.style.display = v === 'meta' ? 'block' : 'none';
+}
 function loadSettingsForm(){
   document.getElementById('sName').value = settings.storeName;
   document.getElementById('sTag').value = settings.tagline;
@@ -8965,6 +9103,8 @@ renderBizImageGrid();
   renderBackupList();
   refreshStorePasswordStatus();
   showPermDebugHint();
+  // Config de WhatsApp de pagos: viene del privateSettings del negocio
+  loadBizWhatsappConfig();
   // Plan destacado / profesional / emprendedor
   const sponsEl = document.getElementById('sponsoredStatus');
   if(sponsEl){
@@ -9593,8 +9733,10 @@ async function saveSettings(){
   const sinpe = document.getElementById('sSinpe').value.trim();
   const wa = waDigits(document.getElementById('sWa').value);
   if(!name){ toast('El nombre de la tienda es obligatorio', 'err'); return; }
-  if(waDigits(sinpe).length < 8){ toast('Ingresá un número SINPE válido (8 dígitos)', 'err'); return; }
-  if(wa.length < 11){ toast('Ingresá el WhatsApp con código de país (506…)', 'err'); return; }
+  /* Validaciones suaves: avisan pero NO bloquean el guardado, para que los
+     demás cambios (IVA, descuento, precios, etc.) siempre se guarden. */
+  if(waDigits(sinpe).length < 8 && waDigits(sinpe).length > 0){ toast('Aviso: el SINPE tiene menos de 8 dígitos. Revisá el número.', 'warn'); }
+  if(wa.length > 0 && wa.length < 11){ toast('Aviso: el WhatsApp debería incluir el código de país (ej. 506+teléfono).', 'warn'); }
   if(document.getElementById('sAiEnabled').checked && !planAllows('ai-assistant')){
     toast('El Asistente de IA es exclusivo del Plan Destacado. Subí de plan para activarlo.', 'err');
     document.getElementById('sAiEnabled').checked = false;
@@ -9629,8 +9771,8 @@ const cats = document.getElementById('sCats').value.split(',').map(s=>s.trim()).
     bingoUrl:document.getElementById('sBingoUrl').value.trim(),
     bingoLabel:document.getElementById('sBingoLabel').value.trim() || 'Bingo de Plantas',
     bingoIcon: pendingBingoIcon !== null ? pendingBingoIcon : (settings.bingoIcon||''),
-    iva: parseFloat(document.getElementById('sIva').value) || 13,
-    globalDiscountPercent: parseFloat(document.getElementById('sDiscount').value) || 0,
+    iva: (function(){ var v = parseFloat(document.getElementById('sIva').value); return isNaN(v) ? settings.iva||13 : Math.max(0, Math.min(100, v)); })(),
+    globalDiscountPercent: (function(){ var v = parseFloat(document.getElementById('sDiscount').value); return isNaN(v) ? 0 : Math.max(0, Math.min(100, v)); })(),
     facturaEmisor: document.getElementById('sFacturaRazon').value.trim() || settings.storeName,
     facturaCedula: document.getElementById('sFacturaCedula').value.trim(),
     facturaRazon: document.getElementById('sFacturaRazon').value.trim(),
@@ -9683,6 +9825,19 @@ try{
     if(newORKey && newORKey !== _masked.openrouter) priv.aiOpenrouterKey = newORKey;
     if(newGemKey && newGemKey !== _masked.gemini) priv.aiApiKey = newGemKey;
     if(newExtKey && newExtKey !== _masked.external) priv.aiExternalKey = newExtKey;
+    /* Config de notificación de pagos por WhatsApp del NEGOCIO (privada) */
+    const wProvEl = document.getElementById('sWaProvider');
+    const wSidEl = document.getElementById('sWaSid');
+    const wAuthEl = document.getElementById('sWaAuth');
+    const wFromEl = document.getElementById('sWaFrom');
+    const wTokEl = document.getElementById('sWaToken');
+    const wPhEl = document.getElementById('sWaPhoneId');
+    if(wProvEl) priv.waProvider = wProvEl.value || 'twilio';
+    if(wSidEl) priv.waSid = wSidEl.value.trim();
+    if(wAuthEl) priv.waAuth = wAuthEl.value.trim();
+    if(wFromEl) priv.waFrom = wFromEl.value.trim() || 'whatsapp:+14155238886';
+    if(wTokEl) priv.waToken = wTokEl.value.trim();
+    if(wPhEl) priv.waPhoneId = wPhEl.value.trim();
     if(Object.keys(priv).length) await privateSettingsRef.set(priv, { merge:true });
     /* Refrescar el flag público "aiConfigured" con el estado real del backend
        (el navegador no puede saber si hay clave: solo el servidor). */
@@ -11305,6 +11460,9 @@ const DEFAULT_PLAN_CONFIG = {
      de cobro. El monto se envía dinámicamente en el enlace. */
   paymeUser: '',
   paymeCurrency: 'USD',
+  /* Tasa de cambio forzada (opcional): { 'CRC:USD': 0.00026 }. Si está vacío,
+     se usa el tipo de cambio del BCCR en tiempo real. */
+  fxRates: {},
   paypalButtons: {
     emprendedor: { monthly: 'YUZDRC8347WRL', quarterly: 'EHXRKLZU2BTG2', yearly: '6WUEDY8WY389C' },
     profesional: { monthly: 'M3LSVWWH7ZUF8', quarterly: 'F7JYKDKJGS8DE', yearly: 'KAPMX24JYSXLQ' },
@@ -11390,6 +11548,11 @@ async function savePlanConfig(){
   if(pmEl) planConfig.paymeUser = pmEl.value.trim().replace(/^https?:\/\/paypal\.me\//i,'').replace(/@/g,'');
   const pmC = document.getElementById('saPaymeCurrency');
   if(pmC) planConfig.paymeCurrency = pmC.value;
+  /* Tasa de cambio forzada CRC→USD (si el superadmin la define) */
+  const fxEl = document.getElementById('saFxRate');
+  var fxRates = planConfig.fxRates = planConfig.fxRates || {};
+  if(fxEl && fxEl.value.trim()) fxRates['CRC:USD'] = parseFloat(fxEl.value) || 0;
+  else delete fxRates['CRC:USD'];
   const inputs = wrap.querySelectorAll('[data-plan-field]');
   const newPlans = [];
   const newPeriods = [];
@@ -11551,6 +11714,7 @@ function pickTermsPdf(){
   inp.click();
 }
 
+/* Muestra/oculta el bloque de config de WhatsApp según el proveedor */
 function loadLandingConfigFields(){
   try{
     const l = (planConfig && planConfig.landing) || DEFAULT_PLAN_CONFIG.landing || {};
@@ -11917,7 +12081,11 @@ function renderPlanConfigUI(){
         '<option value="CRC"' + ((planConfig.paymeCurrency||'')==='CRC'?' selected':'') + '>CRC ₡</option>' +
       '</select>' +
     '</div>' +
-    '<div style="font-size:11.5px;color:var(--muted);margin-top:4px">El cliente paga el monto exacto del plan/período de forma dinámica vía PayPal.Me (tarjeta o saldo PayPal). Dejá el usuario de paypal.me (sin el "paypal.me/").</div>' +
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">' +
+      '<b style="font-size:12px;min-width:110px">Tasa CRC→USD (opcional)</b>' +
+      '<input class="f-input" id="saFxRate" placeholder="Ej: 0.00026 (vacío = usar BCCR en tiempo real)" value="' + esc((planConfig.fxRates && planConfig.fxRates['CRC:USD']) || '') + '" style="flex:1;min-width:220px">' +
+    '</div>' +
+    '<div style="font-size:11.5px;color:var(--muted);margin-top:4px">Si lo dejás vacío, la plataforma usa en <b>tiempo real</b> el tipo de cambio del Banco Central de Costa Rica (BCCR) para mostrar el equivalente en dólares. Podés forzar una tasa aquí.</div>' +
   '</div>';
   html += '</div>';
   wrap.innerHTML = html;
