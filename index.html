@@ -1723,7 +1723,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 <body>
 
 <!-- SDK de PayPal (bolsones de pago alojados) — se carga 1 sola vez por página -->
-<script src="https://www.paypal.com/sdk/js?client-id=BAAJONAw-87NQh8DWWyPrGWNQNj8qnMnWgFNh8jgqtSB34M5kuncUoUd2ODCggi8UU09yjjIqo3EcS8Cug&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=BAAJONAw-87NQh8DWWyPrGWNQNj8qnMnWgFNh8jgqtSB34M5kuncUoUd2ODCggi8UU09yjjIqo3EcS8Cug&components=buttons,hosted-buttons&disable-funding=venmo&currency=USD"></script>
 
 
 <!-- ================= SELECTOR DE NEGOCIOS (ESTILO TREINTA) =================
@@ -2004,6 +2004,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div class="f-group"><label>Notas del pedido (opcional)</label><input class="f-input" id="cNotes" placeholder="Ej: entregar en la mañana"></div>
         <button class="btn-primary" onclick="submitOrder()">Generar factura y pagar con <span id="cPayLabel">menor</span></button>
         <button class="btn-export" id="cCardBtn" style="width:100%;margin-top:8px;display:none" onclick="payOrderCard()">💳 Pagar el monto exacto con tarjeta (PayPal)</button>
+        <div id="paypalCheckoutBox" style="width:100%;margin-top:8px;display:none"></div>
         <p class="hint" style="text-align:center;margin-top:10px">Al continuar se genera tu factura con el monto exacto a transferir.</p>
       </div>
 
@@ -2417,7 +2418,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div class="f-row">
           <div class="f-group">
             <label>Moneda / divisa</label>
-            <select class="f-input" id="sCurrency">
+            <select class="f-input" id="sCurrency" onchange="onCurrencyChange(this)">
               <option value="CRC">🇨🇷 Colones (₡) — Costa Rica</option>
               <option value="USD">🇺🇸 Dólares ($)</option>
               <option value="EUR">🇪🇺 Euros (€)</option>
@@ -4023,6 +4024,88 @@ function updateOrdersNavBadge(){
 }
 
 async function saveSettingsToDB(data){ await settingsRef.set(data, {merge:true}); }
+/* Se dispara al cambiar la divisa en Configuraciones: convierte los precios */
+async function onCurrencyChange(el){
+  var newCur = el.value;
+  var oldCur = (settings && settings.currency) || 'CRC';
+  if(newCur === oldCur) return;
+  /* Si el admin es posible, convertir precios; si no, avisar que necesita cargar catálogo */
+  if(typeof convertStorePrices === 'function'){
+    try{
+      var res = await convertStorePrices(oldCur, newCur);
+      if(res && res.done){
+        /* Refrescar la divisa global y el formulario */
+        _CURRENCY = newCur;
+        settings.currency = newCur;
+        renderGrid && renderGrid();
+        updateCartUI && updateCartUI();
+      }
+    }catch(e){ console.error(e); }
+  }
+}
+/* ---------- CONVERSIÓN DE DIVISA DE PRECIOS ----------
+   Cuando el admin cambia la divisa del negocio, convierte TODOS los precios
+   (productos, variantes, costos, precios comparativos y ofertas) de la divisa
+   anterior a la nueva, y guarda los cambios en Firestore. El total del carrito
+   también se recalcula en vivo con fmt() usando la nueva divisa. */
+async function convertStorePrices(fromCur, toCur){
+  if(fromCur === toCur) return { done:0 };
+  try{
+    var rate = await getFxRate(fromCur, toCur);
+    if(!rate){ toast('No se pudo obtener la tasa de ' + fromCur + '→' + toCur + '. Convertí a mano o probá más tarde.', 'err'); return null; }
+    if(!confirm('Se convertirán TODOS los precios de "' + fromCur + '" a "' + toCur + '" (x' + rate.toFixed(5) + ').\n\n¿Continuar?')) return null;
+    toast('Convirtiendo precios…', 'ok');
+    var done = 0;
+    /* Recorrer el catálogo local (products ya cargado) y actualizar cada doc */
+    var batch = db.batch();
+    var ops = 0;
+    for(var i = 0; i < products.length; i++){
+      var p = products[i];
+      var patch = {};
+      var changed = false;
+      if(p.price != null){ patch.price = Math.round(p.price * rate); changed = true; }
+      if(p.compareAtPrice != null){ patch.compareAtPrice = Math.round(p.compareAtPrice * rate); changed = true; }
+      if(p.cost != null){ patch.cost = Math.round(p.cost * rate); changed = true; }
+      if(p.hasVariants && Array.isArray(p.variants)){
+        patch.variants = p.variants.map(function(v){
+          var nv = Object.assign({}, v);
+          if(v.price != null){ nv.price = Math.round(v.price * rate); }
+          return nv;
+        });
+        changed = true;
+      }
+      if(changed){
+        var ref = productsCol.doc(p.id);
+        batch.set(ref, patch, { merge:true });
+        ops++;
+        if(ops >= 400){ await batch.commit(); batch = db.batch(); ops = 0; }
+        done++;
+      }
+    }
+    await batch.commit();
+    /* Recargar catálogo y re-renderizar */
+    productsReady = false;
+    toast('Se convirtieron ' + done + ' productos a ' + toCur + ' ✓', 'ok');
+    return { done: done, rate: rate };
+  }catch(e){
+    console.error('convertStorePrices:', e);
+    toast('No se pudieron convertir los precios: ' + ((e && e.message)||'error'), 'err');
+    return null;
+  }
+}
+/* Tasa de cambio entre dos divisas (API gratuita, con caché y respaldo) */
+async function getFxRate(from, to){
+  if(from === to) return 1;
+  try{
+    var r = await fetch('https://api.frankfurter.app/latest?from=' + from + '&to=' + to);
+    var j = await r.json();
+    if(j && j.rates && j.rates[to]) return j.rates[to];
+  }catch(e){ console.warn('Fx error:', e); }
+  /* Respaldo común */
+  if(from === 'CRC' && to === 'USD') return 0.00026;
+  if(from === 'CRC' && to === 'EUR') return 0.00024;
+  return null;
+}
 /* Migración segura: mueve claves que aún estén en el doc PÚBLICO
    tenants/{slug}/settings/store hacia la subcolección PRIVADA
    tenants/{slug}/privateSettings/ai y las borra del público. NO elimina
@@ -6506,8 +6589,10 @@ async function convertCurrency(amount, from, to){
   var fallback = from === 'CRC' ? 0.00026 : (from === 'EUR' ? 1.08 : 1);
   return amount * fallback;
 }
-/* Pago del pedido con tarjeta (PayPal.Me) con monto dinámico del carrito.
-   Usa el PayPal.me del NEGOCIO (settings.paypalMe); si no hay, el del superadmin. */
+/* Pago del pedido con PayPal: cobra el monto EXACTO de la factura del carrito.
+   - Si el NEGOCIO configuró su PayPal.Me, se abre su enlace con el monto exacto
+     (el dinero llega a la cuenta del administrador).
+   - Si no, se usa un botón de PayPal Checkout (llega a la cuenta del client-id). */
 function payOrderCard(){
   const user = (settings && settings.paypalMe) ? settings.paypalMe.trim() : '';
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
@@ -6522,15 +6607,58 @@ function payOrderCard(){
   if(btn){ btn.textContent = '💳 Convirtiendo a ' + cur + '…'; btn.disabled = true; }
   convertCurrency(amount, local, cur).then(function(converted){
     const amountFinal = Number(converted).toFixed(2);
-    /* URL CANÓNICA de PayPal.Me (usa paypal.com/paypalme/ → sin error "nothing found") */
-    const url = 'https://www.paypal.com/paypalme/' + encodeURIComponent(userFinal) + '?amount=' + amountFinal + '&currency=' + encodeURIComponent(cur);
-    if(btn){ btn.textContent = '💳 Pagar ' + amountFinal + ' ' + cur + ' con tarjeta (PayPal)'; btn.disabled = false; }
-    window.open(url, '_blank', 'noopener');
-    toast('Abriendo pago por ' + amountFinal + ' ' + cur + '…', 'ok');
+    if(btn){ btn.textContent = '💳 Pagar ' + amountFinal + ' ' + cur + ' con PayPal'; btn.disabled = false; }
+    if(user){
+      /* 1º: enlace de PayPal.Me del negocio → el dinero llega a SU cuenta */
+      const url = 'https://www.paypal.com/paypalme/' + encodeURIComponent(user) + '?amount=' + amountFinal + '&currency=' + encodeURIComponent(cur);
+      window.open(url, '_blank', 'noopener');
+      toast('Abriendo pago por ' + amountFinal + ' ' + cur + '…', 'ok');
+    } else {
+      /* 2º: respaldo con botón de checkout (cuenta del client-id) */
+      renderPaypalCheckout(userFinal, amountFinal, cur);
+    }
   }).catch(function(){
     if(btn){ btn.disabled = false; btn.textContent = '💳 Pagar con tarjeta (PayPal)'; }
     toast('No se pudo convertir la moneda. Probá de nuevo.', 'err');
   });
+}
+/* Renderiza un Smart Button de PayPal que cobra el monto exacto (checkout) */
+function renderPaypalCheckout(payee, amount, currency){
+  const box = document.getElementById('paypalCheckoutBox');
+  if(!box) return;
+  box.innerHTML = '';
+  if(typeof paypal === 'undefined' || !paypal.Buttons){
+    box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Cargando botón de PayPal…</div>';
+    setTimeout(function(){ renderPaypalCheckout(payee, amount, currency); }, 600);
+    return;
+  }
+  try{
+    var btn = paypal.Buttons({
+      style: { layout:'vertical', label:'paypal', shape:'rect', color:'blue' },
+      createOrder: function(data, actions){
+        /* PayPal se registra a nombre del negocio (payee_email no aplica en
+           SDK JS libre; se cobra a la cuenta del cliente-id configurado). */
+        return actions.order.create({
+          purchase_units: [{
+            description: 'Pago de factura — ' + (settings.storeName||'Tienda'),
+            amount: { currency_code: currency, value: amount }
+          }]
+        });
+      },
+      onApprove: function(data, actions){
+        return actions.order.capture().then(function(details){
+          toast('✅ Pago aprobado por PayPal. ¡Gracias!', 'ok');
+          try{
+            /* Marcar que el pedido se pagó por PayPal (si hay pedido abierto) */
+            if(lastOrder && lastOrder.number){
+              ordersCol.doc(lastOrder.number).update({ checkPayMethod:'PayPal', payStatus:'pagado' }).catch(function(){});
+            }
+          }catch(e){}
+        });
+      }
+    });
+    btn.render('#paypalCheckoutBox');
+  }catch(e){ console.error(e); box.innerHTML = '<div style="font-size:12px;color:var(--danger);text-align:center;padding:10px">No se pudo cargar el botón de PayPal.</div>'; }
 }
 /* Actualiza el botón de tarjeta con el monto convertido según el carrito */
 function refreshCheckoutCardBtn(){
@@ -6551,7 +6679,7 @@ function refreshCheckoutCardBtn(){
     const t = cartTotals();
     if(t && t.count){
       convertCurrency(t.total || 0, local, cur).then(function(conv){
-        if(!b.disabled) b.textContent = '💳 Pagar ' + Number(conv).toFixed(2) + ' ' + cur + ' en PayPal';
+        if(!b.disabled) b.textContent = '💳 Pagar ' + Number(conv).toFixed(2) + ' ' + cur + ' con PayPal';
       }).catch(function(){});
     }
   }
