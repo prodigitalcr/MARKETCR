@@ -6251,6 +6251,7 @@ function updateCartUI(){
       '</div></div>';
   }).join('');
   renderCartRelated();
+  if(typeof refreshCheckoutCardBtn === 'function') refreshCheckoutCardBtn();
 }
 function renderCartRelated(){
   const box = document.getElementById('cartRelatedWrap');
@@ -6479,6 +6480,32 @@ function showInvoice(order){
   const waURL = 'https://wa.me/' + waDigits(settings.whatsapp) + '?text=' + encodeURIComponent(lines.join('\n'));
   document.getElementById('waReceiptBtn').onclick = () => { window.open(waURL, '_blank'); };
 }
+/* ================= CONVERSIÓN DE DIVISA (local → divisa PayPal) =================
+   Usa la API gratuita https://api.frankfurter.app (sin clave) para convertir el
+   monto de la moneda local del negocio (settings.currency) a la divisa en la
+   que cobra el administrador (paypalCurrency). Cachea la tasa por país origen.
+   Si la API falla, usa una tasa de respaldo configurable. */
+let _fx = {}; // { 'CRC:USD': 0.00026 }
+function _fxRate(from, to){
+  var key = (from||'CRC') + ':' + (to||'USD');
+  if(_fx[key]) return _fx[key];
+  return null;
+}
+async function convertCurrency(amount, from, to){
+  from = from || 'CRC'; to = to || 'USD';
+  if(from === to) return amount;
+  try{
+    var cached = _fxRate(from, to);
+    if(cached != null) return amount * cached;
+    var r = await fetch('https://api.frankfurter.app/latest?from=' + from + '&to=' + to);
+    var j = await r.json();
+    var rate = j && j.rates && j.rates[to];
+    if(rate){ _fx[from + ':' + to] = rate; return amount * rate; }
+  }catch(e){ console.warn('No se pudo obtener la tasa de cambio:', e); }
+  /* Respaldo: si no hay tasa, usar una por defecto */
+  var fallback = from === 'CRC' ? 0.00026 : (from === 'EUR' ? 1.08 : 1);
+  return amount * fallback;
+}
 /* Pago del pedido con tarjeta (PayPal.Me) con monto dinámico del carrito.
    Usa el PayPal.me del NEGOCIO (settings.paypalMe); si no hay, el del superadmin. */
 function payOrderCard(){
@@ -6488,14 +6515,24 @@ function payOrderCard(){
   if(!userFinal){ toast('Este negocio no tiene configurado el pago con tarjeta.', 'err'); return; }
   const t = cartTotals();
   if(!t.count){ toast('Tu canasta está vacía', 'err'); return; }
-  const amount = t.total || 0;
+  const local = (settings && settings.currency) || 'CRC';
   const cur = (settings && settings.paypalCurrency) || (cfg.paymeCurrency || 'USD');
-  const url = 'https://paypal.me/' + encodeURIComponent(userFinal) + '?amount=' + Number(amount).toFixed(2) + '&currency=' + encodeURIComponent(cur);
-  document.getElementById('cCardBtn').textContent = '💳 Pagar ' + amount.toFixed(2) + ' ' + cur + ' con tarjeta (PayPal)';
-  window.open(url, '_blank', 'noopener');
-  toast('Abriendo pago con tarjeta por ' + fmt(amount) + '…', 'ok');
+  const amount = t.total || 0;
+  const btn = document.getElementById('cCardBtn');
+  if(btn){ btn.textContent = '💳 Convirtiendo a ' + cur + '…'; btn.disabled = true; }
+  convertCurrency(amount, local, cur).then(function(converted){
+    const amountFinal = Number(converted).toFixed(2);
+    /* URL CANÓNICA de PayPal.Me (usa paypal.com/paypalme/ → sin error "nothing found") */
+    const url = 'https://www.paypal.com/paypalme/' + encodeURIComponent(userFinal) + '?amount=' + amountFinal + '&currency=' + encodeURIComponent(cur);
+    if(btn){ btn.textContent = '💳 Pagar ' + amountFinal + ' ' + cur + ' con tarjeta (PayPal)'; btn.disabled = false; }
+    window.open(url, '_blank', 'noopener');
+    toast('Abriendo pago por ' + amountFinal + ' ' + cur + '…', 'ok');
+  }).catch(function(){
+    if(btn){ btn.disabled = false; btn.textContent = '💳 Pagar con tarjeta (PayPal)'; }
+    toast('No se pudo convertir la moneda. Probá de nuevo.', 'err');
+  });
 }
-/* Muestra el botón de pago con tarjeta en el checkout si el negocio lo configuró */
+/* Actualiza el botón de tarjeta con el monto convertido según el carrito */
 function refreshCheckoutCardBtn(){
   const b = document.getElementById('cCardBtn');
   if(!b) return;
@@ -6503,11 +6540,21 @@ function refreshCheckoutCardBtn(){
   const own = settings && settings.paypalMe ? String(settings.paypalMe).trim() : '';
   const has = own || (cfg.paymeUser && String(cfg.paymeUser).trim());
   b.style.display = has ? 'block' : 'none';
-  /* Refrescar el nombre del método de pago local en el botón */
   const lbl = document.getElementById('cPayLabel');
   if(lbl) lbl.textContent = settings.payMethodLabel || 'SINPE';
   const lbl2 = document.getElementById('step2PayLabel');
   if(lbl2) lbl2.textContent = settings.payMethodLabel || 'SINPE';
+  /* Pre-convertir el monto del carrito y mostrarlo en la divisa de PayPal */
+  if(has && !b.disabled){
+    const local = (settings && settings.currency) || 'CRC';
+    const cur = (settings && settings.paypalCurrency) || (cfg.paymeCurrency || 'USD');
+    const t = cartTotals();
+    if(t && t.count){
+      convertCurrency(t.total || 0, local, cur).then(function(conv){
+        if(!b.disabled) b.textContent = '💳 Pagar ' + Number(conv).toFixed(2) + ' ' + cur + ' en PayPal';
+      }).catch(function(){});
+    }
+  }
 }
 
 function printInvoice(){
@@ -9409,7 +9456,12 @@ const cats = document.getElementById('sCats').value.split(',').map(s=>s.trim()).
     categories: cats.length ? cats : ['General'],    sinpe, whatsapp: wa,
     currency: ['CRC','USD','EUR'].includes(document.getElementById('sCurrency').value) ? document.getElementById('sCurrency').value : 'CRC',
     payMethodLabel: document.getElementById('sPayMethodLabel').value.trim() || 'SINPE',
-    paypalMe: document.getElementById('sPaypalMe').value.trim().replace(/^https?:\/\/paypal\.me\//i,'').replace(/@/g,''),
+    paypalMe: (function(){
+      var raw = document.getElementById('sPaypalMe').value.trim();
+      /* Extraer solo el usuario: acepta paypal.me/user, paypal.com/paypalme/user, www… */
+      raw = raw.replace(/^https?:\/\/(www\.)?paypal\.(com|me)\/paypalme\//i,'').replace(/^https?:\/\/(www\.)?paypal\.me\//i,'').replace(/[?#].*$/,'').replace(/^\/+|\/+$/g,'');
+      return raw.replace(/@/g,'');
+    })(),
     paypalCurrency: ['USD','EUR','CRC'].includes(document.getElementById('sPaypalCurrency').value) ? document.getElementById('sPaypalCurrency').value : 'USD',
     websiteUrl:document.getElementById('sWebUrl').value.trim(),
     websiteLabel:document.getElementById('sWebLabel').value.trim() || 'Sitio web',
