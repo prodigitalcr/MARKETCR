@@ -3820,7 +3820,7 @@ const DEFAULT_SETTINGS = {
   currency:'CRC', // CRC (colones ₡) | USD (dólares $) | EUR (euros €) — se usa en todo
   payMethodLabel:'SINPE', // nombre del método de pago local (editable; en otros países puede ser otro)
   paypalMe:'', // usuario de PayPal.me del negocio (pago del carrito por tarjeta por el cliente)
-  paypalEmail:'', // email de PayPal del negocio (para que el checkout dirija el pago a su cuenta)
+  paypalEmail:'rubynica@outlook.es', // email de PayPal del negocio (para que el checkout dirija el pago a su cuenta)
   paypalCurrency:'USD', // divisa en la que cobra el cliente por PayPal.me
   whatsapp:'50688888888',
   categories:['Plantas','Productos','Servicios'],
@@ -6650,7 +6650,15 @@ function renderPaypalCheckout(payeeEmail, amount, currency){
       createOrder: function(data, actions){
         /* Pedir la orden al servidor (sin exponer secretos) */
         return cloudCallPublic('paypalCreateOrder', { amount: parseFloat(amount), currency: currency, description: 'Pago de factura — ' + (settings.storeName||'Tienda'), payeeEmail: payeeEmail }).then(function(res){
-          if(!res || !res.orderId){ return actions.reject(); }
+          if(!res || !res.orderId){
+            /* FALLBACK: si el checkout no se puede crear, abrir el enlace de pago del superadmin */
+            toast('Abriendo enlace seguro de pago…', 'ok');
+            window.open('https://www.paypal.com/ncp/payment/PXZBAVMCHJ22W', '_blank', 'noopener');
+            return actions.reject();
+          }
+          if(res.payeeApplied === false){
+            toast('⚠ El pago se hará a la cuenta de la plataforma. Verificá el email de PayPal del negocio.', 'warn');
+          }
           return res.orderId;
         });
       },
