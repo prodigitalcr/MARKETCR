@@ -2002,8 +2002,9 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
         <div class="f-group"><label>Dirección / Ubicación <span class="req">*</span></label><textarea class="f-input" id="cAddress" placeholder="Provincia, cantón, distrito y señas"></textarea></div>
         <div class="f-group"><label>Notas del pedido (opcional)</label><input class="f-input" id="cNotes" placeholder="Ej: entregar en la mañana"></div>
-        <button class="btn-primary" onclick="submitOrder()">Generar factura y pagar con SINPE</button>
-        <p class="hint" style="text-align:center;margin-top:10px">Al continuar se genera tu factura con el monto exacto a transferir por SINPE Móvil.</p>
+        <button class="btn-primary" onclick="submitOrder()">Generar factura y pagar con <span id="cPayLabel">menor</span></button>
+        <button class="btn-export" id="cCardBtn" style="width:100%;margin-top:8px;display:none" onclick="payOrderCard()">💳 Pagar el monto exacto con tarjeta (PayPal)</button>
+        <p class="hint" style="text-align:center;margin-top:10px">Al continuar se genera tu factura con el monto exacto a transferir.</p>
       </div>
 
       <!-- Paso 2: factura + pago -->
@@ -2011,7 +2012,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div class="order-ok">
           <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></div>
           <h4>¡Pedido registrado!</h4>
-          <p>Realizá el SINPE por el monto exacto y envianos el comprobante.</p>
+          <p>Realizá el <b id="step2PayLabel">método de pago</b> local por el monto exacto y envianos el comprobante.</p>
         </div>
         <div class="invoice" id="invoiceBox"></div>
         <div class="inv-actions">
@@ -2408,6 +2409,42 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <h4><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg>WhatsApp del negocio</h4>
         <div class="desc">A este número llegarán los comprobantes de pago y consultas de clientes. Incluí el código de país (506 para Costa Rica).</div>
         <div class="f-group"><label>Número de WhatsApp (con código de país)</label><input class="f-input" id="sWa" placeholder="Ej: 50688888888" inputmode="tel"></div>
+      </div>
+
+      <div class="settings-card">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Moneda y método de pago</h4>
+        <div class="desc">Elegí la divisa en la que mostrás precios (productos, variantes, facturas y reportes) y el nombre del método de pago local. Se refleja en toda la tienda.</div>
+        <div class="f-row">
+          <div class="f-group">
+            <label>Moneda / divisa</label>
+            <select class="f-input" id="sCurrency">
+              <option value="CRC">🇨🇷 Colones (₡) — Costa Rica</option>
+              <option value="USD">🇺🇸 Dólares ($)</option>
+              <option value="EUR">🇪🇺 Euros (€)</option>
+            </select>
+          </div>
+          <div class="f-group">
+            <label>Nombre del método de pago local</label>
+            <input class="f-input" id="sPayMethodLabel" placeholder="Ej: SINPE, Yape, Bizum, Nequi">
+            <div class="hint" style="margin-top:4px">Es el nombre que aparece en el botón/aviso de pago local (por defecto "SINPE").</div>
+          </div>
+        </div>
+        <div class="f-row" style="margin-top:10px">
+          <div class="f-group" style="flex:1;min-width:200px">
+            <label>Tu usuario de PayPal.Me (pago del carrito con tarjeta)</label>
+            <input class="f-input" id="sPaypalMe" placeholder="Ej: tunegocio (para paypal.me/tunegocio)">
+            <div class="hint" style="margin-top:4px">El cliente podrá pagar el <b>monto de su factura</b> con tarjeta a esta cuenta. Dejalo vacío para ocultar la opción.</div>
+          </div>
+          <div class="f-group" style="max-width:150px">
+            <label>Divisa del cobro PayPal</label>
+            <select class="f-input" id="sPaypalCurrency">
+              <option value="USD">USD $</option>
+              <option value="EUR">EUR €</option>
+              <option value="CRC">CRC ₡</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Los precios se ingresan en la divisa elegida. Si cambiás la divisa, revisá que los precios de tus productos estén en esa moneda.</div>
       </div>
 
       <div class="settings-card">
@@ -3772,6 +3809,10 @@ const DEFAULT_SETTINGS = {
   hours:'Lun - Sáb · 6:00 a.m. - 5:00 p.m.',
   shipping:'Hacemos envíos por Uber Flash · San José, CR',
   sinpe:'8888-8888',
+  currency:'CRC', // CRC (colones ₡) | USD (dólares $) | EUR (euros €) — se usa en todo
+  payMethodLabel:'SINPE', // nombre del método de pago local (editable; en otros países puede ser otro)
+  paypalMe:'', // usuario de PayPal.me del negocio (pago del carrito por tarjeta por el cliente)
+  paypalCurrency:'USD', // divisa en la que cobra el cliente por PayPal.me
   whatsapp:'50688888888',
   categories:['Plantas','Productos','Servicios'],
   websiteUrl:'',
@@ -3911,6 +3952,8 @@ function listenSettings(){
   if(unsubSettings) unsubSettings();
   unsubSettings = settingsRef.onSnapshot(snap=>{
     settings = Object.assign({}, DEFAULT_SETTINGS, snap.exists ? snap.data() : {});
+    /* Actualizar la divisa global usada por fmt() en todo el sistema */
+    _CURRENCY = ['CRC','USD','EUR'].includes(settings.currency) ? settings.currency : 'CRC';
     isProfessionalStore = settings.tipo === 'profesional';
     document.body.classList.toggle('professional-mode', isProfessionalStore);
     settingsReady = true;
@@ -4032,7 +4075,16 @@ async function setProductStatus(id, status){
 }
 
 /* ---------- helpers ---------- */
-function fmt(n){ return '₡' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u2009'); }
+/* Símbolos de divisa soportadas. _CURRENCY se actualiza con la configuración
+   del negocio (settings.currency): se usa en productos, variantes, facturas,
+   reportes, POS y carrito para mostrar el monto en la divisa elegida. */
+var _CURRENCY = 'CRC'; // CRC | USD | EUR
+var CURRENCY_SYMBOL = { CRC:'₡', USD:'$', EUR:'€' };
+function currencySymbol(){ return CURRENCY_SYMBOL[_CURRENCY] || '₡'; }
+/* Nombre del método de pago local (por defecto "SINPE", editable por el admin) */
+function payMethodLabel(){ return (settings && settings.payMethodLabel) || 'SINPE'; }
+function fmt(n){ return currencySymbol() + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u2009'); }
+function fmtUsd(n){ return '$' + Number(n||0).toFixed(2); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 /* Convierte la descripción del producto en párrafos: cada renglón/espacio en
    blanco ingresado en el editor pasa a ser un párrafo separado en la ficha. */
@@ -5297,6 +5349,7 @@ function renderHeader(){
     '<span class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>' + esc(settings.shipping) + '</span>';
   document.getElementById('shipHint').textContent = settings.shipping;
   refreshUberFloat();
+  if(typeof refreshCheckoutCardBtn === 'function') refreshCheckoutCardBtn();
 }
 function renderChips(){
   const cats = ['Todos'].concat(settings.categories);
@@ -6393,7 +6446,7 @@ return '<div class="inv-head">' +
       '</div>' +
     '</div>' +
     '<div class="sinpe-box">' +
-      '<div class="lbl">Pago por SINPE Móvil</div>' +
+      '<div class="lbl">Pago por ' + esc(payMethodLabel()) + '</div>' +
       '<div class="num">' + esc(settings.sinpe) + '</div>' +
       '<div class="amt">Monto exacto: ' + fmt(order.total) + ' · A nombre de ' + esc(settings.storeName) + '</div>' +
       '<div class="steps">1. Abrí la app de tu banco → SINPE Móvil<br>2. Transferí el monto exacto al número indicado<br>3. Enviá el comprobante por WhatsApp con el botón de abajo</div>' +
@@ -6425,6 +6478,36 @@ function showInvoice(order){
   lines.push('Ya realicé el SINPE Móvil al ' + settings.sinpe + ' por ' + fmt(order.total) + '. Adjunto mi comprobante de pago:');
   const waURL = 'https://wa.me/' + waDigits(settings.whatsapp) + '?text=' + encodeURIComponent(lines.join('\n'));
   document.getElementById('waReceiptBtn').onclick = () => { window.open(waURL, '_blank'); };
+}
+/* Pago del pedido con tarjeta (PayPal.Me) con monto dinámico del carrito.
+   Usa el PayPal.me del NEGOCIO (settings.paypalMe); si no hay, el del superadmin. */
+function payOrderCard(){
+  const user = (settings && settings.paypalMe) ? settings.paypalMe.trim() : '';
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const userFinal = user || (cfg.paymeUser || '').trim();
+  if(!userFinal){ toast('Este negocio no tiene configurado el pago con tarjeta.', 'err'); return; }
+  const t = cartTotals();
+  if(!t.count){ toast('Tu canasta está vacía', 'err'); return; }
+  const amount = t.total || 0;
+  const cur = (settings && settings.paypalCurrency) || (cfg.paymeCurrency || 'USD');
+  const url = 'https://paypal.me/' + encodeURIComponent(userFinal) + '?amount=' + Number(amount).toFixed(2) + '&currency=' + encodeURIComponent(cur);
+  document.getElementById('cCardBtn').textContent = '💳 Pagar ' + amount.toFixed(2) + ' ' + cur + ' con tarjeta (PayPal)';
+  window.open(url, '_blank', 'noopener');
+  toast('Abriendo pago con tarjeta por ' + fmt(amount) + '…', 'ok');
+}
+/* Muestra el botón de pago con tarjeta en el checkout si el negocio lo configuró */
+function refreshCheckoutCardBtn(){
+  const b = document.getElementById('cCardBtn');
+  if(!b) return;
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const own = settings && settings.paypalMe ? String(settings.paypalMe).trim() : '';
+  const has = own || (cfg.paymeUser && String(cfg.paymeUser).trim());
+  b.style.display = has ? 'block' : 'none';
+  /* Refrescar el nombre del método de pago local en el botón */
+  const lbl = document.getElementById('cPayLabel');
+  if(lbl) lbl.textContent = settings.payMethodLabel || 'SINPE';
+  const lbl2 = document.getElementById('step2PayLabel');
+  if(lbl2) lbl2.textContent = settings.payMethodLabel || 'SINPE';
 }
 
 function printInvoice(){
@@ -8589,6 +8672,10 @@ function loadSettingsForm(){
   document.getElementById('sServiciosProf').value = (settings.servicios||[]).join(', ');
   document.getElementById('profFieldsWrap').style.display = settings.tipo === 'profesional' ? '' : 'none';
   document.getElementById('sSinpe').value = settings.sinpe;
+  document.getElementById('sCurrency').value = settings.currency || 'CRC';
+  document.getElementById('sPayMethodLabel').value = settings.payMethodLabel || 'SINPE';
+  document.getElementById('sPaypalMe').value = settings.paypalMe || '';
+  document.getElementById('sPaypalCurrency').value = settings.paypalCurrency || 'USD';
   document.getElementById('sWa').value = settings.whatsapp;
   document.getElementById('sUberAddress').value = (settings.uberLocation && settings.uberLocation.address) || '';
   document.getElementById('sUberLat').value = (settings.uberLocation && settings.uberLocation.lat) || '';
@@ -9319,8 +9406,11 @@ const cats = document.getElementById('sCats').value.split(',').map(s=>s.trim()).
     tagline:document.getElementById('sTag').value.trim(),
     hours:document.getElementById('sHours').value.trim(),
     shipping:document.getElementById('sShip').value.trim(),
-    categories: cats.length ? cats : ['General'],
-    sinpe, whatsapp: wa,
+    categories: cats.length ? cats : ['General'],    sinpe, whatsapp: wa,
+    currency: ['CRC','USD','EUR'].includes(document.getElementById('sCurrency').value) ? document.getElementById('sCurrency').value : 'CRC',
+    payMethodLabel: document.getElementById('sPayMethodLabel').value.trim() || 'SINPE',
+    paypalMe: document.getElementById('sPaypalMe').value.trim().replace(/^https?:\/\/paypal\.me\//i,'').replace(/@/g,''),
+    paypalCurrency: ['USD','EUR','CRC'].includes(document.getElementById('sPaypalCurrency').value) ? document.getElementById('sPaypalCurrency').value : 'USD',
     websiteUrl:document.getElementById('sWebUrl').value.trim(),
     websiteLabel:document.getElementById('sWebLabel').value.trim() || 'Sitio web',
     websiteIcon: pendingWebIcon !== null ? pendingWebIcon : (settings.websiteIcon||''),
@@ -10998,6 +11088,11 @@ const DEFAULT_PLAN_CONFIG = {
      - Destacado:   mensual KX7ZAR7GSUNY2 · trimestral HZABGRZHKJ6YG · anual 5T7XHNPYY5JDG */
   payLinks: {},
   payDash: '',
+  /* ---------- PAGO CON TARJETA DINÁMICO (PayPal.Me) ----------
+     El superadmin pone su usuario de PayPal.Me (o enlace de cobro) y la divisa
+     de cobro. El monto se envía dinámicamente en el enlace. */
+  paymeUser: '',
+  paymeCurrency: 'USD',
   paypalButtons: {
     emprendedor: { monthly: 'YUZDRC8347WRL', quarterly: 'EHXRKLZU2BTG2', yearly: '6WUEDY8WY389C' },
     profesional: { monthly: 'M3LSVWWH7ZUF8', quarterly: 'F7JYKDKJGS8DE', yearly: 'KAPMX24JYSXLQ' },
@@ -11078,6 +11173,11 @@ async function savePlanConfig(){
       else delete uLocs[slug];
     }
   });
+  /* Guardar usuario de PayPal.Me para pago con tarjeta dinámico */
+  const pmEl = document.getElementById('saPaymeUser');
+  if(pmEl) planConfig.paymeUser = pmEl.value.trim().replace(/^https?:\/\/paypal\.me\//i,'').replace(/@/g,'');
+  const pmC = document.getElementById('saPaymeCurrency');
+  if(pmC) planConfig.paymeCurrency = pmC.value;
   const inputs = wrap.querySelectorAll('[data-plan-field]');
   const newPlans = [];
   const newPeriods = [];
@@ -11596,6 +11696,16 @@ function renderPlanConfigUI(){
       '<input class="f-input" id="saStripeDashboard" placeholder="https://www.paypal.com/ | https://www.payoneer.com/" value="' + esc((planConfig.payDash || '')) + '" style="flex:1;min-width:220px">' +
       '<a class="btn-ghost" style="width:auto;padding:8px 12px;font-size:12px" href="' + esc((planConfig.payDash || '#')) + '" target="_blank" rel="noopener">Abrir mi cuenta →</a>' +
     '</div>' +
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">' +
+      '<b style="font-size:12px;min-width:110px">Pago con tarjeta dinámico</b>' +
+      '<input class="f-input" id="saPaymeUser" placeholder="paypal.me/tu-usuario (o usuario)" value="' + esc((planConfig.paymeUser || '')) + '" style="flex:1;min-width:220px">' +
+      '<select class="f-input" id="saPaymeCurrency" style="width:100px;min-width:100px">' +
+        '<option value="USD"' + ((planConfig.paymeCurrency||'USD')==='USD'?' selected':'') + '>USD $</option>' +
+        '<option value="EUR"' + ((planConfig.paymeCurrency||'')==='EUR'?' selected':'') + '>EUR €</option>' +
+        '<option value="CRC"' + ((planConfig.paymeCurrency||'')==='CRC'?' selected':'') + '>CRC ₡</option>' +
+      '</select>' +
+    '</div>' +
+    '<div style="font-size:11.5px;color:var(--muted);margin-top:4px">El cliente paga el monto exacto del plan/período de forma dinámica vía PayPal.Me (tarjeta o saldo PayPal). Dejá el usuario de paypal.me (sin el "paypal.me/").</div>' +
   '</div>';
   html += '</div>';
   wrap.innerHTML = html;
@@ -11873,7 +11983,12 @@ async function openMembershipPaymentModal(){
   if(!currentPlan){ toast('No se pudo determinar tu plan', 'err'); closeMemPaymentModal(); return; }
 
   document.getElementById('memPayPlan').value = currentPlan.name + ' — ' + fmt(currentPlan.price) + '/mes';
-  const periodSel = document.getElementById('memPayPeriod');
+  /* Mostrar el método de pago local con su nombre editable (SINPE u otro) */
+  var _pml = payMethodLabel();
+  var _s1 = document.getElementById('memSinpeLabel'); if(_s1) _s1.textContent = _pml;
+  var _s2 = document.getElementById('memSinpeLabel2'); if(_s2) _s2.textContent = _pml;
+  var _btn = document.getElementById('memPayConfirmBtn'); if(_btn) _btn.textContent = 'Confirmar pago por ' + _pml;
+  var periodSel = document.getElementById('memPayPeriod');
   periodSel.innerHTML = cfg.periods.filter(p=>p.active).map(p=>{
     const total = Math.round(currentPlan.price * p.months * (1 - p.discount/100));
     return '<option value="'+p.id+'" data-months="'+p.months+'" data-discount="'+p.discount+'" data-total="'+total+'">'+esc(p.label)+' — '+fmt(total)+ (p.discount>0?' (ahorrás '+p.discount+'%)':'') +'</option>';
@@ -11897,6 +12012,9 @@ function toggleMemPayMethod(){
   if(confirmBtn) confirmBtn.style.display = isPaypal ? 'none' : 'block';
   if(isPaypal){
     renderPaypalButton();
+    const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+    const cardBtn = document.getElementById('memCardBtn');
+    if(cardBtn) cardBtn.style.display = (cfg.paymeUser && cfg.paymeUser.trim()) ? 'block' : 'none';
     /* Registrar el pago por PayPal en el historial (para aprobación del superadmin) */
     if(typeof registerPaypalPayment === 'function') registerPaypalPayment();
   }
@@ -11965,6 +12083,21 @@ async function registerPaypalPayment(){
     await tenantRef().set({ planApprovalStatus: 'pendiente', estadoPago: 'pendiente' }, { merge:true });
     console.info('Pago PayPal registrado (pendiente de aprobación)');
   }catch(e){ console.warn('No se pudo registrar el pago PayPal:', e); }
+}
+/* Pago con tarjeta DINÁMICO: abre PayPal.Me con el monto exacto del
+   plan + período elegido. Requiere que el superadmin haya puesto su usuario. */
+function payWithCardDynamic(){
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const user = (cfg.paymeUser || '').trim().replace(/^https?:\/\/paypal\.me\//i,'').replace(/@/g,'');
+  if(!user){ toast('El superadmin aún no configuró el pago con tarjeta dinámico.', 'err'); return; }
+  const sel = document.getElementById('memPayPeriod');
+  const opt = sel && sel.options[sel.selectedIndex];
+  const amount = opt ? (parseInt(opt.dataset.total)||0) : 0;
+  const cur = (cfg.paymeCurrency || 'USD');
+  /* PayPal.Me coherente: https://paypal.me/usuario?amount=MONTON&currency=DIVISA */
+  const url = 'https://paypal.me/' + encodeURIComponent(user) + '?amount=' + amount.toFixed(2) + '&currency=' + encodeURIComponent(cur);
+  window.open(url, '_blank', 'noopener');
+  toast('Abriendo pago con tarjeta por ' + fmt(amount) + '…', 'ok');
 }
 function closeMemPaymentModal(){ document.getElementById('memPaymentModal').classList.remove('show'); resetMemPayForm(); }
 /* Muestra el texto/enlace de los términos en el modal de pago */
@@ -14925,7 +15058,7 @@ bootPlatform();
       <div class="f-group"><label>Plan actual</label><input class="f-input" id="memPayPlan" readonly></div>
       <div class="f-group"><label>Período de pago</label><select class="f-input" id="memPayPeriod" onchange="updateMemPayTotal()"></select></div>
       <label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-top:10px;cursor:pointer">
-        <input type="radio" name="memPayMethod" value="sinpe" id="memMethodSinpe" checked style="width:16px;height:16px" onchange="toggleMemPayMethod()"> Pagar por <b>SINPE Móvil</b> (Costa Rica)
+        <input type="radio" name="memPayMethod" value="sinpe" id="memMethodSinpe" checked style="width:16px;height:16px" onchange="toggleMemPayMethod()"> Pagar por <b id="memSinpeLabel">SINPE</b> local
       </label>
       <label style="display:flex;align-items:center;gap:8px;font-weight:700;margin:6px 0 4px;cursor:pointer">
         <input type="radio" name="memPayMethod" value="paypal" id="memMethodPaypal" style="width:16px;height:16px" onchange="toggleMemPayMethod()"> Pagar por <b>PayPal</b> (internacional)
@@ -14933,7 +15066,7 @@ bootPlatform();
       <div id="memSinpeWrap">
         <div class="sinpe-preview" id="memPaySinpeBox" style="display:none">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
-          <span>Transferí por SINPE Móvil al <b id="memPaySinpeNum">—</b></span>
+          <span>Transferí por <b id="memSinpeLabel2">SINPE</b> al <b id="memPaySinpeNum">—</b></span>
         </div>
         <input type="file" id="memPayProofInput" accept="image/*" style="display:none" onchange="onMemPayProofChosen(this)">
         <div class="f-group"><label>Referencia / comprobante (opcional)</label><input class="f-input" id="memPayRef" placeholder="Número de SINPE o referencia"></div>
@@ -14955,6 +15088,9 @@ bootPlatform();
       <div id="memPaypalWrap" style="display:none">
         <div class="hint" style="margin-bottom:10px">Completá el pago con PayPal para activar tu plan. Así podés pagar desde cualquier país.</div>
         <div id="paypalContainer" style="width:100%"></div>
+        <button class="btn-export" id="memCardBtn" style="width:100%;margin-top:8px;display:none" onclick="payWithCardDynamic()">
+          💳 Pagar el monto exacto con tarjeta (PayPal.Me)
+        </button>
       </div>
       <div class="f-group" id="memTermsWrap" style="margin-top:6px">
         <label class="sf-check" style="align-items:flex-start;gap:8px">
@@ -14968,7 +15104,7 @@ bootPlatform();
         <div class="sum-line grand"><span>Total a pagar</span><span id="memPayTotal">₡0</span></div>
       </div>
       <button class="btn-primary" id="memPayConfirmBtn" onclick="processMembershipPayment()">Confirmar pago por SINPE</button>
-      <p class="hint" style="text-align:center;margin-top:8px">El SINPE es para Costa Rica. Para pagar desde otro país usá <b>PayPal</b>.</p>
+      <p class="hint" style="text-align:center;margin-top:8px">El pago local es para tu país. Para pagar desde otro país usá <b>PayPal</b>.</p>
     </div>
   </div>
 </div>
