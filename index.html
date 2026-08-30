@@ -178,17 +178,21 @@ body.no-scroll{overflow:hidden}
 .dot-open{color:var(--green);font-weight:600}
 .dot-closed{color:var(--danger);font-weight:600}
 
-.ext-btn{display:inline-flex;align-items:center;gap:10px;padding:12px 20px;border-radius:16px;font-size:14px;font-weight:800;color:#fff;text-decoration:none;position:relative;overflow:hidden;background:linear-gradient(135deg,#1B7A43,#0F5A30);box-shadow:0 6px 18px rgba(27,122,67,.32),inset 0 1px 0 rgba(255,255,255,.28);transition:.22s;border:1px solid rgba(255,255,255,.16)}
-.ext-btn::before{content:'';position:absolute;inset:0;background:radial-gradient(120px 60px at 12% 0%,rgba(255,255,255,.22),transparent 60%);pointer-events:none}
-.ext-btn img.ext-icon{width:24px;height:24px;border-radius:8px;object-fit:cover;margin-right:2px;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.ext-btn{display:inline-flex;align-items:center;gap:11px;padding:13px 22px;border-radius:18px;font-size:14.5px;font-weight:800;color:#fff;text-decoration:none;position:relative;overflow:hidden;background:linear-gradient(135deg,#1B7A43,#0F5A30);box-shadow:0 8px 22px rgba(27,122,67,.30),inset 0 1px 0 rgba(255,255,255,.30),inset 0 -1px 0 rgba(0,0,0,.12);transition:.24s cubic-bezier(.2,.8,.25,1);border:1px solid rgba(255,255,255,.22);letter-spacing:.2px}
+.ext-btn::before{content:'';position:absolute;inset:0;background:radial-gradient(140px 70px at 14% -6%,rgba(255,255,255,.30),transparent 62%);pointer-events:none}
+.ext-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14));width:50%;transform:translateX(-140%) skewX(-18deg);transition:transform .5s ease;pointer-events:none}
+.ext-btn:hover::after{transform:translateX(320%) skewX(-18deg)}
+.ext-btn img.ext-icon{width:26px;height:26px;flex-shrink:0;object-fit:contain;margin-right:1px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.22))}
 .ext-btn svg.ext-icon-fallback{width:21px;height:21px}
-.ext-btn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 10px 26px rgba(27,122,67,.42),inset 0 1px 0 rgba(255,255,255,.28)}
-.ext-btn:active{transform:translateY(0) scale(.99)}
+.ext-btn:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 14px 34px rgba(27,122,67,.42),inset 0 1px 0 rgba(255,255,255,.30),inset 0 -1px 0 rgba(0,0,0,.12)}
+.ext-btn:active{transform:translateY(0) scale(.98);box-shadow:0 6px 16px rgba(27,122,67,.35),inset 0 1px 0 rgba(255,255,255,.25)}
 .ext-btn svg{width:20px;height:20px}
-.ext-btn .ext-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35)}
-.ext-btn.games{background:linear-gradient(135deg,#F59E0B,#D9770D);box-shadow:0 6px 18px rgba(217,119,13,.36),inset 0 1px 0 rgba(255,255,255,.3)}
-.ext-btn.games:hover{box-shadow:0 10px 26px rgba(217,119,13,.48),inset 0 1px 0 rgba(255,255,255,.3)}
-@keyframes extBlinkSlow{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.92;transform:scale(.99)}}
+.ext-btn .ext-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.ext-btn.games{background:linear-gradient(135deg,#F59E0B,#D9770D);box-shadow:0 8px 22px rgba(217,119,13,.34),inset 0 1px 0 rgba(255,255,255,.32),inset 0 -1px 0 rgba(0,0,0,.12)}
+.ext-btn.games:hover{box-shadow:0 14px 34px rgba(217,119,13,.48),inset 0 1px 0 rgba(255,255,255,.32),inset 0 -1px 0 rgba(0,0,0,.12)}
+.ext-btn.games::before{background:radial-gradient(140px 70px at 14% -6%,rgba(255,255,255,.34),transparent 62%)}
+.ext-btn.games:active{box-shadow:0 6px 16px rgba(217,119,13,.36),inset 0 1px 0 rgba(255,255,255,.28)}
+@keyframes extBlinkSlow{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.94;transform:scale(.99)}}
 .ext-btn.blink{animation:extBlinkSlow 2.6s ease-in-out infinite}
 
 .toolbar{max-width:1280px;margin:0 auto;padding:14px 20px 6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -266,6 +270,8 @@ body.no-scroll{overflow:hidden}
 .ci{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px}
 .ci-thumb{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ci-thumb svg{width:30px;height:30px}
+.ci-thumb-img{overflow:hidden}
+.ci-thumb-img img{width:100%;height:100%;object-fit:cover;border-radius:11px;display:block}
 .ci-info{flex:1;min-width:0}
 .ci-name{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ci-price{font-size:12.5px;color:var(--muted)}
@@ -336,6 +342,9 @@ textarea.f-input{resize:vertical;min-height:70px}
 .sum-line{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;color:var(--muted)}
 .sum-line b{color:var(--ink)}
 .sum-line.grand{font-size:16px;font-weight:800;color:var(--ink);border-top:1px dashed var(--line);margin-top:8px;padding-top:10px}
+.sum-line-item{align-items:center;gap:8px}
+.sum-left{display:flex;align-items:center;gap:8px;min-width:0}
+.co-sum-img{width:36px;height:36px;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid var(--line)}
 
 /* ============ FACTURA ============ */
 .invoice{border:1px solid var(--line);border-radius:16px;overflow:hidden}
@@ -787,6 +796,8 @@ body.is-admin-view #sAiConfigSuperBlock{display:none !important}
 .logo-preview{width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2E9E5B,#0F5A30);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .logo-preview img{width:100%;height:100%;object-fit:cover}
 .logo-preview svg{width:36px;height:36px}
+.logo-preview.icon-checker{background:conic-gradient(#e2e8f0 0 25%,#fff 0 50%,#e2e8f0 0 75%,#fff 0) 0 0/16px 16px;box-shadow:inset 0 0 0 1px var(--line)}
+.logo-preview.icon-checker img{object-fit:contain;padding:4px}
 .sinpe-preview{background:var(--yellow-soft);border:1.5px dashed #EAB308;border-radius:12px;padding:12px 16px;font-size:13px;color:#92400E;display:flex;align-items:center;gap:10px;margin-top:6px}
 .sinpe-preview svg{width:20px;height:20px;flex-shrink:0}
 .sinpe-preview b{font-size:16px;color:var(--ink);letter-spacing:1px}
@@ -2526,7 +2537,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div class="f-row">
           <div class="f-group"><label>Icono del botón (sitio web) — opcional</label>
             <div class="logo-upload-row">
-              <span class="logo-preview" id="sWebIconPreview" style="width:48px;height:48px;border-radius:10px"></span>
+              <span class="logo-preview icon-checker" id="sWebIconPreview" style="width:48px;height:48px;border-radius:10px"></span>
               <input type="file" id="sWebIconFile" accept="image/*" style="display:none" onchange="onExternalIconFileChosen(this,'web')">
               <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="document.getElementById('sWebIconFile').click()">Subir icono</button>
               <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;color:var(--danger)" onclick="removeExternalIcon('web')">Quitar</button>
@@ -2541,7 +2552,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <div class="f-row">
           <div class="f-group"><label>Icono del botón (juego / bingo) — opcional</label>
             <div class="logo-upload-row">
-              <span class="logo-preview" id="sBingoIconPreview" style="width:48px;height:48px;border-radius:10px"></span>
+              <span class="logo-preview icon-checker" id="sBingoIconPreview" style="width:48px;height:48px;border-radius:10px"></span>
               <input type="file" id="sBingoIconFile" accept="image/*" style="display:none" onchange="onExternalIconFileChosen(this,'bingo')">
               <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="document.getElementById('sBingoIconFile').click()">Subir icono</button>
               <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;color:var(--danger)" onclick="removeExternalIcon('bingo')">Quitar</button>
@@ -2565,7 +2576,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 <div class="settings-card">
         <h4>✨ Asistente de compras con IA <span id="sAiVersionBadge" style="font-size:11px;color:var(--muted);font-weight:600;margin-left:6px"></span></h4>
         <div class="desc">Un chat flotante que recomienda productos a tus clientes.</div>
-<div class="desc" id="sAiLockNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El Asistente de IA (chat + generador de fotos con fondo blanco) es exclusivo del <b>Plan Destacado</b>. Podés dejar los datos guardados, pero no se activará para tus clientes hasta que subas de plan.</div>
+<div class="desc" id="sAiLockNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El superadministrador de la plataforma ha <b>deshabilitado el Asistente de IA</b> para esta tienda. Cuando lo habilite de nuevo, el asistente volverá a mostrarse a tus clientes.</div>
         <div class="desc" id="sAiAdminOnlyNotice" style="display:none;color:var(--ruby-dark);font-weight:700">🔒 El proveedor, las claves de API y los modelos del asistente de IA solo los configura el <b>superadministrador de la plataforma</b>.<br>Como administradora de esta tienda podés entrenar a tu agente (instrucciones), cambiar su nombre, el mensaje de bienvenida y activarlo para los clientes.</div>
 
         <!-- Config avanzada de IA (proveedor + claves + modelos): SOLO superadmin -->
@@ -3470,6 +3481,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
       </div>
       <div id="saAiKeyStatus" style="font-size:12.5px;margin-bottom:8px;color:var(--muted)"></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;margin:10px 0 4px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--soft)">
+        <input type="checkbox" id="saAiDisabled" style="width:16px;height:16px"> Deshabilitar el Asistente IA para esta tienda
+        <span class="hint" style="display:inline">(anula el interruptor del negocio aunque esté activado; el asistente no aparecerá a sus clientes)</span>
+      </label>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn-primary" style="width:auto;padding:11px 22px" onclick="saSaveAiKeys()">💾 Guardar claves</button>
         <button class="btn-ghost" style="width:auto;padding:11px 22px" onclick="saTestAiOpenRouter()" title="Prueba la conexión de OpenRouter con la clave guardada">🧪 Probar OpenRouter</button>
@@ -4273,6 +4288,39 @@ reader.readAsDataURL(file);
   });
 }
 
+/* Comprime una imagen manteniendo el FONDO TRANSPARENTE (PNG). Sirve para
+   íconos/logos que deben verse sobre fondos de color: no rellena de blanco y
+   genera PNG. Si el archivo original es PNG (o no tiene fondo), conserva el
+   canal alfa; el resultado queda recortado sin fondo. */
+function compressImageToPng(file, maxDim){
+  return new Promise((resolve, reject) => {
+    if(!file || !file.type.startsWith('image/')){ reject(new Error('Archivo no es una imagen')); return; }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('No se pudo cargar la imagen'));
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        const max = maxDim || 300;
+        if(w > max || h > max){
+          if(w >= h){ h = Math.round(h * max / w); w = max; }
+          else { w = Math.round(w * max / h); h = max; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        /* NO rellenar de blanco: se dibuja la imagen directo (si el PNG trae
+           alpha, el fondo queda transparente). */
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.src = reader.result;
+    };
+reader.readAsDataURL(file);
+  });
+}
+
 /* Comprime una foto de VARIANTE a un cuadrado exacto de size×size px: recorta
    el centro de la imagen, la escala a un único tamaño estandarizado y la guarda
    en base64. Así todas las fotos de los tamaños se abren a 1280×1280 en la
@@ -4585,7 +4633,11 @@ function renderAIAssistant(){
   // responder en este chat — si el negocio dejó configurado un proveedor que
   // no funciona desde el navegador (ver aiProviderWorksHere), es mejor no
   // mostrar un botón que va a fallar en cada mensaje.
-  const canUse = !!(settings.aiEnabled && hasCreds && planAllows('ai-assistant') && aiProviderWorksHere(provider, settings.aiExternalProvider));
+  // Todos los PLANES pueden usar el asistente IA. El superadministrador puede
+  // deshabilitarlo por negocio (aiSuperDisabled). El negocio además debe
+  // activarlo (aiEnabled) y el superadmin configurarlo con credenciales válidas.
+  const superDisabled = settings.aiSuperDisabled === true;
+  const canUse = !!(settings.aiEnabled && hasCreds && !superDisabled && aiProviderWorksHere(provider, settings.aiExternalProvider));
   btn.style.display = canUse ? 'flex' : 'none';
   document.getElementById('aiAssistantName').textContent = settings.aiAssistantName || 'Asistente';
   const logoUrl = (settings.logoUrl||'').trim();
@@ -5507,7 +5559,7 @@ function renderExternalLinks(){
   const bar = document.getElementById('externalLinksBar');
   const btns = [];
   if(settings.websiteUrl) btns.push('<a class="ext-btn web" href="' + esc(settings.websiteUrl) + '" target="_blank" rel="noopener">' + (settings.websiteIcon ? '<img class="ext-icon" src="' + esc(settings.websiteIcon) + '" alt="">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg>') + esc(settings.websiteLabel || 'Sitio web') + '<span class="ext-badge">Visitar</span></a>');
-  if(settings.bingoUrl) btns.push('<a class="ext-btn games blink" href="' + esc(settings.bingoUrl) + '" target="_blank" rel="noopener">' + (settings.bingoIcon ? '<img class="ext-icon" src="' + esc(settings.bingoIcon) + '" alt="">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>') + esc(settings.bingoLabel || 'Bingo de Plantas') + '<span class="ext-badge">Jugar</span></a>');
+  if(settings.bingoUrl && planAllows('games-link')) btns.push('<a class="ext-btn games blink" href="' + esc(settings.bingoUrl) + '" target="_blank" rel="noopener">' + (settings.bingoIcon ? '<img class="ext-icon" src="' + esc(settings.bingoIcon) + '" alt="">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>') + esc(settings.bingoLabel || 'Bingo de Plantas') + '<span class="ext-badge">Jugar</span></a>');
   bar.innerHTML = btns.join('');
 }
 
@@ -6381,8 +6433,12 @@ function updateCartUI(){
     if(!info) return '';
     const p = info.p;
     const g = gradFor(p.id);
+    const pimg = firstThumb(p) || (p.images && p.images[0]) || '';
+    const thumb = pimg
+      ? '<div class="ci-thumb ci-thumb-img" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')"><img src="' + esc(pimg) + '" alt="' + esc(info.label) + '" loading="lazy"></div>'
+      : '<div class="ci-thumb" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + svgIcon(p.icon,30) + '</div>';
     return '<div class="ci">' +
-      '<div class="ci-thumb" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')">' + svgIcon(p.icon,30) + '</div>' +
+      thumb +
       '<div class="ci-info"><div class="ci-name">' + esc(info.label) + '</div><div class="ci-price">' + fmt(info.unitPrice) + ' c/u</div></div>' +
       '<div class="ci-right">' +
         '<div class="qty-ctl"><button onclick="setQty(\'' + key + '\',' + (cart[key]-1) + ')">−</button><span>' + cart[key] + '</span><button onclick="setQty(\'' + key + '\',' + (cart[key]+1) + ')">+</button></div>' +
@@ -6430,7 +6486,9 @@ function openCheckout(){
     Object.keys(cart).map(key => {
       const info = cartLineInfo(key);
       if(!info) return '';
-      return '<div class="sum-line"><span>' + cart[key] + ' × ' + esc(info.label) + '</span><b>' + fmt(info.unitPrice*cart[key]) + '</b></div>';
+      const pimg = firstThumb(info.p) || (info.p.images && info.p.images[0]) || '';
+      const im = pimg ? '<img class="co-sum-img" src="' + esc(pimg) + '" alt="' + esc(info.label) + '" loading="lazy">' : '';
+      return '<div class="sum-line sum-line-item"><span class="sum-left">' + im + '<span>' + cart[key] + ' × ' + esc(info.label) + '</span></span><b>' + fmt(info.unitPrice*cart[key]) + '</b></div>';
     }).join('') +
     '<div class="sum-line"><span>Subtotal</span><b>' + fmt(t.sub) + '</b></div>' +
     (t.discountAmt ? '<div class="sum-line" style="color:#B45309"><span>Descuento global (' + t.discountPercent + '%)</span><b>−' + fmt(t.discountAmt) + '</b></div>' : '') +
@@ -6705,6 +6763,9 @@ async function convertCurrency(amount, from, to){
    y el cliente aprueba con el botón de PayPal. Cobra el monto EXACTO de la factura. */
 function payOrderCard(){
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  if(typeof planAllows === 'function' && !planAllows('paypal')){
+    toast('El pago con PayPal está disponible a partir del plan Profesional. Subí de plan para activarlo.', 'err'); return;
+  }
   const hasEmail = !!(settings && settings.paypalEmail);
   const hasMe = !!(settings && settings.paypalMe);
   if(!hasEmail && !hasMe){
@@ -6852,7 +6913,7 @@ function refreshCheckoutCardBtn(){
   if(!b) return;
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
   const own = settings && settings.paypalMe ? String(settings.paypalMe).trim() : '';
-  const has = !!(own || (settings && settings.paypalEmail) || (settings && settings.paypalClientId));
+  const has = !!(own || (settings && settings.paypalEmail) || (settings && settings.paypalClientId)) && planAllows('paypal');
   b.style.display = has ? 'block' : 'none';
   const lbl = document.getElementById('cPayLabel');
   if(lbl) lbl.textContent = settings.payMethodLabel || 'SINPE';
@@ -7176,7 +7237,8 @@ function applyPlanRestrictions(){
   // Marcar pestañas bloqueadas visualmente
   document.querySelectorAll('.adm-link[data-panel]').forEach(btn => {
     const panel = btn.dataset.panel;
-    const featureKey = panel === 'orders' ? 'panel-orders' : panel === 'stats' ? 'panel-analytics' : null;
+    const featureKey = panel === 'orders' ? 'panel-orders' : panel === 'stats' ? 'panel-analytics' :
+      panel === 'pos' ? 'pos-panel' : panel === 'finance' ? 'finance-panel' : panel === 'employees' ? 'employees-panel' : null;
     if(featureKey && !planAllows(featureKey)){
       btn.style.opacity = '0.5';
       btn.title = 'Requiere plan superior';
@@ -7236,7 +7298,7 @@ function showPanel(name, btn){
     if(lp) lp.remove();
   }
   // Verificar acceso al panel según plan activo
-  const PANEL_FEATURE = {orders:'panel-orders', stats:'panel-analytics'};
+  const PANEL_FEATURE = {orders:'panel-orders', stats:'panel-analytics', pos:'pos-panel', finance:'finance-panel', employees:'employees-panel'};
   const featureKey = PANEL_FEATURE[name];
   if(featureKey && !planAllows(featureKey)){
     showPlanWall(featureKey);
@@ -9159,7 +9221,7 @@ onExternalProviderChange();
     if(_saAiNotice) _saAiNotice.style.display = '';
   }
   const aiLockEl = document.getElementById('sAiLockNotice');
-  if(aiLockEl) aiLockEl.style.display = planAllows('ai-assistant') ? 'none' : '';
+  if(aiLockEl) aiLockEl.style.display = (settings.aiSuperDisabled === true) ? '' : 'none';
   document.getElementById('sinpePreview').textContent = settings.sinpe;
   pendingLogoDataUrl = null;
   document.getElementById('logoPreview').innerHTML = settings.logoUrl ? '<img src="' + esc(settings.logoUrl) + '" alt="Logo">' : logoSVG;
@@ -9778,7 +9840,9 @@ function removeLogo(){
 function onExternalIconFileChosen(input, key){
   const file = input.files && input.files[0];
   if(!file) return;
-  compressImageFile(file, 200, 0.85).then(dataUrl => {
+  /* Mantener el fondo transparente (PNG) para que el ícono se vea limpio
+     sobre el botón de color. */
+  compressImageToPng(file, 220).then(dataUrl => {
     if(key === 'web'){
       pendingWebIcon = dataUrl;
       document.getElementById('sWebIconPreview').innerHTML = '<img src="' + dataUrl + '" alt="Icono">';
@@ -9786,7 +9850,7 @@ function onExternalIconFileChosen(input, key){
       pendingBingoIcon = dataUrl;
       document.getElementById('sBingoIconPreview').innerHTML = '<img src="' + dataUrl + '" alt="Icono">';
     }
-    toast('Icono cargado, recordá presionar "Guardar cambios"', 'ok');
+    toast('Icono cargado con fondo transparente. Recordá presionar "Guardar cambios"', 'ok');
   }).catch(()=> toast('No se pudo procesar la imagen del ícono', 'err'));
   input.value = '';
 }
@@ -9843,10 +9907,11 @@ async function saveSettings(){
      demás cambios (IVA, descuento, precios, etc.) siempre se guarden. */
   if(waDigits(sinpe).length < 8 && waDigits(sinpe).length > 0){ toast('Aviso: el SINPE tiene menos de 8 dígitos. Revisá el número.', 'warn'); }
   if(wa.length > 0 && wa.length < 11){ toast('Aviso: el WhatsApp debería incluir el código de país (ej. 506+teléfono).', 'warn'); }
-  if(document.getElementById('sAiEnabled').checked && !planAllows('ai-assistant')){
-    toast('El Asistente de IA es exclusivo del Plan Destacado. Subí de plan para activarlo.', 'err');
+  /* El Asistente IA está disponible para todos los planes. Solo se bloquea si
+     el superadministrador lo deshabilitó para este negocio (aiSuperDisabled). */
+  if(document.getElementById('sAiEnabled').checked && settings.aiSuperDisabled === true){
+    toast('El superadministrador ha deshabilitado el Asistente de IA para esta tienda.', 'err');
     document.getElementById('sAiEnabled').checked = false;
-    showPlanWall('ai-assistant');
     return;
   }
 const cats = document.getElementById('sCats').value.split(',').map(s=>s.trim()).filter(Boolean);
@@ -10915,6 +10980,14 @@ async function saOnAiStoreChange(){
     saSetMaskedInput('saAiGeminiKey', _saAiMasked.gemini, !!gmSt.exists, 'AIza...');
     saSetMaskedInput('saAiExternalKey', _saAiMasked.external, !!exSt.exists, 'sk-...');
     if(imgSel) imgSel.innerHTML = '<option value="'+esc(_saAiImageModel)+'">'+esc(_saAiImageModel)+'</option>';
+    /* Estado del interruptor "deshabilitar IA" del superadmin por tienda */
+    const disEl = document.getElementById('saAiDisabled');
+    if(disEl){
+      try{
+        const sSnap = await db.collection('tenants').doc(slug).collection('settings').doc('store').get();
+        disEl.checked = !!(sSnap.exists && sSnap.data().aiSuperDisabled === true);
+      }catch(_e){ disEl.checked = false; }
+    }
     status.innerHTML = (st && st.configured)
       ? '<span style="color:var(--green)">✓ Asistente configurado' + (_saAiModel ? ' · modelo chat: <b>' + esc(_saAiModel) + '</b>' : '') + (_saAiImageModel ? ' · modelo imagen: <b>' + esc(_saAiImageModel) + '</b>' : '') + '.</span>'
       : '<span style="color:#92400E">La tienda aún no tiene el asistente completamente configurado (falta clave o modelo).</span>';
@@ -10992,12 +11065,18 @@ async function saSaveAiKeys(){
   if(newModel !== _saAiModel && !newModel) priv.aiModel = firebase.firestore.FieldValue.delete();
   if(newImgModel && newImgModel !== _saAiImageModel) priv.aiImageModel = newImgModel;
   if(newImgModel !== _saAiImageModel && !newImgModel) priv.aiImageModel = firebase.firestore.FieldValue.delete();
-  if(!Object.keys(priv).length){ toast('No hay claves ni modelo nuevos para guardar', 'err'); return; }
+  /* Interruptor del superadmin: deshabilitar la IA para esta tienda.
+     Se guarda público (para que la tienda lo lea y oculte el botón al cliente). */
+  const disEl = document.getElementById('saAiDisabled');
+  const pubUpd = {};
+  if(disEl){
+    pubUpd.aiSuperDisabled = !!disEl.checked;
+  }
+  if(!Object.keys(priv).length && !Object.keys(pubUpd).length){ toast('No hay claves ni modelo nuevos para guardar', 'err'); return; }
   status.textContent = 'Guardando…'; status.style.color = 'var(--muted)';
   try{
-    await db.collection('tenants').doc(slug).collection('privateSettings').doc('ai').set(priv, { merge:true });
+    if(Object.keys(priv).length) await db.collection('tenants').doc(slug).collection('privateSettings').doc('ai').set(priv, { merge:true });
     await migrateStoreKeys(slug);
-    const pubUpd = {};
     if(priv.aiOpenrouterKey || newModel){ pubUpd.aiProvider = 'openrouter'; if(newModel) pubUpd.aiModel = newModel; }
     if(priv.aiApiKey) pubUpd.aiProvider = 'gemini';
     if(priv.aiExternalKey) pubUpd.aiProvider = 'external';
@@ -11370,12 +11449,16 @@ const PLAN_FEATURE_MAP = {
   'panel-orders':   'profesional',  // panel de pedidos
   /* panel-analytics ya no requiere plan: Emprendedor ve estadísticas básicas,
      Profesional/Destacado ven el panel completo (ver renderStats/applyStatsPlanView) */
-  'sinpe':          'profesional',  // pagos SINPE en tienda
-  'inventory':      'profesional',  // control de inventario
   'video':          'profesional',  // video historia flotante
   'reviews':        'profesional',  // reseñas de productos
-  'ai-assistant':   'destacado',    // asistente IA (chat OpenRouter/Gemini) — exclusivo plan Destacado
-  'ai-image':       'destacado',    // generador de fotos de producto con fondo blanco (IA) — exclusivo plan Destacado
+  'pos-panel':      'profesional',  // Punto de Venta (POS)
+  'finance-panel':  'profesional',  // finanzas (apertura, gastos, cierre)
+  'employees-panel':'profesional',  // empleados (varios vendedores)
+  'paypal':         'profesional',  // cobro por PayPal / tarjeta
+  'wa-notify':      'profesional',  // notificación de pagos por WhatsApp
+  /* 'ai-assistant', 'ai-image', 'sinpe' y 'inventory' ya NO requieren plan superior:
+     están disponibles para todos los planes. El superadmin deshabilita la IA
+     por negocio (aiSuperDisabled). SINPE y el inventario funcionan en todos. */
   'destacado-badge':'destacado',    // insignia y posición destacada
   'games-link':     'profesional',  // botón de juegos/bingo
 };
@@ -11387,6 +11470,11 @@ const PLAN_FEATURE_LABELS = {
   'inventory':      'Control de Inventario',
   'video':          'Video Historia',
   'reviews':        'Reseñas de Productos',
+  'pos-panel':      'Punto de Venta (POS)',
+  'finance-panel':  'Finanzas',
+  'employees-panel':'Empleados',
+  'paypal':         'Pago con PayPal',
+  'wa-notify':      'Notificación de pagos por WhatsApp',
   'ai-assistant':   'Asistente IA',
   'ai-image':       'Generador de Fotos con IA',
   'destacado-badge':'Posición Destacada',
@@ -11512,9 +11600,9 @@ async function checkAndRevertExpiredPlan(){
    ================================================================ */
 const DEFAULT_PLAN_CONFIG = {
   plans:[
-    {id:'emprendedor', name:'Emprendedor', price:9900, features:['Catálogo pequeño','WhatsApp','Perfil','Fotos','Servicios','Estadísticas básicas'], active:true},
-    {id:'profesional', name:'Profesional', price:15000, features:['Catálogo completo','Inventario','Pedidos','SINPE','Estadísticas','Reseñas','Video','WhatsApp'], active:true},
-    {id:'destacado', name:'Destacado', price:25000, features:['Todo lo anterior','Mayor exposición','Aparece primero','Insignia','Promoción dentro de la plataforma','Mayor presencia en búsquedas'], active:true}
+    {id:'emprendedor', name:'Emprendedor', price:9900, features:['Catálogo (hasta 20)','Inventario básico','Perfil','Fotos','Servicios','Estadísticas básicas','WhatsApp','SINPE','Moneda','Asistente IA'], active:true},
+    {id:'profesional', name:'Profesional', price:15000, features:['Todo lo de Emprendedor','Catálogo (hasta 200)','Pedidos y facturación','Punto de Venta (POS)','Finanzas','Empleados','Reseñas','Video','Pago con PayPal','Notificación de pagos por WhatsApp','Enlace de juegos','Asistente IA'], active:true},
+    {id:'destacado', name:'Destacado', price:25000, features:['Todo lo de Profesional','Productos ilimitados','Mayor exposición','Aparece primero','Insignia Destacada','Promoción dentro de la plataforma','Mayor presencia en búsquedas','Asistente IA'], active:true}
   ],
   periods:[
     {id:'monthly', label:'Mensual', months:1, discount:0, active:true},
@@ -11591,6 +11679,8 @@ let planConfig = null;
 let membershipPayments = [];
 let unsubMembership = null;
 let memTimerInterval = null;
+let privatePaypalSecret = '';       // secret PayPal de la plataforma (solo servidor)
+let _maskedPlatformSecret = '';     // versión enmascarada para mostrar al superadmin
 
 /* ---------- utilidades de fecha ---------- */
 function addMonths(date, months){
@@ -11665,6 +11755,16 @@ async function savePlanConfig(){
   if(pmEl) planConfig.paymeUser = pmEl.value.trim().replace(/^https?:\/\/paypal\.me\//i,'').replace(/@/g,'');
   const pmC = document.getElementById('saPaymeCurrency');
   if(pmC) planConfig.paymeCurrency = pmC.value;
+  /* Credenciales PayPal de la PLATAFORMA (para el cobro de membresías con monto exacto) */
+  const saPpC = document.getElementById('saPaypalClientId');
+  if(saPpC) planConfig.paypalClientId = saPpC.value.trim();
+  const saPpS = document.getElementById('saPaypalSecret');
+  const saPpE = document.getElementById('saPaypalEmail');
+  if(saPpE) planConfig.paypalEmail = saPpE.value.trim();
+  /* El SECRET no va al doc público (lo lee cualquier usuario logueado): se
+     guarda en platform/private, que solo lee el servidor. */
+  if(saPpS && saPpS.value.trim() && saPpS.value !== _maskedPlatformSecret) privatePaypalSecret = saPpS.value.trim();
+  else if(!saPpS || !saPpS.value.trim()) { /* vacío = conservar */ }
   /* Tasa de cambio forzada CRC→USD (si el superadmin la define) */
   const fxEl = document.getElementById('saFxRate');
   var fxRates = planConfig.fxRates = planConfig.fxRates || {};
@@ -11705,6 +11805,12 @@ async function savePlanConfig(){
   const dashEl = document.getElementById('saStripeDashboard');
   if(dashEl) planConfig.payDash = dashEl.value.trim();
   try{
+    /* El SECRET de PayPal de la plataforma se guarda aparte, en platform/private,
+       porque platform/config es legible por cualquier usuario logueado. */
+    if(privatePaypalSecret){
+      await db.collection('platform').doc('private').set({ paypalSecret: privatePaypalSecret }, {merge:true});
+      privatePaypalSecret = '';
+    }
     await db.collection('platform').doc('config').set(planConfig, {merge:true});
     toast('Configuración de planes guardada', 'ok');
     renderPlanConfigUI();
@@ -12198,6 +12304,17 @@ function renderPlanConfigUI(){
         '<option value="CRC"' + ((planConfig.paymeCurrency||'')==='CRC'?' selected':'') + '>CRC ₡</option>' +
       '</select>' +
     '</div>' +
+    /* Credenciales PayPal de la PLATAFORMA (para el cobro de membresías con
+       monto exacto: el dinero llega a TU cuenta de PayPal) */
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">' +
+      '<div class="f-group"><label>Client ID de tu app PayPal (membresía)</label><input class="f-input" id="saPaypalClientId" autocomplete="off" placeholder="ARxxAx..." value="' + esc((planConfig.paypalClientId || '')) + '"></div>' +
+      '<div class="f-group"><label>Secret Key de tu app PayPal</label><input class="f-input" id="saPaypalSecret" type="password" autocomplete="off" placeholder="****************************" value="' + esc(_maskedPlatformSecret || '') + '"></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">' +
+      '<b style="font-size:12px;min-width:110px">Email Checkout (membresía)</b>' +
+      '<input class="f-input" id="saPaypalEmail" type="email" autocomplete="off" placeholder="tu@cuenta-paypal.com" value="' + esc((planConfig.paypalEmail || '')) + '" style="flex:1;min-width:220px">' +
+      '<span style="font-size:11px;color:var(--muted)">El pago de membresía se cobra con el monto exacto y llega a esta cuenta (empresarial/verificada).</span>' +
+    '</div>' +
     '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">' +
       '<b style="font-size:12px;min-width:110px">Tasa CRC→USD (opcional)</b>' +
       '<input class="f-input" id="saFxRate" placeholder="Ej: 0.00026 (vacío = usar BCCR en tiempo real)" value="' + esc((planConfig.fxRates && planConfig.fxRates['CRC:USD']) || '') + '" style="flex:1;min-width:220px">' +
@@ -12207,6 +12324,21 @@ function renderPlanConfigUI(){
   html += '</div>';
   wrap.innerHTML = html;
   loadLandingConfigFields();
+  loadPlatformPaypalSecret();
+}
+/* Carga el Secret PayPal de la plataforma (platform/private) y lo muestra
+   enmascarado. Solo el superadmin puede leerlo (reglas: platform/private). */
+async function loadPlatformPaypalSecret(){
+  try{
+    const snap = await db.collection('platform').doc('private').get();
+    const d = snap.exists ? snap.data() : {};
+    const s = (d.paypalSecret || '');
+    if(s){
+      _maskedPlatformSecret = s.slice(0,6) + '****' + s.slice(-4);
+      const el = document.getElementById('saPaypalSecret');
+      if(el){ el.value = _maskedPlatformSecret; el.placeholder = 'Guardada: ' + _maskedPlatformSecret + ' — escribí una nueva para reemplazarla'; }
+    }
+  }catch(_e){ /* si falla, queda vacío */ }
 }
 
 /* ---------- "Buscar clientes" (enlace definido por el superadministrador) ---------- */
@@ -12516,7 +12648,11 @@ function toggleMemPayMethod(){
     if(typeof registerPaypalPayment === 'function') registerPaypalPayment();
   }
 }
-/* Renderiza el botón de pago de PayPal del plan activo (button alojado). */
+/* Renderiza el botón de pago de membresía con PayPal de forma DINÁMICA:
+   el servidor crea la orden por el MONTO EXACTO del plan + período (precio ×
+   meses × descuento), convertido a la divisa de la plataforma. Así el cobro
+   siempre coincide con el precio establecido. Si el SDK no está disponible,
+   ofrece el enlace de PayPal.Me dinámico como respaldo. */
 let _paypalRendered = '';
 function renderPaypalButton(){
   const box = document.getElementById('paypalContainer');
@@ -12524,36 +12660,67 @@ function renderPaypalButton(){
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
   const t = TENANT_DATA || {};
   const currentPlan = cfg.plans.find(p=>p.id===t.membershipPlan) || cfg.plans[0];
-  /* Período elegido (monthly / quarterly / yearly) */
   const sel = document.getElementById('memPayPeriod');
   const periodId = sel && sel.value ? sel.value : 'monthly';
-  const buttons = (cfg.paypalButtons) || DEFAULT_PLAN_CONFIG.paypalButtons || {};
-  const planBtns = buttons[currentPlan.id] || {};
-  const btnId = planBtns[periodId];
-  if(!btnId){ box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Este plan/período no tiene botón de PayPal configurado.</div>'; return; }
-  if(_paypalRendered === btnId) return; // ya renderizado
-  _paypalRendered = btnId;
-  box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:14px">Cargando botón de PayPal…</div>';
-  /* Fallback: si en unos segundos el SDK no renderiza, ofrecer enlace directo */
-  const fallbackLink = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=' + encodeURIComponent(btnId);
-  const showFallback = function(){
-    box.innerHTML = '<a class="btn-export" href="' + fallbackLink + '" target="_blank" rel="noopener" style="width:100%;padding:12px 16px;justify-content:center">💳 Pagar con PayPal (abrir enlace de pago)</a>';
-  };
-  let done = false;
-  const tryRender = function(){
-    if(done) return;
-    if(typeof paypal !== 'undefined' && paypal.HostedButtons){
-      done = true;
-      box.innerHTML = '';
-      try{ paypal.HostedButtons({ hostedButtonId: btnId }).render('#paypalContainer'); }
-      catch(e){ console.error(e); showFallback(); }
-      return;
+  const periodCfg = (cfg.periods || []).find(p=>p.id===periodId) || {months:1, discount:0};
+  const localAmt = Math.round(currentPlan.price * (periodCfg.months || 1) * (1 - (periodCfg.discount || 0)/100));
+  const cur = (cfg.paymeCurrency || 'USD');
+  const key = currentPlan.id + ':' + periodId + ':' + localAmt + ':' + cur;
+  if(_paypalRendered === key) return;
+  _paypalRendered = key;
+  box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:14px">Preparando pago de ' + fmt(localAmt) + '…</div>';
+  /* El precio de la plataforma está en colones (CRC). Para PayPal convertimos
+     el monto a la divisa de cobro (USD por defecto) usando BCCR o la tasa forzada. */
+  const localCurrency = 'CRC';
+  const doButtonsWithAmount = function(amountFinal){
+    const doButtons = function(){
+      if(typeof paypal === 'undefined' || !paypal.Buttons){
+        openMemPayaplMe(amountFinal, cur);
+        return;
+      }
+      try{
+        paypal.Buttons({
+          style: { layout:'vertical', label:'paypal', shape:'rect', color:'blue' },
+          createOrder: function(data, actions){
+            const desc = 'Membresía ' + currentPlan.name + ' (' + (periodCfg.label || periodId) + ')';
+            return cloudCallPublic('membershipPaypalCreateOrder', { amount: amountFinal, currency: cur, description: desc, slug: TENANT_ID, months: periodCfg.months || 1 }).then(function(res){
+              if(!res || !res.orderId){ openMemPayaplMe(amountFinal, cur); return actions.reject(); }
+              if(res.payeeApplied === false){ toast('⚠ El pago se hará a la cuenta de la plataforma. Verificá el email de PayPal configurado.', 'warn'); }
+              return res.orderId;
+            });
+          },
+          onApprove: function(data, actions){
+            return cloudCallPublic('membershipPaypalCaptureOrder', { orderId: data.orderID, slug: TENANT_ID, months: periodCfg.months || 1 }).then(function(res){
+              if(res && res.status){
+                toast('✅ Pago de membresía aprobado por PayPal. ¡Gracias!', 'ok');
+                try{ if(typeof registerPaypalPayment === 'function') registerPaypalPayment(); }catch(_e){}
+              } else { toast('El pago quedó pendiente de verificación.', 'warn'); }
+            });
+          }
+        }).render('#paypalContainer');
+      }catch(e){ console.error(e); openMemPayaplMe(amountFinal, cur); }
+    };
+    if(planConfig && planConfig.paypalClientId){
+      loadPayPalSdk(planConfig.paypalClientId).then(doButtons).catch(doButtons);
+    } else {
+      doButtons();
     }
-    setTimeout(tryRender, 300);
   };
-  tryRender();
-  /* Tope de espera: si a los 4s todavía no cargó, mostrar el enlace directo */
-  setTimeout(function(){ if(!done){ box.innerHTML = ''; showFallback(); } }, 4000);
+  convertCurrency(localAmt, localCurrency, cur).then(function(conv){
+    doButtonsWithAmount(Number(conv).toFixed(2));
+  }).catch(function(){
+    doButtonsWithAmount(localAmt);
+  });
+}
+/* Abre PayPal.Me de la plataforma con el monto dinámico de la membresía */
+function openMemPayaplMe(amount, currency){
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const user = (cfg.paymeUser || '').trim().replace(/^https?:\/\/paypal\.me\//i,'').replace(/@/g,'');
+  if(!user){ toast('La plataforma aún no configuró PayPal para membresías.', 'err'); return; }
+  const amt = Number(amount||0).toFixed(2);
+  const cur = currency || (cfg.paymeCurrency || 'USD');
+  window.open('https://paypal.me/' + encodeURIComponent(user) + '?amount=' + amt + '&currency=' + encodeURIComponent(cur), '_blank', 'noopener');
+  toast('Abriendo pago por ' + amt + ' ' + cur + '…', 'ok');
 }
 /* Registra el pago por PayPal en el historial del negocio para que el
    superadmin pueda verlo en su panel y aprobarlo. El pago de PayPal lo cobra
@@ -12586,15 +12753,19 @@ async function registerPaypalPayment(){
 function payWithCardDynamic(){
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
   const user = (cfg.paymeUser || '').trim().replace(/^https?:\/\/paypal\.me\//i,'').replace(/@/g,'');
-  if(!user){ toast('El superadmin aún no configuró el pago con tarjeta dinámico.', 'err'); return; }
+  if(!user){ toast('La plataforma aún no configuró el pago con tarjeta dinámico.', 'err'); return; }
   const sel = document.getElementById('memPayPeriod');
   const opt = sel && sel.options[sel.selectedIndex];
-  const amount = opt ? (parseInt(opt.dataset.total)||0) : 0;
+  const amountCRC = opt ? (parseInt(opt.dataset.total)||0) : 0;
   const cur = (cfg.paymeCurrency || 'USD');
-  /* PayPal.Me coherente: https://paypal.me/usuario?amount=MONTON&currency=DIVISA */
-  const url = 'https://paypal.me/' + encodeURIComponent(user) + '?amount=' + amount.toFixed(2) + '&currency=' + encodeURIComponent(cur);
-  window.open(url, '_blank', 'noopener');
-  toast('Abriendo pago con tarjeta por ' + fmt(amount) + '…', 'ok');
+  convertCurrency(amountCRC, 'CRC', cur).then(function(conv){
+    const amt = Number(conv).toFixed(2);
+    const url = 'https://paypal.me/' + encodeURIComponent(user) + '?amount=' + amt + '&currency=' + encodeURIComponent(cur);
+    window.open(url, '_blank', 'noopener');
+    toast('Abriendo pago por ' + amt + ' ' + cur + '…', 'ok');
+  }).catch(function(){
+    toast('No se pudo convertir la divisa. Probá de nuevo.', 'err');
+  });
 }
 function closeMemPaymentModal(){ document.getElementById('memPaymentModal').classList.remove('show'); resetMemPayForm(); }
 /* Muestra el texto/enlace de los términos en el modal de pago */
