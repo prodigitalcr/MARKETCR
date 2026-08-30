@@ -1722,8 +1722,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 </head>
 <body>
 
-<!-- SDK de PayPal (bolsones de pago alojados) — se carga 1 sola vez por página -->
-<script src="https://www.paypal.com/sdk/js?client-id=BAAJONAw-87NQh8DWWyPrGWNQNj8qnMnWgFNh8jgqtSB34M5kuncUoUd2ODCggi8UU09yjjIqo3EcS8Cug&components=buttons,hosted-buttons&disable-funding=venmo&currency=USD"></script>
+<!-- SDK de PayPal se carga dinámicamente con el client-id del negocio (loadPayPalSdk) -->
 
 
 <!-- ================= SELECTOR DE NEGOCIOS (ESTILO TREINTA) =================
@@ -1966,7 +1965,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
   <div id="cartRelatedWrap"></div>
   <div class="cart-foot">
     <div class="cart-row"><span>Subtotal</span><span id="cartSub">₡0</span></div>
-    <div class="cart-row"><span>IVA (13%)</span><span id="cartIva">₡0</span></div>
+    <div class="cart-row"><span id="cartIvaLabel">IVA</span><span id="cartIva">₡0</span></div>
     <div class="cart-row total"><span>Total</span><span id="cartTotal">₡0</span></div>
     <button class="btn-primary" id="checkoutBtn" onclick="openCheckout()">
       Continuar al pago
@@ -2358,7 +2357,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Impuestos y descuentos</h4>
         <div class="desc">Configurá el porcentaje de impuesto de ventas (IVA) y un descuento global opcional que se aplicará a todos los pedidos de tu tienda.</div>
         <div class="f-row">
-          <div class="f-group"><label>IVA (%)</label><input class="f-input" id="sIva" type="number" min="0" max="100" step="0.5" placeholder="13"></div>
+          <div class="f-group"><label>IVA (%)</label><input class="f-input" id="sIva" type="number" min="0" max="100" step="0.5" placeholder="13" onchange="saveIvaImmediate()"></div>
           <div class="f-group"><label>Descuento global (%)</label><input class="f-input" id="sDiscount" type="number" min="0" max="100" step="0.5" placeholder="0"></div>
         </div>
         <div class="sinpe-preview" style="background:var(--blue-soft);border-color:var(--blue);color:var(--blue)">
@@ -2431,13 +2430,19 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           </div>
         </div>
         <div class="f-row" style="margin-top:10px">
+          <div class="f-group" style="text-align:center;width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px;background:var(--soft)">
+            <b style="font-size:13px">🅿️ Tu cuenta de PayPal (cobro internacional)</b>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:4px">El cliente paga su factura con tarjeta y el dinero llega a <b>TU cuenta</b>. Podés cobrar por <b>PayPal.Me</b> (enlace personal, monto exacto) y/o con <b>Checkout</b> (tarjeta de crédito). Completá al menos uno.</div>
+          </div>
+        </div>
+        <div class="f-row" style="margin-top:8px">
           <div class="f-group" style="flex:1;min-width:200px">
-            <label>Tu usuario de PayPal.Me (pago del carrito con tarjeta)</label>
-            <input class="f-input" id="sPaypalMe" placeholder="Ej: tunegocio (para paypal.me/tunegocio)">
-            <div class="hint" style="margin-top:4px">El cliente podrá pagar el <b>monto de su factura</b> con tarjeta a esta cuenta. Dejalo vacío para ocultar la opción.</div>
+            <label>Tu enlace PayPal.Me (u usuario)</label>
+            <input class="f-input" id="sPaypalMe" placeholder="Ej: tunegocio  →  paypal.me/tunegocio">
+            <div class="hint" style="margin-top:4px">Copia tu nombre de usuario de PayPal.Me, o el enlace completo <b>paypal.me/tu-usuario</b>. El cliente paga el monto exacto de su factura con tarjeta. Dejalo vacío para ocultar esta opción.</div>
           </div>
           <div class="f-group" style="max-width:150px">
-            <label>Divisa del cobro PayPal</label>
+            <label>Divisa del cobro</label>
             <select class="f-input" id="sPaypalCurrency">
               <option value="USD">USD $</option>
               <option value="EUR">EUR €</option>
@@ -2445,11 +2450,25 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
             </select>
           </div>
         </div>
-        <div class="f-row" style="margin-top:10px">
+        <div class="f-row" style="margin-top:8px">
           <div class="f-group" style="flex:1;min-width:220px">
-            <label>Email de tu cuenta PayPal (para recibir el pago del carrito)</label>
-            <input class="f-input" id="sPaypalEmail" type="email" placeholder="Ej: micuenta@ejemplo.com">
-            <div class="hint" style="margin-top:4px">Con PayPal <b>Checkout</b>, el comprador paga y el dinero llega a esta cuenta (debe ser una cuenta PayPal <b>empresarial/verificada</b> que pueda recibir).</div>
+            <label>Email de tu cuenta PayPal (Checkout con tarjeta)</label>
+            <input class="f-input" id="sPaypalEmail" type="email" placeholder="Ej: tunegocio@ejemplo.com">
+            <div class="hint" style="margin-top:4px">Con <b>Checkout</b>, el comprador paga con tarjeta y el dinero llega a <b>esta cuenta</b>. Debe ser una cuenta PayPal <b>empresarial/verificada</b> que pueda recibir pagos. Dejalo vacío si preferís usar solo PayPal.Me.</div>
+          </div>
+        </div>
+        <div class="f-row" style="margin-top:8px">
+          <div class="f-group" style="flex:1;min-width:220px">
+            <label>Client ID de tu app de PayPal</label>
+            <input class="f-input" id="sPaypalClientId" autocomplete="off" placeholder="Ej: ARxxAx...">
+            <div class="hint" style="margin-top:4px">Lo sacás de <b>developer.paypal.com → My Apps &amp; Credentials</b>. Es lo que permite que tu tienda muestre el botón de PayPal y cobre con tu cuenta.</div>
+          </div>
+        </div>
+        <div class="f-row" style="margin-top:8px">
+          <div class="f-group" style="flex:1;min-width:220px">
+            <label>Secret Key de tu app de PayPal</label>
+            <input class="f-input" id="sPaypalSecret" type="password" autocomplete="off" placeholder="****************************">
+            <div class="hint" style="margin-top:4px">Se guarda <b>en el servidor</b> (nunca en el navegador) y se usa para confirmar el pago. Si no completás estos campos, la plataforma usa las credenciales de su cuenta.</div>
           </div>
         </div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Los precios se ingresan en la divisa elegida. Si cambiás la divisa, revisá que los precios de tus productos estén en esa moneda.</div>
@@ -2845,7 +2864,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
           <div id="posCartItems" style="max-height:46vh;overflow-y:auto"></div>
           <div class="pos-total-row"><span>Subtotal</span><span id="posSub">₡0</span></div>
           <div class="pos-total-row" id="posDiscountRow" style="display:none"><span>Descuento</span><span id="posDiscount">−₡0</span></div>
-          <div class="pos-total-row"><span>IVA</span><span id="posIva">₡0</span></div>
+          <div class="pos-total-row"><span id="posIvaLabel">IVA</span><span id="posIva">₡0</span></div>
 <div class="pos-total-row grand"><span>TOTAL</span><span id="posTotal">₡0</span></div>
           <div class="pos-paid-wrap">
             <label>💵 Con cuánto paga</label>
@@ -6346,6 +6365,8 @@ function updateCartUI(){
   badge.style.display = t.count ? 'flex' : 'none';
   badge.textContent = t.count;
   document.getElementById('cartSub').textContent = fmt(t.sub);
+  var ivaPctLbl = document.getElementById('cartIvaLabel');
+  if(ivaPctLbl) ivaPctLbl.textContent = 'IVA (' + (settings.iva||0) + '%)';
   document.getElementById('cartIva').textContent = fmt(t.iva);
   document.getElementById('cartTotal').textContent = fmt(t.total);
   document.getElementById('checkoutBtn').disabled = !t.count;
@@ -6685,7 +6706,7 @@ async function convertCurrency(amount, from, to){
 function payOrderCard(){
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
   const hasEmail = !!(settings && settings.paypalEmail);
-  const hasMe = !!(settings && settings.paypalMe) || !!(cfg.paymeUser && String(cfg.paymeUser).trim());
+  const hasMe = !!(settings && settings.paypalMe);
   if(!hasEmail && !hasMe){
     toast('Este negocio no tiene configurado el pago con tarjeta.', 'err'); return;
   }
@@ -6702,11 +6723,15 @@ function payOrderCard(){
     convertCurrency(amount, local, cur).then(function(converted){
       const amountFinal = Number(converted).toFixed(2);
       if(btn){ btn.textContent = '💳 Pagar ' + amountFinal + ' ' + cur + ' con PayPal'; btn.disabled = false; }
-      /* Si el negocio definió un email PayPal (Checkout real): usamos el botón
-         de Checkout, que confirma y notifica automáticamente el pago. Si no hay
-         email, caemos a PayPal.Me con monto dinámico (respaldo, sin confirmación
-         automática). El checkout también abre PayPal.Me si la API falla. */
-      if(settings && settings.paypalEmail){
+      /* Priorizar el enlace PayPal.Me del PROPIO negocio: garantiza que el
+         dinero llegue a su cuenta (PayPal.Me siempre cobra al titular).
+         Si el negocio no tiene PayPal.Me pero sí email de Checkout, usamos el
+         Checkout (confirma y notifica automáticamente). Si no hay nada,
+         caemos al PayPal.Me general de la plataforma. */
+      const bizMe = settings && settings.paypalMe ? String(settings.paypalMe).trim() : '';
+      if(bizMe){
+        openPaypalMeDynamic(amountFinal, cur);
+      } else if(settings && settings.paypalEmail){
         renderPaypalCheckout(settings.paypalEmail, amountFinal, cur, facturaNum);
       } else {
         openPaypalMeDynamic(amountFinal, cur);
@@ -6722,11 +6747,10 @@ function payOrderCard(){
    Garantiza que SIEMPRE se muestre el monto a pagar, sin depender del Checkout API. */
 function openPaypalMeDynamic(amount, currency){
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
-  const me = (settings && settings.paypalMe ? String(settings.paypalMe).trim() : '') ||
-             (cfg.paymeUser ? String(cfg.paymeUser).trim() : '');
-  if(!me){ toast('No hay PayPal.Me configurado. Contactá al administrador.', 'warn'); return; }
+  const me = (settings && settings.paypalMe ? String(settings.paypalMe).trim() : '');
+  if(!me){ toast('Este negocio no tiene configurado su PayPal.Me. El administrador debe ingresarlo en Configuración → Pagos.', 'warn'); return; }
   const amt = Number(amount || 0).toFixed(2);
-  const cur = currency || (cfg.paymeCurrency || 'USD');
+  const cur = currency || (settings && settings.paypalCurrency) || (cfg.paymeCurrency || 'USD');
   const url = 'https://www.paypal.com/paypalme/' + encodeURIComponent(me) + '?amount=' + amt + '&currency=' + encodeURIComponent(cur);
   window.open(url, '_blank', 'noopener');
   toast('Abriendo pago de ' + amt + ' ' + cur + '…', 'ok');
@@ -6740,18 +6764,44 @@ function renderPaypalCheckout(payeeEmail, amount, currency, facturaNum){
   if(!box) return;
   box.style.display = 'block';
   box.innerHTML = '';
-  if(typeof paypal === 'undefined' || !paypal.Buttons){
-    box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Cargando botón de PayPal…</div>';
-    setTimeout(function(){ renderPaypalCheckout(payeeEmail, amount, currency, facturaNum); }, 600);
+  /* Usar el Client ID del propio negocio (el admin lo ingresa en su panel) */
+  const bizClientId = (settings && settings.paypalClientId) ? settings.paypalClientId : '';
+  if(!bizClientId){
+    box.innerHTML = '<div style="font-size:12px;color:var(--danger);text-align:center;padding:10px">Este negocio aún no ha configurado su Client ID de PayPal. El administrador debe ingresar sus credenciales en Configuración → Pagos.</div>';
     return;
   }
+  loadPayPalSdk(bizClientId).then(function(){
+    if(typeof paypal === 'undefined' || !paypal.Buttons){
+      box.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">No se pudo cargar el botón de PayPal. Revisá el Client ID.</div>';
+      return;
+    }
+    renderPaypalButtons(box, payeeEmail, amount, currency, facturaNum);
+  });
+}
+/* Carga dinámicamente el SDK de PayPal con un client-id específico. Devuelve
+   una promesa que resuelve cuando el SDK está listo (o rechaza si falla). */
+var _paypalSdkLoaded = null;
+function loadPayPalSdk(clientId){
+  if(typeof paypal !== 'undefined' && paypal.Buttons) return Promise.resolve();
+  if(_paypalSdkLoaded) return _paypalSdkLoaded;
+  _paypalSdkLoaded = new Promise(function(resolve, reject){
+    var s = document.createElement('script');
+    s.src = 'https://www.paypal.com/sdk/js?client-id=' + encodeURIComponent(clientId) + '&components=buttons&disable-funding=venmo&currency=USD';
+    s.onload = function(){ resolve(); };
+    s.onerror = function(){ _paypalSdkLoaded = null; reject(new Error('No se pudo cargar el SDK de PayPal')); };
+    document.head.appendChild(s);
+  });
+  return _paypalSdkLoaded;
+}
+/* Renderiza el botón de PayPal (checkout) con la orden que crea el servidor */
+function renderPaypalButtons(box, payeeEmail, amount, currency, facturaNum){
   try{
     var btn = paypal.Buttons({
       style: { layout:'vertical', label:'paypal', shape:'rect', color:'blue' },
       createOrder: function(data, actions){
         /* Pedir la orden al servidor (sin exponer secretos) con el monto de la factura */
         var desc = 'Pago de factura ' + (facturaNum ? facturaNum : dateOrderNumber()) + ' — ' + (settings.storeName||'Tienda');
-        return cloudCallPublic('paypalCreateOrder', { amount: parseFloat(amount), currency: currency, description: desc, payeeEmail: payeeEmail }).then(function(res){
+        return cloudCallPublic('paypalCreateOrder', { amount: parseFloat(amount), currency: currency, description: desc, payeeEmail: payeeEmail, slug: TENANT_ID }).then(function(res){
           if(!res || !res.orderId){
             /* FALLBACK: abrir PayPal.Me con el monto dinámico para que el cliente
                pague el importe exacto aunque el Checkout API no esté disponible. */
@@ -6802,7 +6852,7 @@ function refreshCheckoutCardBtn(){
   if(!b) return;
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
   const own = settings && settings.paypalMe ? String(settings.paypalMe).trim() : '';
-  const has = own || (cfg.paymeUser && String(cfg.paymeUser).trim());
+  const has = !!(own || (settings && settings.paypalEmail) || (settings && settings.paypalClientId));
   b.style.display = has ? 'block' : 'none';
   const lbl = document.getElementById('cPayLabel');
   if(lbl) lbl.textContent = settings.payMethodLabel || 'SINPE';
@@ -8313,6 +8363,8 @@ function renderPOSCart(){
   document.getElementById('posSub').textContent = fmt(t.sub);
   document.getElementById('posDiscountRow').style.display = t.discountAmt ? 'flex' : 'none';
   document.getElementById('posDiscount').textContent = '−' + fmt(t.discountAmt);
+  var posIvaLbl = document.getElementById('posIvaLabel');
+  if(posIvaLbl) posIvaLbl.textContent = 'IVA (' + (settings.iva||0) + '%)';
   document.getElementById('posIva').textContent = fmt(t.iva);
   document.getElementById('posTotal').textContent = fmt(t.total);
   document.getElementById('posCobrarBtn').disabled = !t.count;
@@ -8947,6 +8999,8 @@ let pendingBingoIcon = null;
    versión enmascarada (ej: sk-or-v1-****abcd) y si existe. El admin la ve
    para saber que está guardada y puede reemplazarla escribiendo una nueva. */
 let _masked = { openrouter:'', gemini:'', external:'' };
+let _maskedPaypalSecret = '';
+let privatePaypal = {};
 async function refreshMaskedAiKeys(){
   const setMask = (id, masked, exists, placeholder) => {
     const el = document.getElementById(id);
@@ -8993,6 +9047,23 @@ async function loadBizWhatsappConfig(){
     if(tok) tok.value = p.waToken || '';
     const ph = document.getElementById('sWaPhoneId');
     if(ph) ph.value = p.waPhoneId || '';
+    /* Credenciales PayPal del negocio: el Client ID es público (se muestra),
+       el Secret se muestra enmascarado (solo el servidor lo usa de verdad). */
+    privatePaypal = { paypalClientId: p.paypalClientId || '', paypalSecret: p.paypalSecret || '' };
+    const ppc = document.getElementById('sPaypalClientId');
+    if(ppc) ppc.value = p.paypalClientId || '';
+    const pps = document.getElementById('sPaypalSecret');
+    if(pps){
+      if(p.paypalSecret){
+        _maskedPaypalSecret = p.paypalSecret.slice(0,6) + '****' + p.paypalSecret.slice(-4);
+        pps.value = _maskedPaypalSecret;
+        pps.placeholder = 'Guardada: ' + _maskedPaypalSecret + ' — escribí una nueva para reemplazarla';
+      } else {
+        _maskedPaypalSecret = '';
+        pps.value = '';
+        pps.placeholder = '****************************';
+      }
+    }
     onBizWaProviderChange();
   }catch(e){ console.warn('No se pudo cargar config WhatsApp del negocio:', e && e.message); }
 }
@@ -9728,6 +9799,41 @@ function removeExternalIcon(key){
     document.getElementById('sBingoIconPreview').innerHTML = '';
   }
 }
+
+/* Guarda el cambio de IVA/impuesto al instante (sin depender del botón).
+   Se llama en el onchange del campo sIva. */
+async function saveIvaImmediate(){
+  try{
+    const el = document.getElementById('sIva');
+    let v = parseFloat(el.value);
+    if(isNaN(v)) v = settings.iva || 0;
+    v = Math.max(0, Math.min(100, v));
+    el.value = v;
+    await settingsRef.set({ iva: v }, { merge:true });
+    /* Verificar que el write realmente se aplicó en Firestore (el SDK es
+       optimista: con permisos incorrectos puede resolver sin escribir). */
+    const chk = await settingsRef.get();
+    let persisted = false;
+    if(chk.exists){
+      const chkIva = chk.data().iva;
+      persisted = (chkIva === v) || (Math.abs(parseFloat(chkIva) - v) < 0.001);
+    }
+    settings.iva = v;
+    try{ updateCartUI(); }catch(_e){}
+    if(!persisted){
+      const me2 = (auth.currentUser && auth.currentUser.email) || '(sin sesión)';
+      const list2 = (TENANT_DATA && TENANT_DATA.adminEmails) || [];
+      showPermDebugHint();
+      toast('No persistió: ' + (me2 || 'sin sesión') + ' vs adminEmails [' + list2.join(', ') + ']', 'err');
+      return;
+    }
+    toast('IVA actualizado a ' + v + '%', 'ok');
+  }catch(e){
+    toast('No se pudo guardar el IVA: ' + (e && e.message ? e.message : 'error'), 'err');
+    console.error(e);
+  }
+}
+
 async function saveSettings(){
   const name = document.getElementById('sName').value.trim();
   const sinpe = document.getElementById('sSinpe').value.trim();
@@ -9765,6 +9871,7 @@ const cats = document.getElementById('sCats').value.split(',').map(s=>s.trim()).
     })(),
     paypalEmail: document.getElementById('sPaypalEmail').value.trim(),
     paypalCurrency: ['USD','EUR','CRC'].includes(document.getElementById('sPaypalCurrency').value) ? document.getElementById('sPaypalCurrency').value : 'USD',
+    paypalClientId: (document.getElementById('sPaypalClientId').value || '').trim(),
     websiteUrl:document.getElementById('sWebUrl').value.trim(),
     websiteLabel:document.getElementById('sWebLabel').value.trim() || 'Sitio web',
     websiteIcon: pendingWebIcon !== null ? pendingWebIcon : (settings.websiteIcon||''),
@@ -9825,6 +9932,11 @@ try{
     if(newORKey && newORKey !== _masked.openrouter) priv.aiOpenrouterKey = newORKey;
     if(newGemKey && newGemKey !== _masked.gemini) priv.aiApiKey = newGemKey;
     if(newExtKey && newExtKey !== _masked.external) priv.aiExternalKey = newExtKey;
+    /* Credenciales PayPal del NEGOCIO (privadas: el Secret solo lo lee el servidor) */
+    const ppClientEl = document.getElementById('sPaypalClientId');
+    const ppSecretEl = document.getElementById('sPaypalSecret');
+    if(ppClientEl && ppClientEl.value.trim()) priv.paypalClientId = ppClientEl.value.trim();
+    if(ppSecretEl && ppSecretEl.value.trim() && ppSecretEl.value !== _maskedPaypalSecret) priv.paypalSecret = ppSecretEl.value.trim();
     /* Config de notificación de pagos por WhatsApp del NEGOCIO (privada) */
     const wProvEl = document.getElementById('sWaProvider');
     const wSidEl = document.getElementById('sWaSid');
@@ -9869,6 +9981,11 @@ try{
       tenantMirror.createdAt = firebase.firestore.FieldValue.serverTimestamp();
     }
     await tenantRef().set(tenantMirror, { merge:true });
+    /* Refrescar la configuración en memoria y la UI para que el IVA/descuento
+       nuevos se apliquen al carrito, POS y facturas sin recargar la página. */
+    settings = Object.assign({}, settings, data);
+    _CURRENCY = ['CRC','USD','EUR'].includes(settings.currency) ? settings.currency : 'CRC';
+    try{ updateCartUI(); }catch(_e){}
     settingsFormDirty = false;
     pendingLogoDataUrl = null;
     pendingWebIcon = null;
