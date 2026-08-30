@@ -966,6 +966,9 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 .sv-hero-actions{display:flex;gap:12px;flex-wrap:wrap}
 .sv-hero-media{position:relative}
 .sv-hero-media img{width:100%;border-radius:26px;box-shadow:0 30px 60px rgba(0,0,0,.35);object-fit:cover;aspect-ratio:4/3.2;display:block}
+.sv-hero-media.sv-shape-circle img,.sv-hero-media.sv-shape-circle .sv-hero-slide{border-radius:50%;aspect-ratio:1/1;max-height:520px}
+.sv-hero-media.sv-shape-sharp img,.sv-hero-media.sv-shape-sharp .sv-hero-slide{border-radius:2px}
+.sv-hero-media.sv-shape-rounded img{border-radius:26px}
 /* Carrusel del hero: fundido suave entre imágenes + puntos */
 .sv-hero-media .sv-hero-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease}
 .sv-hero-media .sv-hero-slide.active{opacity:1;position:relative}
@@ -1076,6 +1079,16 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 .sv-gal img{width:100%;height:100%;object-fit:cover;transition:.35s}
 .sv-gal:hover img{transform:scale(1.06)}
 .sv-gal-ph{background:linear-gradient(135deg,var(--site-soft),var(--site-p));color:#fff;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;aspect-ratio:1;border-radius:16px}
+.sv-gal-carousel{position:relative;border-radius:18px;overflow:hidden;background:#0f172a}
+.sv-gal-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;cursor:pointer}
+.sv-gal-slide.active{opacity:1;position:relative;aspect-ratio:16/6}
+.sv-gal-slide img{width:100%;height:100%;object-fit:cover}
+.sv-gal-carousel .sv-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.9);color:#111;border:none;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.sv-gal-carousel .sv-gal-prev{left:14px}
+.sv-gal-carousel .sv-gal-next{right:14px}
+.sv-gal-carousel .sv-gal-dots{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:3}
+.sv-gal-carousel .sv-gal-dots span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.5);cursor:pointer;transition:.25s}
+.sv-gal-carousel .sv-gal-dots span.active{background:#fff;width:22px;border-radius:4px}
 /* ----- CTA final ----- */
 .sv-cta{position:relative;overflow:hidden;background:linear-gradient(120deg,var(--site-p),var(--site-pd));color:#fff;text-align:center;border-radius:28px;padding:70px 30px}
 .sv-cta::before{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.1);top:-120px;left:-80px}
@@ -1523,6 +1536,38 @@ body.in-admin .ai-float,body.in-admin .ai-panel{display:none}
 .prof-chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--green-dark);background:var(--green-soft);padding:4px 9px;border-radius:999px}
 .prof-chip svg{width:12px;height:12px}
 .prof-wa-btn{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:12px;background:#25D366;color:#fff;font-size:13.5px;font-weight:700;border:none;cursor:pointer;transition:.15s;width:100%}
+
+/* ============ SELECTOR DE PLANTILLAS DE LANDING (estilo Canva) ============ */
+.sv-tpl-head{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.sv-tpl-count{font-size:11px;font-weight:800;color:var(--green-dark);background:var(--green-soft);padding:4px 10px;border-radius:999px}
+.sv-tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:10px}
+.sv-tpl-card{border:2px solid #E8EDF2;border-radius:16px;background:#fff;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column;padding:0;text-align:left}
+.sv-tpl-card:hover{border-color:var(--green);box-shadow:0 10px 26px rgba(0,0,0,.1);transform:translateY(-3px)}
+.sv-tpl-preview{aspect-ratio:4/5;background:linear-gradient(180deg,#F8FAFC,#EEF2F7);padding:10px;display:flex;flex-direction:column;gap:6px;overflow:hidden;border-bottom:1px solid var(--line)}
+.sv-tpl-nav{display:flex;gap:3px;align-items:center;padding:2px 2px 0}
+.sv-tpl-dot{width:5px;height:5px;border-radius:50%;background:var(--ts);opacity:.7}
+.sv-tpl-hero{flex:1;display:grid;gap:6px;padding-top:4px;min-height:0}
+.sv-tpl-hero-left{grid-template-columns:1fr 1.1fr;align-items:center}
+.sv-tpl-hero-right{grid-template-columns:1.1fr 1fr;align-items:center}
+.sv-tpl-hero-right .sv-tpl-hcol{order:2}
+.sv-tpl-hero-center{grid-template-columns:1fr;text-align:center}
+.sv-tpl-hero-center .sv-tpl-hcol{display:flex;flex-direction:column;align-items:center}
+.sv-tpl-hcol{display:flex;flex-direction:column;gap:4px}
+.sv-tpl-line{height:6px;border-radius:3px;background:var(--tp);opacity:.85}
+.sv-tpl-line.w70{width:70%}.sv-tpl-line.w50{width:50%}
+.sv-tpl-btn{width:34px;height:10px;border-radius:5px;background:var(--ts);margin-top:2px}
+.sv-tpl-box{background:linear-gradient(135deg,var(--tp),var(--ts));border-radius:var(--tr);min-height:60px;width:100%}
+.sv-tpl-box.sv-tpl-circle{border-radius:50%;aspect-ratio:1;width:80%;max-width:70px;justify-self:center}
+.sv-tpl-box.sv-tpl-sharp{border-radius:3px}
+.sv-tpl-benefits{display:grid;gap:4px}
+.sv-tpl-b{height:18px;border-radius:5px;background:#fff;border:1px solid var(--line)}
+.sv-tpl-prod{display:flex;gap:4px}
+.sv-tpl-p{flex:1;height:26px;border-radius:5px;background:#fff;border:1px solid var(--line)}
+.sv-tpl-prod-rows .sv-tpl-p{flex:none;width:100%;height:16px}
+.sv-tpl-meta{padding:10px 12px;background:#fff}
+.sv-tpl-name{font-size:13px;font-weight:800;color:var(--ink)}
+.sv-tpl-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.sv-tpl-tags span{font-size:10px;font-weight:700;color:var(--muted);background:#F1F5F9;padding:2px 7px;border-radius:999px}
 .prof-wa-btn:hover{background:#1EBE5B}
 .prof-wa-btn svg{width:18px;height:18px}
 .prof-btn-row{margin-top:auto;display:flex;flex-direction:column;gap:8px}
@@ -1669,6 +1714,40 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
 .pw-plan.required{border-color:var(--yellow);background:var(--yellow-soft)}
 .pw-plan-name{font-size:13px;font-weight:800;margin-bottom:4px}
 .pw-plan-price{font-size:12px;color:var(--muted);font-weight:600}
+
+/* ============ FICHA MODERNA DE PLANES (comparativa) ============ */
+.mem-period-toggle{display:inline-flex;background:#F1F5F9;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg-btn{border:none;background:transparent;padding:8px 14px;border-radius:9px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:.15s}
+.seg-btn:hover{color:var(--ink)}
+.seg-btn.active{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.plan-compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;align-items:stretch}
+.plan-compare-card{position:relative;background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;transition:.25s;overflow:hidden}
+.plan-compare-card:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(0,0,0,.12)}
+.plan-compare-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:var(--pc-accent,#1B7A43)}
+.plan-compare-card.current{border-color:var(--pc-accent,#1B7A43);box-shadow:0 0 0 3px color-mix(in srgb,var(--pc-accent,#1B7A43) 18%,transparent)}
+.plan-compare-card.top{background:linear-gradient(180deg,#FBF7FF,#fff)}
+.pc-flag{position:absolute;top:14px;right:14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:var(--pc-accent,#7C3AED);padding:4px 9px;border-radius:999px}
+.pc-head{text-align:center;padding-bottom:14px;border-bottom:1px dashed var(--line);margin-bottom:12px}
+.pc-icon{font-size:34px;margin-bottom:6px}
+.pc-name{font-size:17px;font-weight:900}
+.pc-sub{font-size:12px;color:var(--muted);margin-bottom:10px}
+.pc-price{font-size:26px;font-weight:900;color:var(--pc-accent,#1B7A43);line-height:1}
+.pc-price-per{font-size:12px;color:var(--muted);font-weight:600}
+.pc-limit{display:inline-block;margin-top:10px;font-size:11px;font-weight:700;color:var(--pc-accent,#1B7A43);background:color-mix(in srgb,var(--pc-accent,#1B7A43) 12%,transparent);padding:4px 10px;border-radius:999px}
+.pc-features{flex:1;display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.pc-feature{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;color:var(--ink)}
+.pc-check{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;background:color-mix(in srgb,var(--pc-accent,#1B7A43) 16%,transparent);color:var(--pc-accent,#1B7A43)}
+.pc-feature.off{opacity:.4}
+.pc-feature.off .pc-check{background:#F1F5F9;color:#CBD5E1}
+.pc-btn-wrap{border-top:1px dashed var(--line);padding-top:12px}
+.pc-total{text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px}
+.pc-total b{font-size:14px;color:var(--ink)}
+.pw-mini{padding:16px 14px}
+.pw-mini .pc-features{gap:5px;margin-bottom:6px}
+.pw-mini .pc-head{padding-bottom:10px;margin-bottom:8px}
+.pw-mini .pc-price{font-size:22px}
+.pw-mini.required{--pc-accent:#D9770D}
+.pw-mini.locked{opacity:.72}
 /* ============ SA PLAN APPROVAL MODAL ============ */
 .sa-plan-modal-card{max-width:660px}
 .plan-request-card{background:#F9FAFB;border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
@@ -1979,7 +2058,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
     <div class="cart-row"><span id="cartIvaLabel">IVA</span><span id="cartIva">₡0</span></div>
     <div class="cart-row total"><span>Total</span><span id="cartTotal">₡0</span></div>
     <button class="btn-primary" id="checkoutBtn" onclick="openCheckout()">
-      Continuar al pago
+      <span>Continuar al pago</span>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
     </button>
   </div>
@@ -1999,10 +2078,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <div id="coStep1">
         <div class="sum-box" id="coSummary"></div>
         <div class="f-row">
-          <div class="f-group"><label>Nombre completo <span class="req">*</span></label><input class="f-input" id="cName" placeholder="Ej: María Rodríguez"></div>
-          <div class="f-group"><label>Teléfono / WhatsApp <span class="req">*</span></label><input class="f-input" id="cPhone" placeholder="Ej: 8888 8888" inputmode="tel"></div>
+          <div class="f-group"><label><span>Nombre completo</span> <span class="req">*</span></label><input class="f-input" id="cName" placeholder="Ej: María Rodríguez"></div>
+          <div class="f-group"><label><span>Teléfono / WhatsApp</span> <span class="req">*</span></label><input class="f-input" id="cPhone" placeholder="Ej: 8888 8888" inputmode="tel"></div>
         </div>
-        <div class="f-group"><label>Correo electrónico (opcional)</label><input class="f-input" id="cEmail" placeholder="tucorreo@ejemplo.com" type="email"></div>
+        <div class="f-group"><label><span>Correo electrónico (opcional)</span></label><input class="f-input" id="cEmail" placeholder="tucorreo@ejemplo.com" type="email"></div>
         <div class="f-group">
           <label>Método de entrega <span class="req">*</span></label>
           <div class="radio-cards">
@@ -2010,10 +2089,10 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
             <label class="radio-card" id="rcEnvio"><input type="radio" name="delivery" value="Envío a domicilio" onchange="selDelivery(this)"><div><b>Envío a domicilio</b><small id="shipHint">Según zona</small></div></label>
           </div>
         </div>
-        <div class="f-group"><label>Dirección / Ubicación <span class="req">*</span></label><textarea class="f-input" id="cAddress" placeholder="Provincia, cantón, distrito y señas"></textarea></div>
-        <div class="f-group"><label>Notas del pedido (opcional)</label><input class="f-input" id="cNotes" placeholder="Ej: entregar en la mañana"></div>
-        <button class="btn-primary" onclick="submitOrder()">Generar factura y pagar con <span id="cPayLabel">menor</span></button>
-        <button class="btn-export" id="cCardBtn" style="width:100%;margin-top:8px;display:none" onclick="payOrderCard()">💳 Pagar el monto exacto con tarjeta (PayPal)</button>
+        <div class="f-group"><label><span>Dirección / Ubicación</span> <span class="req">*</span></label><textarea class="f-input" id="cAddress" placeholder="Provincia, cantón, distrito y señas"></textarea></div>
+        <div class="f-group"><label><span>Notas del pedido (opcional)</span></label><input class="f-input" id="cNotes" placeholder="Ej: entregar en la mañana"></div>
+        <button class="btn-primary" onclick="submitOrder()"><span>Generar factura y pagar con</span> <span id="cPayLabel">menor</span></button>
+        <button class="btn-export" id="cCardBtn" style="width:100%;margin-top:8px;display:none" onclick="payOrderCard()"><span>💳 Pagar el monto exacto con tarjeta (PayPal)</span></button>
         <div id="paypalCheckoutBox" style="width:100%;margin-top:8px;display:none"></div>
         <p class="hint" style="text-align:center;margin-top:10px">Al continuar se genera tu factura con el monto exacto a transferir.</p>
       </div>
@@ -3878,6 +3957,7 @@ const DEFAULT_SETTINGS = {
   tagline:'Vivero, jardinería y servicios',
   hours:'Lun - Sáb · 6:00 a.m. - 5:00 p.m.',
   shipping:'Hacemos envíos por Uber Flash · San José, CR',
+
   sinpe:'8888-8888',
   currency:'CRC', // CRC (colones ₡) | USD (dólares $) | EUR (euros €) — se usa en todo
   payMethodLabel:'SINPE', // nombre del método de pago local (editable; en otros países puede ser otro)
@@ -6425,7 +6505,7 @@ function updateCartUI(){
 
   const box = document.getElementById('cartItems');
   if(!t.count){
-    box.innerHTML = '<div class="cart-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/></svg><br>Tu canasta está vacía.<br>Agregá productos para empezar.</div>';
+    box.innerHTML = '<div class="cart-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/></svg><br>' + 'Tu canasta está vacía.' + '<br>' + 'Agregá productos para empezar.' + '</div>';
     return;
   }
   box.innerHTML = Object.keys(cart).map(key => {
@@ -6644,24 +6724,24 @@ function invoiceHTML(order){
 return '<div class="inv-head">' +
       (settings.logoUrl ? '<img class="inv-logo" src="' + esc(settings.logoUrl) + '" alt="Logo">' : '') +
       '<div><div class="store">' + esc(settings.storeName) + '</div><div class="meta">' + esc(settings.tagline) + '</div></div>' +
-      '<div class="inv-num"><b>FACTURA ' + order.number + '</b><span>' + fecha + '</span></div>' +
+      '<div class="inv-num"><b>' + 'FACTURA' + ' ' + order.number + '</b><span>' + fecha + '</span></div>' +
     '</div>' +
     '<div class="inv-body">' +
-      '<div class="inv-client"><b>Cliente:</b> ' + esc(order.customer.name) + '<br>' +
-      '<b>Teléfono:</b> ' + esc(order.customer.phone) + (order.customer.email ? ' · <b>Correo:</b> ' + esc(order.customer.email) : '') + '<br>' +
-      '<b>Entrega:</b> ' + esc(order.customer.delivery) + ' — ' + esc(order.customer.address) +
-      (order.customer.notes ? '<br><b>Notas:</b> ' + esc(order.customer.notes) : '') + '</div>' +
-      '<table class="inv-table"><thead><tr><th>Producto</th><th class="c">Cant.</th><th class="r">Precio</th><th class="r">Importe</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<div class="inv-client"><b>' + 'Cliente:' + '</b> ' + esc(order.customer.name) + '<br>' +
+      '<b>' + 'Teléfono:' + '</b> ' + esc(order.customer.phone) + (order.customer.email ? ' · <b>' + 'Correo:' + '</b> ' + esc(order.customer.email) : '') + '<br>' +
+      '<b>' + 'Entrega:' + '</b> ' + esc(order.customer.delivery) + ' — ' + esc(order.customer.address) +
+      (order.customer.notes ? '<br><b>' + 'Notas:' + '</b> ' + esc(order.customer.notes) : '') + '</div>' +
+      '<table class="inv-table"><thead><tr><th>' + 'Producto' + '</th><th class="c">' + 'Cant.' + '</th><th class="r">' + 'Precio' + '</th><th class="r">' + 'Importe' + '</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<div class="inv-totals">' +
-        '<div class="row"><span>Subtotal</span><span>' + fmt(order.subtotal) + '</span></div>' +
+        '<div class="row"><span>' + 'Subtotal' + '</span><span>' + fmt(order.subtotal) + '</span></div>' +
         (order.discountAmt ? '<div class="row" style="color:#B45309"><span>Descuento global (' + (order.discountPercent||0) + '%)</span><span>−' + fmt(order.discountAmt) + '</span></div>' : '') +
-        '<div class="row"><span>IVA (' + settings.iva + '%)</span><span>' + fmt(order.iva) + '</span></div>' +
-        '<div class="row tt"><span>TOTAL</span><span>' + fmt(order.total) + '</span></div>' +
+        '<div class="row"><span>' + 'IVA' + ' (' + settings.iva + '%)</span><span>' + fmt(order.iva) + '</span></div>' +
+        '<div class="row tt"><span>' + 'TOTAL' + '</span><span>' + fmt(order.total) + '</span></div>' +
         '<div class="row" id="invUsdRow" style="color:var(--blue);font-size:12px"><span>Equivalente USD (BCCR)</span><span id="invUsd">…</span></div>' +
       '</div>' +
     '</div>' +
     '<div class="sinpe-box">' +
-      '<div class="lbl">Pago por ' + esc(payMethodLabel()) + '</div>' +
+      '<div class="lbl">' + 'Pago por' + ' ' + esc(payMethodLabel()) + '</div>' +
       '<div class="num">' + esc(settings.sinpe) + '</div>' +
       '<div class="amt">Monto exacto: ' + fmt(order.total) + ' · A nombre de ' + esc(settings.storeName) + '</div>' +
       '<div class="steps">1. Abrí la app de tu banco → SINPE Móvil<br>2. Transferí el monto exacto al número indicado<br>3. Enviá el comprobante por WhatsApp con el botón de abajo</div>' +
@@ -6862,7 +6942,7 @@ function renderPaypalButtons(box, payeeEmail, amount, currency, facturaNum){
       createOrder: function(data, actions){
         /* Pedir la orden al servidor (sin exponer secretos) con el monto de la factura */
         var desc = 'Pago de factura ' + (facturaNum ? facturaNum : dateOrderNumber()) + ' — ' + (settings.storeName||'Tienda');
-        return cloudCallPublic('paypalCreateOrder', { amount: parseFloat(amount), currency: currency, description: desc, payeeEmail: payeeEmail, slug: TENANT_ID }).then(function(res){
+        return cloudCallPublic('paypalCreateOrder', { amount: parseFloat(amount), currency: currency, description: desc, payeeEmail: payeeEmail, slug: TENANT_ID, orderNumber: facturaNum || '' }).then(function(res){
           if(!res || !res.orderId){
             /* FALLBACK: abrir PayPal.Me con el monto dinámico para que el cliente
                pague el importe exacto aunque el Checkout API no esté disponible. */
@@ -10073,7 +10153,7 @@ function goToTenant(slug){
 }
 function tenantCardMedia(images, nombre){
   if(images && images.length){
-    const imgs = images.map((url,i)=> '<img src="' + url + '" alt="' + nombre + '"' + (i===0?' class="active"':'') + '>').join('');
+    const imgs = images.map((url,i)=> '<img src="' + url + '" alt="' + nombre + '" loading="lazy" decoding="async"' + (i===0?' fetchpriority="high" class="active"':' fetchpriority="low"') + '>').join('');
     const dots = images.length > 1
       ? '<div class="ts-dots">' + images.map((_,i)=> '<span class="ts-dot' + (i===0?' active':'') + '"></span>').join('') + '</div>'
       : '';
@@ -11481,6 +11561,56 @@ const PLAN_FEATURE_LABELS = {
   'games-link':     'Enlace de Juegos',
 };
 
+/* Información REAL de accesos por plan, para la ficha comparativa.
+   Cada feature: {k, t, cats:[categoría], inc:[planes que lo tienen]}.
+   Todos los planes tienen: catálogo, inventario, perfil, WhatsApp, SINPE,
+   moneda, estadísticas básicas y Asistente IA. */
+const PLAN_PLUS = {
+  emprendedor: {
+    tag:'🌱', color:'#1B7A43', sub:'Para empezar a vender',
+    limit:'Hasta 20 productos',
+    features:[
+      {k:'catalog', t:'Catálogo (hasta 20 productos)', inc:['emprendedor']},
+      {k:'inventory', t:'Inventario y precios', inc:['emprendedor','profesional','destacado']},
+      {k:'profile', t:'Perfil y WhatsApp', inc:['emprendedor','profesional','destacado']},
+      {k:'sinpe', t:'Cobro SINPE / moneda local', inc:['emprendedor','profesional','destacado']},
+      {k:'stats', t:'Estadísticas básicas', inc:['emprendedor','profesional','destacado']},
+      {k:'ai', t:'Asistente IA', inc:['emprendedor','profesional','destacado']},
+      {k:'landing', t:'Landing / página de tienda', inc:['emprendedor','profesional','destacado']}
+    ]
+  },
+  profesional: {
+    tag:'🚀', color:'#D9770D', sub:'Para vender de forma constante',
+    limit:'Hasta 200 productos',
+    features:[
+      {k:'catalog', t:'Catálogo (hasta 200 productos)', inc:['profesional','destacado']},
+      {k:'inventory', t:'Inventario y precios', inc:['emprendedor','profesional','destacado']},
+      {k:'orders', t:'Pedidos y facturación', inc:['profesional','destacado']},
+      {k:'pos', t:'Punto de Venta (POS)', inc:['profesional','destacado']},
+      {k:'finance', t:'Finanzas y empleados', inc:['profesional','destacado']},
+      {k:'reviews', t:'Reseñas de productos', inc:['profesional','destacado']},
+      {k:'video', t:'Video historia flotante', inc:['profesional','destacado']},
+      {k:'paypal', t:'Cobro con PayPal', inc:['profesional','destacado']},
+      {k:'whatsapp', t:'Notificación de pagos por WhatsApp', inc:['profesional','destacado']},
+      {k:'games', t:'Enlace de juegos / Bingo', inc:['profesional','destacado']},
+      {k:'ai', t:'Asistente IA', inc:['emprendedor','profesional','destacado']}
+    ]
+  },
+  destacado: {
+    tag:'⭐', color:'#7C3AED', sub:'Máxima visibilidad y herramientas',
+    limit:'Productos ilimitados',
+    features:[
+      {k:'catalog', t:'Catálogo ilimitado', inc:['destacado']},
+      {k:'everything', t:'Todo lo del plan Profesional', inc:['destacado']},
+      {k:'badge', t:'Insignia "Destacado"', inc:['destacado']},
+      {k:'priority', t:'Aparece primero en la plataforma', inc:['destacado']},
+      {k:'promo', t:'Promoción dentro de la plataforma', inc:['destacado']},
+      {k:'search', t:'Mejor posición en búsquedas', inc:['destacado']},
+      {k:'ai', t:'Asistente IA', inc:['emprendedor','profesional','destacado']}
+    ]
+  }
+};
+
 /* Plan activo aprobado del tenant actual */
 function getActivePlanId(){
   if(!TENANT_DATA) return 'emprendedor';
@@ -11518,12 +11648,24 @@ function showPlanWall(featureKey){
     const isCurrent = p.id === activePlan;
     const isRequired = rank === requiredRank;
     const isLocked = rank < requiredRank;
-    return '<div class="pw-plan ' + (isCurrent?'current':isRequired?'required':isLocked?'locked':'') + '">' +
-      '<div style="font-size:20px;margin-bottom:4px">' + (PLAN_ICONS[p.id]||'📦') + '</div>' +
-      '<div class="pw-plan-name">' + esc(p.name) + '</div>' +
-      '<div class="pw-plan-price">' + fmt(p.price) + '/mes</div>' +
-      (isCurrent ? '<div style="font-size:10px;color:var(--green);font-weight:800;margin-top:4px">✓ Tu plan</div>' : '') +
-      (isRequired ? '<div style="font-size:10px;color:#92400E;font-weight:800;margin-top:4px">⬆ Requerido</div>' : '') +
+    const d = PLAN_PLUS[p.id] || {};
+    const accent = p.id==='destacado'?'#7C3AED':p.id==='profesional'?'#D9770D':'#1B7A43';
+    return '<div class="plan-compare-card pw-mini ' + (isCurrent?'current':isRequired?'required':isLocked?'locked':'') + '" style="--pc-accent:'+accent+'">' +
+      '<div class="pc-head">' +
+        '<div class="pc-icon">' + (d.tag||PLAN_ICONS[p.id]||'📦') + '</div>' +
+        '<div class="pc-name">' + esc(p.name) + '</div>' +
+        '<div class="pc-price"><span class="pc-price-num">' + fmt(p.price) + '</span><span class="pc-price-per">/mes</span></div>' +
+      '</div>' +
+      '<div class="pc-features">' +
+        ((p.features && p.features.length) ? p.features.slice(0,6).map(function(f){ return '<div class="pc-feature"><span class="pc-check">✓</span><span>'+esc(f)+'</span></div>'; }).join('') : (d.features||[]).slice(0,5).map(function(f){
+          const inc = (typeof f === 'object' && f.inc) ? f.inc : [p.id];
+          const incMe = inc.indexOf(p.id) !== -1;
+          return '<div class="pc-feature'+(incMe?'':' off')+'"><span class="pc-check">'+(incMe?'✓':'×')+'</span><span>'+esc(typeof f==='object'?f.t:f)+'</span></div>';
+        }).join('')) +
+      '</div>' +
+      (isCurrent ? '<div style="font-size:11px;color:var(--green);font-weight:800;text-align:center;margin-bottom:8px">✓ Tu plan</div>' :
+        isRequired ? '<div style="font-size:11px;color:#92400E;font-weight:800;text-align:center;margin-bottom:8px">⬆ Requerido</div>' :
+        isLocked ? '<div style="font-size:11px;color:var(--muted);font-weight:800;text-align:center;margin-bottom:8px">🔒 Bloqueado</div>' : '') +
     '</div>';
   }).join('');
   document.getElementById('pwPlansGrid').innerHTML = plansHtml;
@@ -11783,6 +11925,10 @@ async function savePlanConfig(){
     if(type==='planPrice'){
       if(!newPlans[idx]) newPlans[idx] = Object.assign({}, planConfig.plans[idx]);
       newPlans[idx].price = Math.max(0, parseInt(el.value)||0);
+    }
+    if(type==='planFeatures'){
+      if(!newPlans[idx]) newPlans[idx] = Object.assign({}, planConfig.plans[idx]);
+      newPlans[idx].features = el.value.split('\n').map(s=>s.trim()).filter(Boolean);
     }
     if(type==='periodActive'){
       if(!newPeriods[idx]) newPeriods[idx] = Object.assign({}, planConfig.periods[idx]);
@@ -12264,8 +12410,10 @@ function renderPlanConfigUI(){
       '<label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:8px;cursor:pointer">' +
       '<input type="checkbox" data-plan-field="planActive" data-idx="'+i+'" '+(p.active?'checked':'')+'> ' + esc(p.name) + '</label>' +
       '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">'+p.features.map(f=>esc(f)).join(' · ')+'</div>' +
-      '<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px">Precio ₡</span>' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:13px">Precio ₡</span>' +
       '<input type="number" class="f-input" data-plan-field="planPrice" data-idx="'+i+'" value="'+p.price+'" style="width:110px;padding:8px 10px"></div>' +
+      '<label style="font-size:12px;font-weight:700;display:block;margin-bottom:3px">Ventajas que ve el administrador (una por línea)</label>' +
+      '<textarea class="f-input" data-plan-field="planFeatures" data-idx="'+i+'" rows="5" style="font-size:12px;width:100%;padding:8px 10px;line-height:1.5">'+esc((p.features||[]).join('\n'))+'</textarea>' +
       '</div>';
   });
   html += '</div></div>';
@@ -12900,27 +13048,80 @@ async function processMembershipPayment(){
   }
 }
 
-/* ---------- modal cambiar plan ---------- */
+/* ---------- modal cambiar plan (ficha moderna de los 3 planes) ---------- */
 async function openChangePlanModal(){
   await loadPlanConfig();
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
   const t = TENANT_DATA || {};
-  const currentId = t.membershipPlan || 'emprendedor';
+  const currentId = t.planApprovedId || t.membershipPlan || 'emprendedor';
   const body = document.getElementById('memChangePlanBody');
-  body.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">' +
-    cfg.plans.filter(p=>p.active).map(p=>{
+  /* Cabecera con selector de período y divisa */
+  body.innerHTML = '<div style="margin-bottom:16px">' +
+    '<div style="font-size:15px;font-weight:800;margin-bottom:4px">Elegí el plan ideal para tu negocio</div>' +
+    '<div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Compará los accesos de cada membresía. Todos los planes incluyen catálogo, inventario, perfil, SINPE, WhatsApp y el Asistente IA.</div>' +
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+      '<span style="font-size:12px;font-weight:700;color:var(--muted)">Período:</span>' +
+      '<div class="mem-period-toggle" id="memPlanPeriodToggle">' +
+        cfg.periods.filter(p=>p.active).map(p=>'<button type="button" class="seg-btn'+(p.id==='monthly'?' active':'')+'" data-period="'+p.id+'" data-months="'+p.months+'" data-discount="'+p.discount+'">'+esc(p.label)+'</button>').join('') +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="plan-compare-grid" id="planCompareGrid">' +
+    cfg.plans.filter(p=>p.active).map(function(p){
+      const d = PLAN_PLUS[p.id] || {};
       const isCurrent = p.id === currentId;
-      return '<div style="background:#fff;border:2px solid '+(isCurrent?'var(--green)':'var(--line)')+';border-radius:16px;padding:18px;position:relative">' +
-        (isCurrent?'<span class="sponsored-badge" style="position:absolute;top:10px;right:10px"><svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9-6.3-3.3-6.3 3.3 1.2-6.9-5-4.9 7-1z"/></svg>Actual</span>':'') +
-        '<div style="font-size:18px;font-weight:800;margin-bottom:4px">'+esc(p.name)+'</div>' +
-        '<div style="font-size:24px;font-weight:900;color:var(--green);margin-bottom:10px">'+fmt(p.price)+'<span style="font-size:13px;color:var(--muted);font-weight:600">/mes</span></div>' +
-        '<ul style="font-size:13px;color:var(--muted);line-height:1.6;padding-left:18px;margin-bottom:14px">'+p.features.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul>' +
-        '<button class="btn-primary" style="width:100%" '+(isCurrent?'disabled':'onclick="changeMembershipPlan(\''+p.id+'\')"')+'>'+(isCurrent?'Plan actual':'Elegir este plan')+'</button>' +
-        '</div>';
-    }).join('') + '</div>';
+      const isTop = p.id === 'destacado';
+      return '<div class="plan-compare-card'+(isCurrent?' current':'')+(isTop?' top':'')+'" data-plan="'+p.id+'" style="'+(isTop?'--pc-accent:#7C3AED':p.id==='profesional'?'--pc-accent:#D9770D':'--pc-accent:#1B7A43')+'">' +
+        (isTop?'<span class="pc-flag">✦ Más popular</span>':'') +
+        '<div class="pc-head">' +
+          '<div class="pc-icon">'+(d.tag||'📦')+'</div>' +
+          '<div class="pc-name">'+esc(p.name)+'</div>' +
+          '<div class="pc-sub">'+esc(d.sub||'')+'</div>' +
+          '<div class="pc-price"><span class="pc-price-num" data-base="'+p.price+'">'+fmt(p.price)+'</span><span class="pc-price-per">/mes</span></div>' +
+          '<div class="pc-limit">'+esc(d.limit||'')+'</div>' +
+        '</div>' +
+        '<div class="pc-features">' +
+          ((p.features && p.features.length) ? p.features.map(function(f){ return '<div class="pc-feature"><span class="pc-check">✓</span><span>'+esc(f)+'</span></div>'; }).join('') : (d.features||[]).map(function(f){
+            const inc = (typeof f === 'object' && f.inc) ? f.inc : [p.id];
+            const incMe = inc.indexOf(p.id) !== -1;
+            return '<div class="pc-feature'+(incMe?'':' off')+'"><span class="pc-check">'+(incMe?'✓':'×')+'</span><span>'+esc(typeof f === 'object' ? f.t : f)+'</span></div>';
+          }).join('')) +
+        '</div>' +
+        '<div class="pc-btn-wrap">' +
+          '<div class="pc-total">Total: <b data-total>'+fmt(p.price)+'</b></div>' +
+          '<button class="'+(isCurrent?'btn-ghost':'btn-primary')+'" style="width:100%"'+(isCurrent?' disabled':' onclick="changeMembershipPlan(\''+p.id+'\')"')+'>'+(isCurrent?'✓ Plan actual':'Elegir este plan')+'</button>' +
+        '</div>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+  /* Interacción: toggle de período recalcula precios */
+  bindPlanPeriodToggle();
   document.getElementById('memChangePlanModal').classList.add('show');
 }
 function closeChangePlanModal(){ document.getElementById('memChangePlanModal').classList.remove('show'); }
+
+/* Toggle interactivo de período (mensual / trimestral / anual) */
+let _memPlanPeriod = 'monthly';
+function bindPlanPeriodToggle(){
+  const toggle = document.getElementById('memPlanPeriodToggle');
+  if(!toggle) return;
+  toggle.querySelectorAll('.seg-btn').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      toggle.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      _memPlanPeriod = btn.dataset.period;
+      const months = parseInt(btn.dataset.months)||1;
+      const discount = parseInt(btn.dataset.discount)||0;
+      document.querySelectorAll('.plan-compare-card').forEach(card=>{
+        const base = parseFloat(card.querySelector('.pc-price-num').getAttribute('data-base'))||0;
+        const total = Math.round(base * months * (1 - discount/100));
+        card.querySelector('.pc-price-num').textContent = fmt(base);
+        const totEl = card.querySelector('[data-total]');
+        if(totEl) totEl.textContent = fmt(total) + (discount>0 ? ' · ahorrás '+discount+'%' : '');
+      });
+    });
+  });
+}
 
 async function changeMembershipPlan(planId){
   const cfg = planConfig || DEFAULT_PLAN_CONFIG;
@@ -13034,7 +13235,7 @@ async function checkMembershipExpiry(){
    Referencias a MARKET CR: botones "Ver catálogo"/categorías/CTA llevan al
    catálogo real de la tienda (siteStoreUrl()).
    ========================================================================== */
-let siteConfig = null, siteUnsub = null, siteSectionTab = 'negocio', siteViewOverride = null, siteDemoActive = false;
+let siteConfig = null, siteUnsub = null, siteSectionTab = 'plantillas', siteViewOverride = null, siteDemoActive = false;
 
 const SITE_DEFAULTS = {
   active: false,
@@ -13130,94 +13331,54 @@ const SITE_DEFAULTS = {
    COMPLETA lista para editar: textos reales, imágenes, colores y secciones
    armadas. Se aplican con un clic y se guardan igual que todo lo demás. */
 const SITE_TEMPLATES = [
-  {
-    id:'tpl-verde', name:'🌿 Verde Natural',
-    desc:'Plantas, jardín o productos naturales',
-    seed: {
-      primaryColor:'#1B7A43', secondaryColor:'#0F5A30', accentColor:'#FFD100',
-      heroBadge:'Catálogo y venta directa · MARKET CR',
-      heroTitle:'Naturaleza que transforma tu espacio',
-      heroSub:'Productos seleccionados con calidad garantizada y entrega a domicilio.',
-      seed:'verde', heroLayout:'left', benefitsCols:4, productStyle:'grid'
-    }
-  },
-  {
-    id:'tpl-ruby', name:'💜 Rubí Premium',
-    desc:'Marca premium, diseño o servicios elegantes',
-    seed: {
-      primaryColor:'#7C3AED', secondaryColor:'#5B21B6', accentColor:'#FDE047',
-      heroBadge:'Experiencia premium · MARKET CR',
-      heroTitle:'Calidad premium que se nota',
-      heroSub:'Cuidamos cada detalle para que tu experiencia sea única.',
-      seed:'ruby', heroLayout:'right', benefitsCols:3, productStyle:'rows'
-    }
-  },
-  {
-    id:'tpl-sol', name:'🌞 Sol Dorado',
-    desc:'Café, repostería, moda o productos cálidos',
-    seed: {
-      primaryColor:'#D97706', secondaryColor:'#92400E', accentColor:'#FDE68A',
-      heroBadge:'Frescura y sabor · MARKET CR',
-      heroTitle:'Lo mejor llega con calor humano',
-      heroSub:'Preparado con dedicación y entregado con amor a tu puerta.',
-      seed:'sol', heroLayout:'center', benefitsCols:2, productStyle:'grid'
-    }
-  },
-  {
-    id:'tpl-oceano', name:'🌊 Océano Azul',
-    desc:'Tecnología, salud o servicios profesionales',
-    seed: {
-      primaryColor:'#2563EB', secondaryColor:'#1D4ED8', accentColor:'#93C5FD',
-      heroBadge:'Confianza y seguridad · MARKET CR',
-      heroTitle:'Soluciones claras, resultados reales',
-      heroSub:'Confiá en nuestro equipo: calidad y atención en cada paso.',
-      seed:'oceano', heroLayout:'left', benefitsCols:3, productStyle:'grid'
-    }
-  },
-  {
-    id:'tpl-rojo', name:'🔴 Rojo Energía',
-    desc:'Deporte, comida o promociones vibrantes',
-    seed: {
-      primaryColor:'#DC2626', secondaryColor:'#991B1B', accentColor:'#FCA5A5',
-      heroBadge:'Energía y pasión · MARKET CR',
-      heroTitle:'Viví la diferencia hoy',
-      heroSub:'Productos con carácter y promociones que no podés ignorar.',
-      seed:'rojo', heroLayout:'right', benefitsCols:4, productStyle:'rows'
-    }
-  },
-  {
-    id:'tpl-minimal', name:'◻️ Minimalista',
-    desc:'Negocios modernos, tiendas simples y limpias',
-    seed: {
-      primaryColor:'#111827', secondaryColor:'#374151', accentColor:'#22D3EE',
-      heroBadge:'Nuevo en la plataforma · MARKET CR',
-      heroTitle:'Simple, directo y moderno',
-      heroSub:'Menos ruido, más producto. Una experiencia clara para tus clientes.',
-      seed:'minimal', heroLayout:'center', benefitsCols:2, productStyle:'grid'
-    }
-  },
-  {
-    id:'tpl-terra', name:'🟤 Terra',
-    desc:'Artesanal, café, repostería o vintage',
-    seed: {
-      primaryColor:'#78350F', secondaryColor:'#92400E', accentColor:'#FBBF24',
-      heroBadge:'Hecho a mano · MARKET CR',
-      heroTitle:'Cálido, artesanal y cercano',
-      heroSub:'Productos con historia y sabor, hechos con dedicación.',
-      seed:'terra', heroLayout:'left', benefitsCols:3, productStyle:'grid'
-    }
-  },
-  {
-    id:'tpl-rosa', name:'🌸 Rosa Bloom',
-    desc:'Belleza, skincare o moda femenina',
-    seed: {
-      primaryColor:'#DB2777', secondaryColor:'#9D174D', accentColor:'#F9A8D4',
-      heroBadge:'Belleza y cuidado · MARKET CR',
-      heroTitle:'Cuidate, brillá, sentite bien',
-      heroSub:'Productos seleccionados para tu rutina de belleza y bienestar.',
-      seed:'rosa', heroLayout:'right', benefitsCols:4, productStyle:'rows'
-    }
-  }
+  {id:'tpl-verde', name:'🌿 Verde Natural', desc:'Plantas, jardín o naturales', thumbnail:'tpl-verde',
+    seed:{primaryColor:'#1B7A43', secondaryColor:'#0F5A30', accentColor:'#FFD100', heroBadge:'Catálogo y venta directa · MARKET CR', heroTitle:'Naturaleza que transforma tu espacio', heroSub:'Productos seleccionados con calidad garantizada y entrega a domicilio.', heroLayout:'left', benefitsCols:4, productStyle:'grid', galleryStyle:'grid', rounded:18, heroMediaShape:'rounded'}},
+  {id:'tpl-ruby', name:'💜 Rubí Premium', desc:'Marca premium o servicios', thumbnail:'tpl-ruby',
+    seed:{primaryColor:'#7C3AED', secondaryColor:'#5B21B6', accentColor:'#FDE047', heroBadge:'Experiencia premium · MARKET CR', heroTitle:'Calidad premium que se nota', heroSub:'Cuidamos cada detalle para que tu experiencia sea única.', heroLayout:'right', benefitsCols:3, productStyle:'rows', galleryStyle:'carousel', rounded:24, heroMediaShape:'circle'}},
+  {id:'tpl-sol', name:'🌞 Sol Dorado', desc:'Café, repostería o moda', thumbnail:'tpl-sol',
+    seed:{primaryColor:'#D97706', secondaryColor:'#92400E', accentColor:'#FDE68A', heroBadge:'Frescura y sabor · MARKET CR', heroTitle:'Lo mejor llega con calor humano', heroSub:'Preparado con dedicación y entregado con amor a tu puerta.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'grid', rounded:16, heroMediaShape:'rounded'}},
+  {id:'tpl-oceano', name:'🌊 Océano Azul', desc:'Tecnología, salud o servicios', thumbnail:'tpl-oceano',
+    seed:{primaryColor:'#2563EB', secondaryColor:'#1D4ED8', accentColor:'#93C5FD', heroBadge:'Confianza y seguridad · MARKET CR', heroTitle:'Soluciones claras, resultados reales', heroSub:'Confiá en nuestro equipo: calidad y atención en cada paso.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'masonry', rounded:20, heroMediaShape:'rounded'}},
+  {id:'tpl-rojo', name:'🔴 Rojo Energía', desc:'Deporte, comida o promos', thumbnail:'tpl-rojo',
+    seed:{primaryColor:'#DC2626', secondaryColor:'#991B1B', accentColor:'#FCA5A5', heroBadge:'Energía y pasión · MARKET CR', heroTitle:'Viví la diferencia hoy', heroSub:'Productos con carácter y promociones que no podés ignorar.', heroLayout:'right', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:12, heroMediaShape:'sharp'}},
+  {id:'tpl-minimal', name:'◻️ Minimalista', desc:'Negocios modernos y limpios', thumbnail:'tpl-minimal',
+    seed:{primaryColor:'#111827', secondaryColor:'#374151', accentColor:'#22D3EE', heroBadge:'Nuevo en la plataforma · MARKET CR', heroTitle:'Simple, directo y moderno', heroSub:'Menos ruido, más producto. Una experiencia clara para tus clientes.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'carousel', rounded:8, heroMediaShape:'sharp'}},
+  {id:'tpl-terra', name:'🟤 Terra', desc:'Artesanal, café o vintage', thumbnail:'tpl-terra',
+    seed:{primaryColor:'#78350F', secondaryColor:'#92400E', accentColor:'#FBBF24', heroBadge:'Hecho a mano · MARKET CR', heroTitle:'Cálido, artesanal y cercano', heroSub:'Productos con historia y sabor, hechos con dedicación.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'grid', rounded:22, heroMediaShape:'rounded'}},
+  {id:'tpl-rosa', name:'🌸 Rosa Bloom', desc:'Belleza, skincare o moda', thumbnail:'tpl-rosa',
+    seed:{primaryColor:'#DB2777', secondaryColor:'#9D174D', accentColor:'#F9A8D4', heroBadge:'Belleza y cuidado · MARKET CR', heroTitle:'Cuidate, brillá, sentite bien', heroSub:'Productos seleccionados para tu rutina de belleza y bienestar.', heroLayout:'right', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:18, heroMediaShape:'circle'}},
+  {id:'tpl-noche', name:'🌌 Noche Moderna', desc:'Tech, apps o diseño oscuro', thumbnail:'tpl-noche',
+    seed:{primaryColor:'#0F172A', secondaryColor:'#1E293B', accentColor:'#38BDF8', heroBadge:'Innovación que inspira · MARKET CR', heroTitle:'Diseño y tecnología para crecer', heroSub:'Soluciones modernas para tu negocio, con una experiencia impecable.', heroLayout:'center', benefitsCols:3, productStyle:'grid', galleryStyle:'masonry', rounded:14, heroMediaShape:'sharp'}},
+  {id:'tpl-citrico', name:'🍋 Cítrico', desc:'Jugos, frescos o salud', thumbnail:'tpl-citrico',
+    seed:{primaryColor:'#65A30D', secondaryColor:'#3F6212', accentColor:'#FACC15', heroBadge:'Frescura en cada entrega · MARKET CR', heroTitle:'Viví lo fresco, viví lo natural', heroSub:'Productos frescos y saludables, directo a tu mesa.', heroLayout:'left', benefitsCols:2, productStyle:'rows', galleryStyle:'grid', rounded:26, heroMediaShape:'circle'}},
+  {id:'tpl-lavanda', name:'🪻 Lavanda', desc:'Relax, spa o cuidado personal', thumbnail:'tpl-lavanda',
+    seed:{primaryColor:'#7C3AED', secondaryColor:'#4C1D95', accentColor:'#E9D5FF', heroBadge:'Bienestar y equilibrio · MARKET CR', heroTitle:'Tu momento de calma', heroSub:'Cuidado personal y bienestar para sentirse en paz.', heroLayout:'right', benefitsCols:3, productStyle:'grid', galleryStyle:'carousel', rounded:20, heroMediaShape:'rounded'}},
+  {id:'tpl-mar', name:'🏝️ Mar Caribe', desc:'Vacaciones, turismo o moda', thumbnail:'tpl-mar',
+    seed:{primaryColor:'#0891B2', secondaryColor:'#155E75', accentColor:'#67E8F9', heroBadge:'Escapate con nosotros · MARKET CR', heroTitle:'Vibrá el paraíso', heroSub:'Experiencias y productos que te conectan con el mar.', heroLayout:'center', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:18, heroMediaShape:'circle'}},
+  {id:'tpl-oro', name:'🥇 Oro Clásico', desc:'Joyas, lujo o inversión', thumbnail:'tpl-oro',
+    seed:{primaryColor:'#A16207', secondaryColor:'#713F12', accentColor:'#FDE68A', heroBadge:'Elegancia atemporal · MARKET CR', heroTitle:'Detalles que perduran', heroSub:'Productos exclusivos con calidad y refinamiento.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'grid', rounded:24, heroMediaShape:'rounded'}},
+  {id:'tpl-bambu', name:'🎋 Bambú', desc:'Eco, hogar o sostenible', thumbnail:'tpl-bambu',
+    seed:{primaryColor:'#3F6212', secondaryColor:'#1A2E05', accentColor:'#BEF264', heroBadge:'Vida sostenible · MARKET CR', heroTitle:'Eco-amigable por naturaleza', heroSub:'Productos sostenibles para un hogar más verde.', heroLayout:'right', benefitsCols:2, productStyle:'rows', galleryStyle:'masonry', rounded:12, heroMediaShape:'sharp'}},
+  {id:'tpl-coco', name:'🥥 Coco Café', desc:'Café, bakery o cozy', thumbnail:'tpl-coco',
+    seed:{primaryColor:'#9A3412', secondaryColor:'#7C2D12', accentColor:'#FDBA74', heroBadge:'Café y antojos · MARKET CR', heroTitle:'Un rincón cálido para vos', heroSub:'Café, repostería y productos con sabor a hogar.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'carousel', rounded:28, heroMediaShape:'circle'}},
+  {id:'tpl-ladrillo', name:'🧱 Urban Brick', desc:'Moda urbana o callejera', thumbnail:'tpl-ladrillo',
+    seed:{primaryColor:'#B91C1C', secondaryColor:'#7F1D1D', accentColor:'#FCA5A5', heroBadge:'Estilo y actitud · MARKET CR', heroTitle:'Vestí tu identidad', heroSub:'Prendas y accesorios con actitud urbana.', heroLayout:'right', benefitsCols:4, productStyle:'rows', galleryStyle:'masonry', rounded:10, heroMediaShape:'sharp'}},
+  {id:'tpl-cielo', name:'☁️ Cielo', desc:'Baby, hogar o suave', thumbnail:'tpl-cielo',
+    seed:{primaryColor:'#0284C7', secondaryColor:'#075985', accentColor:'#BAE6FD', heroBadge:'Suavidad y cuidado · MARKET CR', heroTitle:'Lo más tierno para los tuyos', heroSub:'Productos suaves y cuidados para toda la familia.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'grid', rounded:24, heroMediaShape:'circle'}},
+  {id:'tpl-vintage', name:'📻 Vintage', desc:'Antigüedades o retro', thumbnail:'tpl-vintage',
+    seed:{primaryColor:'#92400E', secondaryColor:'#78350F', accentColor:'#FBBF24', heroBadge:'Clásicos que perduran · MARKET CR', heroTitle:'Un viaje al pasado', heroSub:'Piezas únicas con historia y encanto.', heroLayout:'left', benefitsCols:3, productStyle:'rows', galleryStyle:'masonry', rounded:16, heroMediaShape:'rounded'}},
+  {id:'tpl-neon', name:'💡 Neon', desc:'Gaming, estudio o creativo', thumbnail:'tpl-neon',
+    seed:{primaryColor:'#4F46E5', secondaryColor:'#312E81', accentColor:'#22D3EE', heroBadge:'Creatividad sin límites · MARKET CR', heroTitle:'Tu estilo, tu energía', heroSub:'Productos para estudios creativos y gamers.', heroLayout:'center', benefitsCols:4, productStyle:'grid', galleryStyle:'carousel', rounded:10, heroMediaShape:'sharp'}},
+  {id:'tpl-bosque', name:'🌲 Bosque', desc:'Camping, outdoor o aventura', thumbnail:'tpl-bosque',
+    seed:{primaryColor:'#166534', secondaryColor:'#14532D', accentColor:'#86EFAC', heroBadge:'Aventura natural · MARKET CR', heroTitle:'Salí a explorar', heroSub:'Equipo y productos para tu próxima aventura.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'grid', rounded:14, heroMediaShape:'sharp'}},
+  {id:'tpl-perla', name:'🫧 Perla', desc:'Cosmética, cuidado o salud', thumbnail:'tpl-perla',
+    seed:{primaryColor:'#DB2777', secondaryColor:'#9D174D', accentColor:'#FBCFE8', heroBadge:'Brillo y cuidado · MARKET CR', heroTitle:'Radiá con tu piel', heroSub:'Cosmética y cuidado personal de alta calidad.', heroLayout:'right', benefitsCols:2, productStyle:'rows', galleryStyle:'carousel', rounded:28, heroMediaShape:'circle'}},
+  {id:'tpl-grafito', name:'✏️ Grafito', desc:'Papelería, arte o diseño', thumbnail:'tpl-grafito',
+    seed:{primaryColor:'#334155', secondaryColor:'#1E293B', accentColor:'#94A3B8', heroBadge:'Creatividad en cada trazo · MARKET CR', heroTitle:'Herramientas para crear', heroSub:'Materiales y productos para tu arte y oficina.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'masonry', rounded:12, heroMediaShape:'sharp'}},
+  {id:'tpl-selva', name:'🦜 Selva', desc:'Tropical, exótico o plantas', thumbnail:'tpl-selva',
+    seed:{primaryColor:'#15803D', secondaryColor:'#166534', accentColor:'#FACC15', heroBadge:'Naturaleza exótica · MARKET CR', heroTitle:'Verde y vida tropical', heroSub:'Plantas exóticas y productos de la selva urbana.', heroLayout:'left', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:18, heroMediaShape:'circle'}},
+  {id:'tpl-aire', name:'🏔️ Aire Libre', desc:'Fitness, yoga o salud', thumbnail:'tpl-aire',
+    seed:{primaryColor:'#0D9488', secondaryColor:'#115E59', accentColor:'#5EEAD4', heroBadge:'Bienestar y movimiento · MARKET CR', heroTitle:'Tu mejor versión', heroSub:'Productos para tu rutina de bienestar y fitness.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'masonry', rounded:20, heroMediaShape:'circle'}}
 ];
 /* Arma una plantilla completa (copia de SITE_DEFAULTS con nuevos textos,
    colores y semillas de imágenes para diferenciar cada plantilla). */
@@ -13230,7 +13391,13 @@ function siteBuildTemplate(s){
     heroLayout: s.heroLayout || 'left',
     benefitsCols: s.benefitsCols || 4,
     productStyle: s.productStyle || 'grid',
-    rounded: s.rounded === undefined ? 18 : s.rounded
+    galleryStyle: s.galleryStyle || 'grid',   // grid | masonry | carousel
+    secOrder: s.secOrder || ['hero','videos','benefits','cats','products','offer','about','whyus','testimonials','gallery','cta','contact'],
+    rounded: s.rounded === undefined ? 18 : s.rounded,
+    navStyle: s.navStyle || 'dark',           // dark | light
+    productLayout: s.productLayout || 'grid',  // grid | rows (alias de productStyle)
+    sectionStyle: s.sectionStyle || 'alt',     // alt | plain
+    heroMediaShape: s.heroMediaShape || 'rounded' // rounded | circle | sharp
   };
   return t;
 }
@@ -13247,32 +13414,84 @@ function siteTemplateApply(tplId){
   siteConfig.secondaryColor = s.seed.secondaryColor;
   siteConfig.accentColor = s.seed.accentColor;
   siteConfig.layout = replaced.layout;
+  /* Limpiar estilos de canvas/overlays antiguos: al cambiar la estructura de
+     una plantilla, los estilos por posición (canvas[cvN]) quedarían pegados a
+     elementos equivocados. Se regeneran al re-entrar a editar. */
+  delete siteConfig.canvas;
+  delete siteConfig.overlays;
+  siteDirty = true;
   renderSiteFull();
-  loadSiteEditor();
   siteLiveAutoSave();
   toast('Plantilla "' + s.name.replace(/^[^ ]+ /, '') + '" aplicada ✓', 'ok');
+  /* Pasar a la vista previa en modo edición para que se pueda editar todo */
+  if(siteLiveEdit){ renderSiteFull(); enableSiteInlineEditing(); }
+  else ensureSiteLive();
 }
-/* Selector de plantillas (se muestra en el panel de landing) */
+/* Selector de plantillas (se muestra en el panel de landing) - estilo Canva */
 function siteThemesHTML(){
   return '<div class="site-grp">' +
-    '<h4>🧩 Plantillas predefinidas</h4>' +
-    '<div class="hint">Elegí una plantilla completa para tu landing: trae textos, imágenes, colores y secciones listas para editar. Después personalizás todo con clic directo en la vista previa.</div>' +
-    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:8px">' +
-      SITE_TEMPLATES.map(t =>
-        '<button type="button" class="theme-card" data-theme="' + esc(t.id) + '" onclick="siteTemplateApply(\'' + esc(t.id) + '\')" style="border:2px solid #E8EDF2;border-radius:12px;padding:10px;text-align:center;cursor:pointer;background:#fff;transition:.15s">' +
-          '<div style="display:flex;gap:4px;justify-content:center;margin-bottom:8px">' +
-            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.seed.primaryColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
-            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.seed.secondaryColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
-            '<span style="width:22px;height:22px;border-radius:50%;background:' + esc(t.seed.accentColor) + ';border:1px solid rgba(0,0,0,.1)"></span>' +
-          '</div>' +
-          '<b style="font-size:13px;display:block">' + esc(t.name) + '</b>' +
-          '<span style="font-size:11px;color:var(--muted);display:block;margin-top:2px">' + esc(t.desc) + '</span>' +
-        '</button>'
-      ).join('') +
+    '<div class="sv-tpl-head"><h4>🧩 Plantillas predefinidas</h4><span class="sv-tpl-count">' + SITE_TEMPLATES.length + ' diseños</span></div>' +
+    '<div class="hint">Elegí una plantilla completa: cada una tiene una estructura, forma y diseño distinto (no solo colores). Se aplica al instante y después personalizás todo con clic directo en la vista previa.</div>' +
+    '<div class="sv-tpl-grid">' +
+      SITE_TEMPLATES.map(t => siteTemplateThumb(t)).join('') +
     '</div></div>';
+}
+/* Miniatura visual de una plantilla: mockup CSS que refleja su estructura */
+function siteTemplateThumb(t){
+  const s = t.seed;
+  const hl = s.heroLayout || 'left';
+  const layoutName = hl==='left'?'Texto↔Imagen':hl==='right'?'Imagen↔Texto':hl==='center'?'Centrado':'Pantalla completa';
+  const gal = s.galleryStyle==='carousel'?'· Carrusel':(s.galleryStyle==='masonry'?'· Mosaico':'');
+  const pStyle = s.productStyle==='rows'?'Filas':'Tarjetas';
+  return '<button type="button" class="sv-tpl-card" data-theme="'+esc(t.id)+'" onclick="siteTemplateApply(\''+esc(t.id)+'\')">' +
+    '<div class="sv-tpl-preview" style="--tp:'+esc(s.primaryColor)+';--ts:'+esc(s.secondaryColor)+';--ta:'+esc(s.accentColor)+';--tr:'+(s.rounded||18)+'px">' +
+      '<div class="sv-tpl-nav"><span class="sv-tpl-dot"></span><span class="sv-tpl-dot"></span><span class="sv-tpl-dot"></span></div>' +
+      '<div class="sv-tpl-hero sv-tpl-hero-'+esc(hl)+'">' +
+        '<div class="sv-tpl-hcol"><span class="sv-tpl-line w70"></span><span class="sv-tpl-line w50"></span><span class="sv-tpl-btn"></span></div>' +
+        '<div class="sv-tpl-box'+(s.heroMediaShape==='circle'?' sv-tpl-circle':'')+(s.heroMediaShape==='sharp'?' sv-tpl-sharp':'')+'"></div>' +
+      '</div>' +
+      '<div class="sv-tpl-benefits" style="grid-template-columns:repeat('+(s.benefitsCols||3)+',1fr)">' +
+        Array.from({length:Math.min(s.benefitsCols||3,4)}).map(function(_,i){ return '<span class="sv-tpl-b"></span>'; }).join('') +
+      '</div>' +
+      '<div class="sv-tpl-prod'+(s.productStyle==='rows'?' sv-tpl-prod-rows':'')+'"><span class="sv-tpl-p"></span><span class="sv-tpl-p"></span><span class="sv-tpl-p"></span></div>' +
+    '</div>' +
+    '<div class="sv-tpl-meta">' +
+      '<div class="sv-tpl-name">'+esc(t.name)+'</div>' +
+      '<div class="sv-tpl-tags"><span>'+esc(layoutName)+'</span><span>'+esc(pStyle)+'</span>'+(gal?'<span>'+esc(gal)+'</span>':'')+'</div>' +
+    '</div></button>';
 }
 /* Ejemplo terminado: un negocio distinto (café + plantas) para que el admin
    vea "cómo se ve" la landing y pueda usarlo como punto de partida. */
+/* Carga plantillas custom desde Storage (sites/templates/*.json) y las
+   agrega a la lista SITE_TEMPLATES. Se llaman al abrir el editor de landing.
+   Cada JSON tiene la forma: {id, name, desc, thumbnail, seed:{...}}. */
+let _templatesLoaded = false;
+async function loadTemplatesFromStorage(){
+  if(_templatesLoaded) return;
+  _templatesLoaded = true;
+  try{
+    if(typeof firebase === 'undefined' || !firebase.storage) return;
+    const list = await firebase.storage().ref('sites/templates').list({ maxResults: 200 });
+    if(!list.items || !list.items.length) return;
+    let added = 0;
+    for(const item of list.items){
+      const id = (item.name || '').replace(/\.json$/,'');
+      if(!id || SITE_TEMPLATES.some(function(x){ return x.id === id; })) continue;
+      try{
+        const url = await item.getDownloadURL();
+        const res = await fetch(url);
+        if(!res.ok) continue;
+        const j = await res.json();
+        if(j && j.seed && j.name){
+          SITE_TEMPLATES.push({ id: j.id || id, name: j.name, desc: j.desc || '', thumbnail: j.thumbnail || '', seed: j.seed });
+          added++;
+        }
+      }catch(_e){ /* saltar este item */ }
+    }
+    if(added) console.info('Plantillas cargadas desde Storage:', added);
+    return added;
+  }catch(e){ console.warn('No se pudieron cargar plantillas de Storage:', e && e.message); return 0; }
+}
 const SITE_DEMO = {
   active: true,
   businessName: 'El Jardín Café y Plantas', tagline: 'Café de especialidad y plantas vivas en un mismo lugar',
@@ -13355,8 +13574,11 @@ const SITE_DEMO = {
 };
 function deepMerge(base, over){
   const o = {};
-  Object.keys(base).forEach(k => {
-    const b = base[k], v = over[k];
+  /* Incluir claves BOTH de base y de over, para que campos nuevos agregados
+     por las plantillas (como `layout`) no se pierdan al fusionar. */
+  const keys = new Set(Object.keys(base||{}).concat(Object.keys(over||{})));
+  keys.forEach(k => {
+    const b = (base||{})[k], v = (over||{})[k];
     o[k] = (b && typeof b === 'object' && !Array.isArray(b) && v && typeof v === 'object' && !Array.isArray(v))
       ? deepMerge(b, v)
       : (v === undefined ? b : v);
@@ -13422,7 +13644,7 @@ function siteStars(n){
 function simg(url, alt, cls){
   if(!url) return '';
   if(imgRemoved(url)) return '';
-  return '<img class="' + (cls||'') + '" src="' + esc(url) + '" alt="' + esc(alt) + '" loading="lazy" onerror="var p=this.parentNode;if(p){p.classList.add(\'sv-img-broken\');this.style.display=\'none\';}">';
+  return '<img class="' + (cls||'') + '" src="' + esc(url) + '" alt="' + esc(alt) + '" loading="lazy" decoding="async" onerror="var p=this.parentNode;if(p){p.classList.add(\'sv-img-broken\');this.style.display=\'none\';}">';
 }
 /* ------------------------- persistencia ------------------------- */
 function listenSite(){
@@ -13590,6 +13812,8 @@ function renderSiteFull(){
   const heroLayout = L.heroLayout || 'left';
   const benefitsCols = L.benefitsCols || 4;
   const productStyle = L.productStyle || 'grid';
+  const galleryStyle = L.galleryStyle || 'grid';
+  const heroMediaShape = L.heroMediaShape || 'rounded';
   const rounded = L.rounded || 18;
   const v = document.getElementById('siteView');
   if(v){
@@ -13649,7 +13873,7 @@ function renderSiteFull(){
     + '<a class="sv-btn sv-btn-ghost" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff" href="#svProducts">Ver productos</a>'
     + (wa ? '<a class="sv-btn sv-btn-wa" href="' + esc(waSite('Hola, quisiera información sobre sus productos.')) + '" target="_blank" rel="noopener">' + si('wa') + 'Contactar por WhatsApp</a>' : '')
     + '</div></div>'
-    + '<div class="sv-hero-media"' + (heroImages.length > 1 ? ' id="svHeroCarousel"' : '') + '>' + heroMediaHtml
+    + '<div class="sv-hero-media sv-shape-' + esc(heroMediaShape) + '"' + (heroImages.length > 1 ? ' id="svHeroCarousel"' : '') + '>' + heroMediaHtml
     + '</div>'
     + '</div></section>';
   /* VIDEOS: 1 vertical tipo historia (9:16) + hasta 2 horizontales (16:9).
@@ -13739,12 +13963,29 @@ function renderSiteFull(){
         return '<div class="sv-test"><div class="sv-stars">' + siteStars(Number(t.stars)||5) + '</div><p>"' + esc(t.comment) + '"</p><div class="sv-test-who">' + av + '<span><b>' + esc(t.name) + '</b><span>Cliente verificado</span></span></div></div>';
       }).join('')
     + '</div></div></section>';
-  /* GALERÍA */
+  /* GALERÍA (grid / masonry / carrusel según plantilla) */
+  const galStyle = galleryStyle || L.galleryStyle || 'grid';
+  let galInner = '';
+  if(c.gallery && c.gallery.length){
+    if(galStyle === 'carousel'){
+      galInner = '<div class="sv-gal-carousel" id="svGalCarousel">'
+        + c.gallery.map(function(g,i){ return '<div class="sv-gal-slide'+(i===0?' active':'')+'" onclick="openSiteLightbox(\'' + esc(g) + '\')">' + simg(g, 'Galería', '') + '</div>'; }).join('')
+        + '<button class="sv-nav sv-gal-prev" onclick="siteGalNav(-1)" aria-label="Anterior">‹</button>'
+        + '<button class="sv-nav sv-gal-next" onclick="siteGalNav(1)" aria-label="Siguiente">›</button>'
+        + '<div class="sv-gal-dots">' + c.gallery.map(function(_,i){ return '<span class="'+(i===0?'active':'')+'" data-i="'+i+'"></span>'; }).join('') + '</div>'
+        + '</div>';
+    } else {
+      galInner = '<div class="sv-gal-grid sv-reveal">'
+        + c.gallery.map(function(g){ return '<div class="sv-gal" onclick="openSiteLightbox(\'' + esc(g) + '\')">' + simg(g, 'Galería', '') + '</div>'; }).join('')
+        + '</div>';
+    }
+  } else {
+    galInner = '<div class="sv-gal-ph" style="aspect-ratio:auto;padding:30px">Agregá imágenes en el editor</div>';
+  }
   html += '<section class="sv-sec sv-sec-alt" id="svGallery"><div class="sv-inner">'
     + '<div class="sv-sec-head"><div class="sv-eyebrow">Nuestro trabajo</div><h2 class="sv-h2">Galería</h2></div>'
-    + '<div class="sv-gal-grid sv-reveal">'
-    + (c.gallery && c.gallery.length ? c.gallery.map(function(g){ return '<div class="sv-gal" onclick="openSiteLightbox(\'' + esc(g) + '\')">' + simg(g, 'Galería', '') + '</div>'; }).join('') : '<div class="sv-gal-ph" style="aspect-ratio:auto;padding:30px">Agregá imágenes en el editor</div>')
-    + '</div></div></section>';
+    + galInner
+    + '</div></section>';
   /* CTA */
   html += '<section class="sv-sec" id="svCta"><div class="sv-inner"><div class="sv-cta sv-reveal">'
     + '<h2>' + esc(c.cta.title) + '</h2><p>' + esc(c.cta.sub) + '</p>'
@@ -13802,6 +14043,7 @@ function renderSiteFull(){
   siteReveal();
   renderSiteOverlays();
   startHeroCarousel();
+  startGalCarousel();
   /* En modo edición en vivo: convertir los objetos en capas Canva */
   if(siteLiveEdit) cvAutoDetectLayers();
   sitePillLabel();
@@ -13822,6 +14064,32 @@ function startHeroCarousel(){
     slides[idx].classList.add('active');
     box.querySelectorAll('.sv-hero-dot').forEach(function(d, i){ d.classList.toggle('active', i === idx); });
   }, 4200);
+}
+let _galCarouselTimer = null;
+function siteGalNav(dir){
+  const box = document.getElementById('svGalCarousel');
+  if(!box) return;
+  const slides = box.querySelectorAll('.sv-gal-slide');
+  if(slides.length < 2) return;
+  let idx = 0;
+  slides.forEach(function(s,i){ if(s.classList.contains('active')) idx = i; });
+  slides[idx].classList.remove('active');
+  idx = (idx + dir + slides.length) % slides.length;
+  slides[idx].classList.add('active');
+  box.querySelectorAll('.sv-gal-dots span').forEach(function(d,i){ d.classList.toggle('active', i === idx); });
+  restartGalCarousel();
+}
+function startGalCarousel(){
+  if(_galCarouselTimer){ clearInterval(_galCarouselTimer); _galCarouselTimer = null; }
+  const box = document.getElementById('svGalCarousel');
+  if(!box) return;
+  const slides = box.querySelectorAll('.sv-gal-slide');
+  if(slides.length < 2) return;
+  _galCarouselTimer = setInterval(function(){ siteGalNav(1); }, 4200);
+}
+function restartGalCarousel(){
+  if(_galCarouselTimer){ clearInterval(_galCarouselTimer); _galCarouselTimer = null; }
+  startGalCarousel();
 }
 /* ---- AUTO-DETECCIÓN DE CAPAS: envuelve TODOS los objetos del landing. ----
    Corre justo después del render cuando el modo edición está activo.
@@ -14250,10 +14518,11 @@ function loadSiteEditor(){
   if(!root) return;
   const c = siteCurrent();
   let html = '';
-  if(siteSectionTab === 'negocio'){
-    /* TEMAS PREESTABLECIDOS: se muestran arriba para empezar con una plantilla */
+  if(siteSectionTab === 'plantillas'){
+    /* Selector de plantillas en su propia pestaña, con vista previa ampliada */
     html = siteThemesHTML();
-    html += SITE_EDITOR_SIMPLE.map(function(grp){
+  } else if(siteSectionTab === 'negocio'){
+    html = SITE_EDITOR_SIMPLE.map(function(grp){
       return '<div class="site-grp"><h4>' + esc(grp.g) + '</h4>'
         + '<div class="f-row" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">' + grp.f.map(function(f){ return siteEditorFieldHTML(f, siteGet(c, f.k), f.k) + siteEditorVideoUploadBtn(f.k); }).join('') + '</div></div>';
     }).join('');
@@ -14270,11 +14539,15 @@ function loadSiteEditor(){
       + '<div class="sf-more"><button class="btn-ghost" type="button" style="width:auto;padding:9px 16px" onclick="addSiteUrlRow()">+ Más campos</button></div></div>';
   }
   root.innerHTML = html;
+  /* Cargar plantillas custom desde Storage; si llegaron nuevas, regenerar */
+  loadTemplatesFromStorage().then(function(count){
+    if(count > 0) loadSiteEditor();
+  }).catch(function(){});
 }
 function generateSiteTabs(){
   const tb = document.getElementById('siteTabs');
   if(!tb) return;
-  const tabs = [ ['negocio','Datos del sitio'], ['listas','Secciones y contenidos'], ['galeria','Galería'] ];
+  const tabs = [ ['plantillas','🧩 Plantillas'], ['negocio','Datos del sitio'], ['listas','Secciones y contenidos'], ['galeria','Galería'] ];
   tb.innerHTML = tabs.map(function(t){ return '<button class="site-tab-btn' + (siteSectionTab === t[0] ? ' on' : '') + '" onclick="siteSectionTab=\'' + t[0] + '\';loadSiteEditor()">' + esc(t[1]) + '</button>'; }).join('');
 }
 function siteRowEditorHTML(def){
