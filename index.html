@@ -966,6 +966,10 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 .sv-hero-actions{display:flex;gap:12px;flex-wrap:wrap}
 .sv-hero-media{position:relative}
 .sv-hero-media img{width:100%;border-radius:26px;box-shadow:0 30px 60px rgba(0,0,0,.35);object-fit:cover;aspect-ratio:4/3.2;display:block}
+/* Todas las fotos de la landing se recortan de forma centrada (object-fit:cover)
+   para que NUNCA se deformen ni se "descuadren" al cambiar de plantilla. */
+#siteRoot img{object-fit:cover;object-position:center}
+#siteRoot .sv-logo,#siteRoot .sv-f-logo,#siteRoot .sv-avatar,#siteRoot .sv-hero-float img{object-fit:contain}
 .sv-hero-media.sv-shape-circle img,.sv-hero-media.sv-shape-circle .sv-hero-slide{border-radius:50%;aspect-ratio:1/1;max-height:520px}
 .sv-hero-media.sv-shape-sharp img,.sv-hero-media.sv-shape-sharp .sv-hero-slide{border-radius:2px}
 .sv-hero-media.sv-shape-rounded img{border-radius:26px}
@@ -977,6 +981,54 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 .sv-hero-dot.active{background:#fff;width:22px;border-radius:4px}
 .sv-hero-chip{position:absolute;bottom:20px;left:20px;background:rgba(255,255,255,.96);color:#17202A;border-radius:16px;padding:14px 18px;box-shadow:0 16px 40px rgba(0,0,0,.22);display:flex;align-items:center;gap:12px;font-weight:700;font-size:13.5px}
 .sv-hero-chip b{color:var(--site-p);font-size:20px}
+
+/* ===== OPCIONES CREATIVAS DE DISEÑO (estructura, forma, tipografía) ===== */
+.sv-site{font-family:var(--site-font,'Inter','Segoe UI',sans-serif)}
+/* Tipografías */
+.sv-site[data-typ=serif] h1,.sv-site[data-typ=serif] h2,.sv-site[data-typ=serif] h3{font-weight:700;letter-spacing:0}
+.sv-site[data-typ=bold] h1,.sv-site[data-typ=bold] h2,.sv-site[data-typ=bold] h3{font-weight:900;text-transform:uppercase;letter-spacing:-.5px}
+/* Decoración de fondo del hero */
+.sv-decor-blob{position:relative}
+.sv-blob-decor{position:absolute;top:-60px;right:-60px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--site-acc),transparent 65%);filter:blur(10px);opacity:.5;z-index:0;pointer-events:none}
+.sv-decor-grid .sv-grid-decor{position:absolute;inset:0;background-image:linear-gradient(var(--site-p) 1px,transparent 1px),linear-gradient(90deg,var(--site-p) 1px,transparent 1px);background-size:44px 44px;opacity:.08;z-index:0;pointer-events:none}
+/* Estilos de hero según plantilla */
+.sv-hero-s-full{min-height:92vh;display:flex;align-items:center}
+.sv-hero-s-full .sv-hero-grid{width:100%}
+.sv-hero-s-stacked .sv-hero-grid{grid-template-columns:1fr}
+.sv-hero-s-stacked .sv-hero-media{max-width:640px;margin:26px auto 0;width:100%}
+.sv-hero-s-minimal{text-align:left}
+.sv-hero-s-minimal .sv-hero-media{max-width:480px;margin-left:auto}
+.sv-hero-s-minimal .sv-hero-badge{background:transparent;border:none;padding:0;color:var(--site-p);font-size:12px}
+/* Tarjetas: estilo de borde/sombra */
+.sv-card-glass .sv-benefit,.sv-card-glass .sv-card,.sv-card-glass .sv-cat{background:rgba(255,255,255,.65);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.6);box-shadow:0 8px 30px rgba(23,32,42,.08)}
+.sv-card-bordered .sv-benefit,.sv-card-bordered .sv-card{border:2px solid #E8EDF2;box-shadow:none}
+.sv-card-bordered .sv-benefit:hover,.sv-card-bordered .sv-card:hover{border-color:var(--site-p)}
+.sv-card-flat .sv-benefit,.sv-card-flat .sv-card{background:#fff;border:none;box-shadow:none;border-radius:0}
+.sv-card-flat .sv-benefit:hover,.sv-card-flat .sv-card:hover{background:var(--site-soft,#F7F9FB)}
+.sv-card-shadow .sv-benefit,.sv-card-shadow .sv-card{background:#fff;border:none;box-shadow:0 18px 40px rgba(23,32,42,.12)}
+.sv-card-shadow .sv-benefit:hover,.sv-card-shadow .sv-card:hover{box-shadow:0 26px 56px rgba(23,32,42,.18)}
+/* Beneficios numerados */
+.sv-bv-numbered .sv-benefit{position:relative;padding-left:64px}
+.sv-bv-numbered .sv-b-num{position:absolute;left:22px;top:22px;width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--site-p),var(--site-pd));color:#fff;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.sv-bv-image .sv-benefit{text-align:center}
+.sv-bv-image .sv-b-img{width:64px;height:64px;margin:0 auto 12px;border-radius:18px;background:var(--site-soft,#F1F5F9);display:flex;align-items:center;justify-content:center}
+.sv-bv-image .sv-b-img svg{width:30px;height:30px;color:var(--site-p)}
+/* Categorías píldora */
+.sv-cc-pill{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.sv-cc-pill .sv-cat{aspect-ratio:16/9;border-radius:999px}
+/* CTA estilos */
+.sv-cta-card{background:#fff;color:#17202A;border:1.5px solid #E8EDF2;border-radius:22px;box-shadow:0 20px 50px rgba(23,32,42,.08)}
+.sv-cta-card h2,.sv-cta-card p{color:#17202A}
+.sv-cta-card p{color:var(--muted)}
+.sv-cta-minimal{background:transparent;color:#17202A;border-radius:0;padding:40px 0}
+.sv-cta-minimal h2{color:#17202A}.sv-cta-minimal p{color:var(--muted)}
+/* Footer estilos */
+.sv-footer-light{background:#F7F9FB;color:#334155}
+.sv-footer-light a{color:#334155}
+.sv-footer-light .sv-f-brand{color:#17202A}
+.sv-footer-brand{background:linear-gradient(120deg,var(--site-pd),var(--site-p));color:#fff}
+.sv-footer-brand a{color:rgba(255,255,255,.9)}
+.sv-footer-brand .sv-f-brand{color:#fff}
 /* ----- títulos ----- */
 .sv-eyebrow{font-size:13px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--site-p)}
 .sv-h2{font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-.4px;color:#17202A;margin:10px 0 8px}
@@ -1176,8 +1228,33 @@ body.site-mode #storeView,body.site-mode #adminView,body.site-mode #superadminVi
 /* ==================== MOTION + EDICIÓN EN VIVO ==================== */
 .sv-reveal{opacity:0;transform:translateY(28px)}
 .sv-reveal.in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.25,.75,.25,1),transform .7s cubic-bezier(.25,.75,.25,1)}
+/* Temas de animación por plantilla (se activan según [data-anim]) */
+#siteRoot[data-anim=float] .sv-reveal.in{animation:svFloat 3.4s ease-in-out infinite}
+#siteRoot[data-anim=pop] .sv-reveal.in{animation:svPop 1.1s cubic-bezier(.2,.9,.3,1.2)}
+#siteRoot[data-anim=wave] .sv-reveal.in{animation:svWave 4s ease-in-out infinite}
+#siteRoot[data-anim=bounce] .sv-reveal.in{animation:svRevealBounce .8s cubic-bezier(.3,.8,.4,1.2)}
+/* Stagger sutil: cada hijo de un grid aparece con un pequeño retraso */
+#siteRoot[data-anim=wave] .sv-reveal.in{animation-delay:0s}
 @keyframes svFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
 @keyframes svFadeIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes svPop{0%{opacity:0;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}
+@keyframes svWave{0%,100%{transform:translateY(0)}25%{transform:translateY(-8px)}50%{transform:translateY(0)}75%{transform:translateY(6px)}}
+@keyframes svRevealBounce{0%{opacity:0;transform:translateY(30px)}55%{opacity:1;transform:translateY(-8px)}100%{opacity:1;transform:none}}
+/* FONDO DINÁMICO de la página (gradiente animado acorde a los colores) */
+#siteView.sv-bg-wave{background:linear-gradient(120deg,var(--site-pd) 0%,var(--site-p) 35%,#fff 72%)}
+#siteView.sv-bg-wave .sv-wrap{background:rgba(255,255,255,.92)}
+#siteView.sv-bg-aurora{background:linear-gradient(135deg,var(--site-pd) 0%,var(--site-p) 40%,var(--site-acc) 80%)}
+#siteView.sv-bg-aurora .sv-wrap{background:rgba(255,255,255,.88)}
+#siteView.sv-bg-light{background:linear-gradient(180deg,color-mix(in srgb,var(--site-p) 10%,#fff),#fff 60%)}
+#siteView.sv-bg-dark{background:linear-gradient(180deg,#0E1420,#0B0F17);color:#E5E7EB}
+#siteView.sv-bg-dark .sv-h2,#siteView.sv-bg-dark .sv-hero h1{color:#fff}
+#siteView.sv-bg-dark .sv-sec-alt{background:rgba(255,255,255,.04)}
+/* CAPA DE PARTÍCULAS/BLOBS animados en el hero */
+.sv-anim-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.sv-anim-bg span{position:absolute;border-radius:50%;opacity:.25;filter:blur(30px);animation:svBlob 12s ease-in-out infinite}
+.sv-anim-bg span:nth-child(2){animation-delay:-4s}
+.sv-anim-bg span:nth-child(3){animation-delay:-8s}
+@keyframes svBlob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-40px) scale(1.25)}}
 @keyframes svZoomOut{from{transform:scale(1.14)}to{transform:scale(1)}}
 @keyframes svPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 @keyframes svShine{from{transform:translateX(-120%)}to{transform:translateX(220%)}}
@@ -1568,6 +1645,12 @@ body.in-admin .ai-float,body.in-admin .ai-panel{display:none}
 .sv-tpl-name{font-size:13px;font-weight:800;color:var(--ink)}
 .sv-tpl-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
 .sv-tpl-tags span{font-size:10px;font-weight:700;color:var(--muted);background:#F1F5F9;padding:2px 7px;border-radius:999px}
+
+/* ============ PALETA DE ELEMENTOS / FORMAS ============ */
+.sv-el-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.sv-el-btn{border:1.5px solid #E8EDF2;border-radius:14px;background:#fff;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:.18s;font-size:12px;font-weight:700;color:var(--ink)}
+.sv-el-btn:hover{border-color:var(--green);box-shadow:0 10px 26px rgba(0,0,0,.1);transform:translateY(-3px)}
+.sv-el-ico{font-size:26px;line-height:1;height:30px;display:flex;align-items:center;justify-content:center}
 .prof-wa-btn:hover{background:#1EBE5B}
 .prof-wa-btn svg{width:18px;height:18px}
 .prof-btn-row{margin-top:auto;display:flex;flex-direction:column;gap:8px}
@@ -1654,6 +1737,28 @@ body.selector-mode #storeView,body.selector-mode .wa-float,body.selector-mode .u
 .ts-arrow svg{width:15px;height:15px;color:var(--green-dark)}
 .ts-loading,.ts-empty{grid-column:1/-1;color:rgba(255,255,255,.75);font-size:14px;padding:30px 0}
 .ts-footer{margin-top:56px;padding-top:22px;border-top:1px solid rgba(255,255,255,.16);text-align:center;font-size:12.5px;color:rgba(255,255,255,.6)}
+
+/* ===== Invitación a suscribir el negocio (landing) ===== */
+.ts-cta{margin-top:34px;padding:26px;border-radius:24px;background:linear-gradient(120deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(12px)}
+.ts-cta-inner{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:space-between}
+.ts-cta-ico{width:60px;height:60px;border-radius:18px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0}
+.ts-cta h2{font-size:22px;font-weight:800;margin:0 0 4px;color:#fff}
+.ts-cta p{font-size:14px;color:rgba(255,255,255,.85);margin:0;max-width:520px}
+.ts-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:14px;font-weight:800;font-size:15px;flex-shrink:0}
+.sub-modal-card{max-width:820px}
+.sub-intro{background:var(--green-soft);border:1px solid var(--green);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sub-intro-badge{font-size:12.5px;font-weight:800;color:#fff;background:var(--green);padding:6px 12px;border-radius:999px;white-space:nowrap}
+.sub-intro p{font-size:13px;color:var(--ink);margin:0;flex:1;min-width:220px}
+.sub-form-plan{margin-bottom:14px}
+.sub-selected-plan{display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid var(--pc-accent,#1B7A43);border-radius:14px;background:color-mix(in srgb,var(--pc-accent,#1B7A43) 10%,#fff);flex-wrap:wrap}
+.sub-selected-plan .pc-icon{font-size:26px}
+.sub-selected-plan div.b{flex:1;min-width:150px}
+.sub-selected-plan b{font-size:15px;color:var(--ink);display:block}
+.sub-selected-plan span{font-size:12px;color:var(--muted)}
+.sub-selected-plan .pc-price-num{font-size:20px;font-weight:900;color:var(--pc-accent,#1B7A43);margin-left:auto}
+.sub-note{background:var(--yellow-soft);border:1px solid #EAB308;border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink);margin-top:12px;line-height:1.5}
+.sub-note-gratis{color:#92400E;font-weight:700;margin-top:6px}
+
 .back-to-selector{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--muted);padding:4px 0}
 .back-to-selector svg{width:14px;height:14px}
 .biz-sec-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:10px 14px 4px}
@@ -1849,6 +1954,21 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </div>
     </div>
 
+    <!-- Invitación a suscribir el negocio -->
+    <div class="ts-cta" id="tsSuscribeCta">
+      <div class="ts-cta-inner">
+        <div class="ts-cta-ico">🏪</div>
+        <div>
+          <h2>¿Tenés un negocio?</h2>
+          <p>Sumate a la plataforma y vendé en línea con tu propia tienda, POS, facturación y asistente IA. <b>Probá gratis 1 mes.</b></p>
+        </div>
+        <button class="btn-primary ts-cta-btn" onclick="openSuscribeLanding()">
+          Suscribir mi negocio
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+
     <footer class="ts-footer">© <span id="tsYear"></span> PRO.DIGITAL — Todos los derechos reservados.</footer>
   </div>
 
@@ -1861,6 +1981,57 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <button class="close-x" onclick="closeProfModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
       <div class="modal-body" id="profModalBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SUSCRIPCIÓN DE NEGOCIO (LANDING) ================= -->
+<!-- Modal 1: elegir plan -->
+<div class="modal" id="subPlanModal" style="z-index:1200">
+  <div class="modal-bg" onclick="closeSubLanding()"></div>
+  <div class="modal-card sub-modal-card">
+    <div class="modal-head">
+      <h3>Elegí tu plan de membresía</h3>
+      <button class="close-x" onclick="closeSubLanding()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sub-intro">
+        <div class="sub-intro-badge">🎉 1 mes de prueba GRATIS</div>
+        <p>Probá la plataforma sin costo el primer mes. Elegí el plan que mejor se adapte a tu negocio y completá tus datos.</p>
+      </div>
+      <div class="plan-compare-grid" id="subPlanGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: formulario de registro -->
+<div class="modal" id="subFormModal" style="z-index:1210">
+  <div class="modal-bg" onclick="closeSubLanding()"></div>
+  <div class="modal-card sub-modal-card">
+    <div class="modal-head">
+      <h3>Registrar nuevo negocio</h3>
+      <button class="close-x" onclick="closeSubLanding()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="sub-form-plan" id="subFormPlan"></div>
+      <div class="f-group"><label>ID del negocio (URL)</label>
+        <input class="f-input" id="subSlug" placeholder="ej: mi-negocio" autocomplete="off" oninput="updateSubUrlPreview()">
+        <div class="hint" style="margin-top:4px">Será la dirección de tu tienda: <span id="subUrlPreview">–</span></div>
+      </div>
+      <div class="f-group"><label>Nombre del negocio</label><input class="f-input" id="subNombre" placeholder="Ej: Juan Pérez Electricista" autocomplete="off"></div>
+      <div class="f-group"><label>Tipo de negocio</label>
+        <select class="f-input" id="subTipo">
+          <option value="">Tienda (catálogo con carrito)</option>
+          <option value="profesional">Profesional (servicios, sin carrito)</option>
+        </select>
+      </div>
+      <div class="f-group"><label>Correo del administrador</label><input class="f-input" id="subAdminEmail" type="email" placeholder="correo@delnegocio.com" autocomplete="off"></div>
+      <div class="sub-note">
+        <b>Plan seleccionado:</b> <span id="subPlanName">—</span> ·
+        <b>Fecha:</b> <span id="subFecha">—</span>
+        <div class="sub-note-gratis">🎁 Este mes de prueba es <b>GRATIS</b>. El plan se activará cuando el superadministrador lo apruebe.</div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:6px" onclick="submitNewBusiness()">Enviar solicitud de suscripción</button>
     </div>
   </div>
 </div>
@@ -3464,6 +3635,7 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <div class="stat-card"><div class="lbl">Vencidos</div><div class="val" id="saCountVenc">0</div></div>
       <div class="stat-card hl"><div class="lbl">Ingreso mensual esperado</div><div class="val" id="saMontoTotal">₡0</div></div>
       <div class="stat-card" style="border:1.5px solid #F59E0B"><div class="lbl" style="color:#92400E">⏳ Planes pendientes</div><div class="val" id="saCountPendingPlans" style="color:#92400E">0</div></div>
+      <div class="stat-card" style="border:1.5px solid #7C3AED"><div class="lbl" style="color:#7C3AED">🆕 Suscripciones nuevas</div><div class="val" id="saCountNewSubs" style="color:#7C3AED">0</div></div>
     </div>
 
     <div class="settings-card" style="margin-bottom:20px">
@@ -3672,6 +3844,21 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         <input class="f-input" id="saPlatformSinpe" placeholder="Ej: 8888 8888" inputmode="tel">
         <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Este es el número al que los negocios transfieren para pagar su plan (Emprendedor/Profesional/Destacado). Se muestra en el modal de pago de membresía.</div>
       </div>
+      <div class="f-group" style="margin-top:12px">
+        <label>WhatsApp del superadministrador (avisos de suscripciones)</label>
+        <input class="f-input" id="saSuperadminWhatsapp" placeholder="Ej: 50672284602" inputmode="tel">
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">A este número llegan los avisos por WhatsApp cuando alguien se suscribe desde el landing (nuevo negocio pendiente de aprobación).</div>
+      </div>
+      <div class="f-row" style="margin-top:12px">
+        <div class="f-group">
+          <label>Proveedor WhatsApp (aviso al superadmin)</label>
+          <select class="f-input" id="saSuperadminWaProvider"><option value="twilio">Twilio</option><option value="meta">Meta WhatsApp Cloud API</option></select>
+        </div>
+        <div class="f-group"><label>Account SID / Token</label><input class="f-input" id="saSuperadminWaSid" placeholder="AC..."></div>
+        <div class="f-group"><label>Auth Token / Phone ID</label><input class="f-input" id="saSuperadminWaAuth" placeholder="************"></div>
+        <div class="f-group"><label>Número WhatsApp (From)</label><input class="f-input" id="saSuperadminWaFrom" placeholder="whatsapp:+14155238886"></div>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Credenciales de respaldo para el aviso por WhatsApp del superadmin. Se usan si el negocio no tiene configurado su propio WhatsApp.</div>
       <div class="f-group" style="margin-top:12px">
         <label>Enlace para "Buscar clientes" (plataforma externa)</label>
         <input class="f-input" id="saBuscarClientesUrl" placeholder="Ej: https://www.google.com/maps/search/clientes+en+mi+zona">
@@ -10748,6 +10935,13 @@ function renderSuperadminSummary(){
     pendEl.textContent = pendingPlans;
     pendEl.closest('.stat-card').style.display = pendingPlans > 0 ? '' : 'none';
   }
+  /* Suscripciones nuevas pendientes (venían del landing con subSource:'landing') */
+  const newSubs = _saTenants.filter(t => t.subSource === 'landing' && t.planApprovalStatus === 'pendiente').length;
+  const subEl = document.getElementById('saCountNewSubs');
+  if(subEl){
+    subEl.textContent = newSubs;
+    subEl.closest('.stat-card').style.display = newSubs > 0 ? '' : 'none';
+  }
 }
 
 function saFechaLabel(t){
@@ -11823,6 +12017,7 @@ let unsubMembership = null;
 let memTimerInterval = null;
 let privatePaypalSecret = '';       // secret PayPal de la plataforma (solo servidor)
 let _maskedPlatformSecret = '';     // versión enmascarada para mostrar al superadmin
+let privatePlatformWa = {};         // claves WhatsApp del superadmin (solo servidor)
 
 /* ---------- utilidades de fecha ---------- */
 function addMonths(date, months){
@@ -11907,6 +12102,19 @@ async function savePlanConfig(){
      guarda en platform/private, que solo lee el servidor. */
   if(saPpS && saPpS.value.trim() && saPpS.value !== _maskedPlatformSecret) privatePaypalSecret = saPpS.value.trim();
   else if(!saPpS || !saPpS.value.trim()) { /* vacío = conservar */ }
+  /* WhatsApp del superadmin: número/proveedor en doc público, claves en privado */
+  const saWaNum = document.getElementById('saSuperadminWhatsapp');
+  if(saWaNum) planConfig.superadminWhatsapp = saWaNum.value.trim();
+  const saWaProv = document.getElementById('saSuperadminWaProvider');
+  if(saWaProv) planConfig.waProvider = saWaProv.value;
+  const saWaFrom = document.getElementById('saSuperadminWaFrom');
+  if(saWaFrom) planConfig.waFrom = saWaFrom.value.trim() || 'whatsapp:+14155238886';
+  const saWaSid = document.getElementById('saSuperadminWaSid');
+  if(saWaSid && saWaSid.value.trim()) privatePlatformWa.waSid = saWaSid.value.trim();
+  const saWaAuth = document.getElementById('saSuperadminWaAuth');
+  if(saWaAuth && saWaAuth.value.trim()) privatePlatformWa.waAuth = saWaAuth.value.trim();
+  if(saWaProv) privatePlatformWa.waProvider = saWaProv.value;
+  if(saWaFrom) privatePlatformWa.waFrom = saWaFrom.value.trim() || 'whatsapp:+14155238886';
   /* Tasa de cambio forzada CRC→USD (si el superadmin la define) */
   const fxEl = document.getElementById('saFxRate');
   var fxRates = planConfig.fxRates = planConfig.fxRates || {};
@@ -11951,17 +12159,36 @@ async function savePlanConfig(){
   const dashEl = document.getElementById('saStripeDashboard');
   if(dashEl) planConfig.payDash = dashEl.value.trim();
   try{
-    /* El SECRET de PayPal de la plataforma se guarda aparte, en platform/private,
+    /* Los SECRETOS (PayPal y WhatsApp) se guardan aparte, en platform/private,
        porque platform/config es legible por cualquier usuario logueado. */
-    if(privatePaypalSecret){
-      await db.collection('platform').doc('private').set({ paypalSecret: privatePaypalSecret }, {merge:true});
-      privatePaypalSecret = '';
+    const privUpdate = {};
+    if(privatePaypalSecret){ privUpdate.paypalSecret = privatePaypalSecret; privatePaypalSecret = ''; }
+    if(Object.keys(privatePlatformWa).length){ Object.assign(privUpdate, privatePlatformWa); privatePlatformWa = {}; }
+    if(Object.keys(privUpdate).length){
+      await db.collection('platform').doc('private').set(privUpdate, {merge:true});
     }
     await db.collection('platform').doc('config').set(planConfig, {merge:true});
-    toast('Configuración de planes guardada', 'ok');
+    toast('Configuración guardada', 'ok');
     renderPlanConfigUI();
   }catch(e){
     toast('No se pudo guardar: ' + (e.message||'error'), 'err');
+  }
+}
+/* Prueba la notificación por WhatsApp del superadmin llamando a la Cloud Function */
+async function saTestSuperadminWa(){
+  const st = document.getElementById('saWaTestStatus');
+  if(st){ st.textContent = 'Enviando…'; st.style.color = 'var(--muted)'; }
+  try{
+    const res = await cloudCall('testSuperadminWhatsapp', {});
+    if(st){
+      st.textContent = res.message || '—';
+      st.style.color = res.ok ? 'var(--green)' : 'var(--danger)';
+    }
+    if(res.ok) toast('Notificación enviada ✓ (revisá tu WhatsApp)', 'ok');
+    else toast('No se pudo enviar. Revisá la config.', 'err');
+  }catch(e){
+    if(st){ st.textContent = 'Error al probar: ' + ((e && e.message)||'error'); st.style.color = 'var(--danger)'; }
+    toast('No se pudo probar la notificación', 'err');
   }
 }
 function resetPlanConfigDefaults(){
@@ -12428,6 +12655,24 @@ function renderPlanConfigUI(){
       '</div>';
   });
   html += '</div></div>';
+  /* NOTIFICACIONES AL SUPERADMIN POR WHATSAPP (nuevas suscripciones + pagos de membresía) */
+  html += '<div><b style="font-size:14px">📲 Notificaciones del superadministrador (WhatsApp)</b>' +
+    '<div style="font-size:12px;color:var(--muted);margin:4px 0 8px">Recibís un aviso por WhatsApp cuando alguien se suscribe con el mes gratis y cuando una tienda paga su membresía. Configurá tu número y la cuenta Twilio/Meta.</div>' +
+    '<div class="f-row" style="grid-template-columns:1fr 1fr;gap:8px">' +
+      '<div class="f-group"><label>Tu número de WhatsApp (receptor)</label><input class="f-input" id="saSuperadminWhatsapp" placeholder="506xxxxxxxx" value="' + esc((planConfig.superadminWhatsapp || '')) + '"></div>' +
+      '<div class="f-group"><label>Proveedor</label><select class="f-input" id="saSuperadminWaProvider"><option value="twilio"' + ((planConfig.waProvider||'twilio')==='twilio'?' selected':'') + '>Twilio</option><option value="meta"' + ((planConfig.waProvider||'')==='meta'?' selected':'') + '>Meta</option></select></div>' +
+    '</div>' +
+    '<div class="f-row" style="grid-template-columns:1fr 1fr;gap:8px">' +
+      '<div class="f-group"><label>Account SID</label><input class="f-input" id="saSuperadminWaSid" autocomplete="off" value="' + esc((planConfig.waSid || '')) + '"></div>' +
+      '<div class="f-group"><label>Auth Token</label><input class="f-input" id="saSuperadminWaAuth" type="password" autocomplete="off" value="' + esc((planConfig.waAuth || '')) + '"></div>' +
+    '</div>' +
+    '<div class="f-group"><label>Número WhatsApp (Twilio/Meta)</label><input class="f-input" id="saSuperadminWaFrom" autocomplete="off" placeholder="whatsapp:+14155238886" value="' + esc((planConfig.waFrom || 'whatsapp:+14155238886')) + '"></div>' +
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">' +
+      '<button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="saTestSuperadminWa()">🧪 Probar notificación</button>' +
+      '<span id="saWaTestStatus" style="font-size:12px;color:var(--muted)"></span>' +
+    '</div>' +
+    '<div style="font-size:11px;color:var(--muted);margin-top:4px">El número receptor y el proveedor se guardan en la config pública. El SID/Auth/Token se guardan en un almacén privado (solo el servidor los lee).</div>' +
+  '</div>';
   /* PAGOS INTERNACIONALES (superadmin): enlaces por plan + panel de su cuenta */
   html += '<div><b style="font-size:14px">💳 Pagos internacionales (PayPal / Payoneer / Wise)</b>' +
     '<div style="font-size:12px;color:var(--muted);margin:4px 0 8px">Para cobrar fuera de Costa Rica, creá un enlace de cobro en tu cuenta de <b>PayPal</b> (paypal.me o "Request Money"), <b>Payoneer</b> (Request a Payment) o <b>Wise</b>, y pegá el enlace por plan. Los negocios verán el botón "Pagar con PayPal / tarjeta" además del SINPE. También podés agregar el enlace a tu cuenta para ver tu estado.</div>' +
@@ -13100,6 +13345,119 @@ async function openChangePlanModal(){
 }
 function closeChangePlanModal(){ document.getElementById('memChangePlanModal').classList.remove('show'); }
 
+/* ================= SUSCRIPCIÓN DE NEGOCIO DESDE EL LANDING ================= */
+let _subSelectedPlan = null;
+/* Abre la ventana de planes desde el landing */
+async function openSuscribeLanding(){
+  await loadPlanConfig();
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const grid = document.getElementById('subPlanGrid');
+  grid.innerHTML = cfg.plans.filter(p=>p.active).map(function(p){
+    const d = PLAN_PLUS[p.id] || {};
+    const isTop = p.id === 'destacado';
+    const accent = isTop?'#7C3AED':p.id==='profesional'?'#D9770D':'#1B7A43';
+    return '<div class="plan-compare-card'+(isTop?' top':'')+'" data-plan="'+p.id+'" style="--pc-accent:'+accent+'">' +
+      (isTop?'<span class="pc-flag">✦ Más popular</span>':'') +
+      '<div class="pc-head">' +
+        '<div class="pc-icon">'+(d.tag||'📦')+'</div>' +
+        '<div class="pc-name">'+esc(p.name)+'</div>' +
+        '<div class="pc-sub">'+esc(d.sub||'')+'</div>' +
+        '<div class="pc-price"><span>'+fmt(p.price)+'</span><span class="pc-price-per">/mes</span></div>' +
+        '<div class="pc-limit">'+esc(d.limit||'')+'</div>' +
+      '</div>' +
+      '<div class="pc-features">' +
+        ((p.features && p.features.length) ? p.features.map(function(f){ return '<div class="pc-feature"><span class="pc-check">✓</span><span>'+esc(f)+'</span></div>'; }).join('') : (d.features||[]).map(function(f){
+          const inc = (typeof f==='object'&&f.inc)?f.inc:[p.id];
+          const incMe = inc.indexOf(p.id)!==-1;
+          return '<div class="pc-feature'+(incMe?'':' off')+'"><span class="pc-check">'+(incMe?'✓':'×')+'</span><span>'+esc(typeof f==='object'?f.t:f)+'</span></div>';
+        }).join('')) +
+      '</div>' +
+      '<div class="pc-btn-wrap"><button class="btn-primary" style="width:100%" onclick="selectSubPlan(\''+p.id+'\')">Elegir este plan</button></div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('subPlanModal').classList.add('show');
+}
+/* Elige un plan y pasa al formulario de registro */
+function selectSubPlan(planId){
+  const cfg = planConfig || DEFAULT_PLAN_CONFIG;
+  const p = cfg.plans.find(x=>x.id===planId) || cfg.plans[0];
+  _subSelectedPlan = planId;
+  document.getElementById('subPlanName').textContent = p.name + ' · ' + fmt(p.price) + '/mes';
+  document.getElementById('subFecha').textContent = new Date().toLocaleDateString('es-CR',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('subFormPlan').innerHTML =
+    '<div class="sub-selected-plan" style="--pc-accent:'+(planId==='destacado'?'#7C3AED':planId==='profesional'?'#D9770D':'#1B7A43')+'">' +
+      '<div class="pc-icon">'+(PLAN_PLUS[planId]?.tag||'📦')+'</div>' +
+      '<div><b>'+esc(p.name)+'</b><span>'+esc(PLAN_PLUS[planId]?.sub||'')+'</span></div>' +
+      '<div class="pc-price-num">'+fmt(p.price)+'<span class="pc-price-per">/mes</span></div>' +
+    '</div>';
+  closeModalEl('subPlanModal');
+  document.getElementById('subFormModal').classList.add('show');
+  requestAnimationFrame(function(){
+    document.getElementById('subSlug').focus();
+    updateSubUrlPreview();
+  });
+}
+/* Actualiza la vista previa de la URL según el slug */
+function updateSubUrlPreview(){
+  const s = slugify(document.getElementById('subSlug').value || '');
+  const el = document.getElementById('subUrlPreview');
+  if(el) el.textContent = s ? (location.origin + location.pathname + '?tienda=' + s) : '–';
+}
+function closeSubLanding(){
+  closeModalEl('subPlanModal');
+  closeModalEl('subFormModal');
+  _subSelectedPlan = null;
+}
+/* Envía la solicitud de suscripción: crea el tenant en estado PENDIENTE de
+   aprobación (con plan elegido y 1 mes de prueba) y avisa al superadmin. */
+async function submitNewBusiness(){
+  const slug = slugify(document.getElementById('subSlug').value);
+  const nombre = document.getElementById('subNombre').value.trim();
+  const tipo = document.getElementById('subTipo').value;
+  const adminEmail = document.getElementById('subAdminEmail').value.trim();
+  if(!slug){ toast('Ingresá un ID/URL válido para tu negocio', 'err'); return; }
+  if(!nombre){ toast('Ingresá el nombre del negocio', 'err'); return; }
+  if(!adminEmail || !/[^@\s]+@[^@\s]+\.[^@\s]+/.test(adminEmail)){ toast('Ingresá un correo válido del administrador', 'err'); return; }
+  try{
+    const ref = db.collection('tenants').doc(slug);
+    const existing = await ref.get();
+    if(existing.exists){ toast('Ese ID ya está en uso. Elegí otro.', 'err'); return; }
+    const planId = _subSelectedPlan || 'emprendedor';
+    await ref.set({
+      nombre, tipo,
+      activo: false, // PENDIENTE de aprobación del superadmin
+      adminEmails: adminEmail ? [adminEmail] : [],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      membershipPlan: planId,
+      planApprovedId: planId,
+      planApprovalStatus: 'pendiente',
+      membershipStatus: 'pendiente',
+      membershipNextDueDate: addMonths(new Date(),1).toISOString(),
+      plan: planId === 'destacado' ? 'destacado' : (planId === 'profesional' ? 'premium' : 'basico'),
+      planRank: planId === 'destacado' ? 3 : (planId === 'profesional' ? 2 : 1),
+      subSource: 'landing',
+      subCreatedAt: new Date().toISOString(),
+      subTrialMonths: 1
+    });
+    /* Registrar notificación para el superadmin (cumpleaños en el panel + WhatsApp) */
+    await db.collection('platform').doc('notifications').set({
+      _pending: firebase.firestore.FieldValue.arrayUnion({
+        id: 'sub:' + slug, type:'new_business', slug: slug, nombre: nombre, plan: planId,
+        adminEmail: adminEmail, fecha: new Date().toISOString(), leido: false
+      })
+    }, { merge:true });
+    /* No se puede avisar por WhatsApp desde el navegador (falta el secreto);
+       se hace desde Cloud Function (notifySuperadmin). Por eso registramos el
+       evento y el frontend, si hay funciones, pide el aviso. */
+    try{ if(typeof cloudCall === 'function') cloudCall('notifySuperadminNewBusiness', { slug: slug }).catch(function(){}); }catch(_e){}
+    closeSubLanding();
+    toast('¡Solicitud enviada! Aprobaremos tu negocio en breve. Te llegará el correo de acceso.', 'ok');
+  }catch(e){
+    console.error(e);
+    toast('No se pudo enviar: ' + ((e && e.message) || 'error'), 'err');
+  }
+}
+
 /* Toggle interactivo de período (mensual / trimestral / anual) */
 let _memPlanPeriod = 'monthly';
 function bindPlanPeriodToggle(){
@@ -13330,55 +13688,31 @@ const SITE_DEFAULTS = {
    En lugar de simples temas de colores, cada plantilla es una landing
    COMPLETA lista para editar: textos reales, imágenes, colores y secciones
    armadas. Se aplican con un clic y se guardan igual que todo lo demás. */
-const SITE_TEMPLATES = [
-  {id:'tpl-verde', name:'🌿 Verde Natural', desc:'Plantas, jardín o naturales', thumbnail:'tpl-verde',
-    seed:{primaryColor:'#1B7A43', secondaryColor:'#0F5A30', accentColor:'#FFD100', heroBadge:'Catálogo y venta directa · MARKET CR', heroTitle:'Naturaleza que transforma tu espacio', heroSub:'Productos seleccionados con calidad garantizada y entrega a domicilio.', heroLayout:'left', benefitsCols:4, productStyle:'grid', galleryStyle:'grid', rounded:18, heroMediaShape:'rounded'}},
-  {id:'tpl-ruby', name:'💜 Rubí Premium', desc:'Marca premium o servicios', thumbnail:'tpl-ruby',
-    seed:{primaryColor:'#7C3AED', secondaryColor:'#5B21B6', accentColor:'#FDE047', heroBadge:'Experiencia premium · MARKET CR', heroTitle:'Calidad premium que se nota', heroSub:'Cuidamos cada detalle para que tu experiencia sea única.', heroLayout:'right', benefitsCols:3, productStyle:'rows', galleryStyle:'carousel', rounded:24, heroMediaShape:'circle'}},
-  {id:'tpl-sol', name:'🌞 Sol Dorado', desc:'Café, repostería o moda', thumbnail:'tpl-sol',
-    seed:{primaryColor:'#D97706', secondaryColor:'#92400E', accentColor:'#FDE68A', heroBadge:'Frescura y sabor · MARKET CR', heroTitle:'Lo mejor llega con calor humano', heroSub:'Preparado con dedicación y entregado con amor a tu puerta.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'grid', rounded:16, heroMediaShape:'rounded'}},
-  {id:'tpl-oceano', name:'🌊 Océano Azul', desc:'Tecnología, salud o servicios', thumbnail:'tpl-oceano',
-    seed:{primaryColor:'#2563EB', secondaryColor:'#1D4ED8', accentColor:'#93C5FD', heroBadge:'Confianza y seguridad · MARKET CR', heroTitle:'Soluciones claras, resultados reales', heroSub:'Confiá en nuestro equipo: calidad y atención en cada paso.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'masonry', rounded:20, heroMediaShape:'rounded'}},
-  {id:'tpl-rojo', name:'🔴 Rojo Energía', desc:'Deporte, comida o promos', thumbnail:'tpl-rojo',
-    seed:{primaryColor:'#DC2626', secondaryColor:'#991B1B', accentColor:'#FCA5A5', heroBadge:'Energía y pasión · MARKET CR', heroTitle:'Viví la diferencia hoy', heroSub:'Productos con carácter y promociones que no podés ignorar.', heroLayout:'right', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:12, heroMediaShape:'sharp'}},
-  {id:'tpl-minimal', name:'◻️ Minimalista', desc:'Negocios modernos y limpios', thumbnail:'tpl-minimal',
-    seed:{primaryColor:'#111827', secondaryColor:'#374151', accentColor:'#22D3EE', heroBadge:'Nuevo en la plataforma · MARKET CR', heroTitle:'Simple, directo y moderno', heroSub:'Menos ruido, más producto. Una experiencia clara para tus clientes.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'carousel', rounded:8, heroMediaShape:'sharp'}},
-  {id:'tpl-terra', name:'🟤 Terra', desc:'Artesanal, café o vintage', thumbnail:'tpl-terra',
-    seed:{primaryColor:'#78350F', secondaryColor:'#92400E', accentColor:'#FBBF24', heroBadge:'Hecho a mano · MARKET CR', heroTitle:'Cálido, artesanal y cercano', heroSub:'Productos con historia y sabor, hechos con dedicación.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'grid', rounded:22, heroMediaShape:'rounded'}},
-  {id:'tpl-rosa', name:'🌸 Rosa Bloom', desc:'Belleza, skincare o moda', thumbnail:'tpl-rosa',
-    seed:{primaryColor:'#DB2777', secondaryColor:'#9D174D', accentColor:'#F9A8D4', heroBadge:'Belleza y cuidado · MARKET CR', heroTitle:'Cuidate, brillá, sentite bien', heroSub:'Productos seleccionados para tu rutina de belleza y bienestar.', heroLayout:'right', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:18, heroMediaShape:'circle'}},
-  {id:'tpl-noche', name:'🌌 Noche Moderna', desc:'Tech, apps o diseño oscuro', thumbnail:'tpl-noche',
-    seed:{primaryColor:'#0F172A', secondaryColor:'#1E293B', accentColor:'#38BDF8', heroBadge:'Innovación que inspira · MARKET CR', heroTitle:'Diseño y tecnología para crecer', heroSub:'Soluciones modernas para tu negocio, con una experiencia impecable.', heroLayout:'center', benefitsCols:3, productStyle:'grid', galleryStyle:'masonry', rounded:14, heroMediaShape:'sharp'}},
-  {id:'tpl-citrico', name:'🍋 Cítrico', desc:'Jugos, frescos o salud', thumbnail:'tpl-citrico',
-    seed:{primaryColor:'#65A30D', secondaryColor:'#3F6212', accentColor:'#FACC15', heroBadge:'Frescura en cada entrega · MARKET CR', heroTitle:'Viví lo fresco, viví lo natural', heroSub:'Productos frescos y saludables, directo a tu mesa.', heroLayout:'left', benefitsCols:2, productStyle:'rows', galleryStyle:'grid', rounded:26, heroMediaShape:'circle'}},
-  {id:'tpl-lavanda', name:'🪻 Lavanda', desc:'Relax, spa o cuidado personal', thumbnail:'tpl-lavanda',
-    seed:{primaryColor:'#7C3AED', secondaryColor:'#4C1D95', accentColor:'#E9D5FF', heroBadge:'Bienestar y equilibrio · MARKET CR', heroTitle:'Tu momento de calma', heroSub:'Cuidado personal y bienestar para sentirse en paz.', heroLayout:'right', benefitsCols:3, productStyle:'grid', galleryStyle:'carousel', rounded:20, heroMediaShape:'rounded'}},
-  {id:'tpl-mar', name:'🏝️ Mar Caribe', desc:'Vacaciones, turismo o moda', thumbnail:'tpl-mar',
-    seed:{primaryColor:'#0891B2', secondaryColor:'#155E75', accentColor:'#67E8F9', heroBadge:'Escapate con nosotros · MARKET CR', heroTitle:'Vibrá el paraíso', heroSub:'Experiencias y productos que te conectan con el mar.', heroLayout:'center', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:18, heroMediaShape:'circle'}},
-  {id:'tpl-oro', name:'🥇 Oro Clásico', desc:'Joyas, lujo o inversión', thumbnail:'tpl-oro',
-    seed:{primaryColor:'#A16207', secondaryColor:'#713F12', accentColor:'#FDE68A', heroBadge:'Elegancia atemporal · MARKET CR', heroTitle:'Detalles que perduran', heroSub:'Productos exclusivos con calidad y refinamiento.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'grid', rounded:24, heroMediaShape:'rounded'}},
-  {id:'tpl-bambu', name:'🎋 Bambú', desc:'Eco, hogar o sostenible', thumbnail:'tpl-bambu',
-    seed:{primaryColor:'#3F6212', secondaryColor:'#1A2E05', accentColor:'#BEF264', heroBadge:'Vida sostenible · MARKET CR', heroTitle:'Eco-amigable por naturaleza', heroSub:'Productos sostenibles para un hogar más verde.', heroLayout:'right', benefitsCols:2, productStyle:'rows', galleryStyle:'masonry', rounded:12, heroMediaShape:'sharp'}},
-  {id:'tpl-coco', name:'🥥 Coco Café', desc:'Café, bakery o cozy', thumbnail:'tpl-coco',
-    seed:{primaryColor:'#9A3412', secondaryColor:'#7C2D12', accentColor:'#FDBA74', heroBadge:'Café y antojos · MARKET CR', heroTitle:'Un rincón cálido para vos', heroSub:'Café, repostería y productos con sabor a hogar.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'carousel', rounded:28, heroMediaShape:'circle'}},
-  {id:'tpl-ladrillo', name:'🧱 Urban Brick', desc:'Moda urbana o callejera', thumbnail:'tpl-ladrillo',
-    seed:{primaryColor:'#B91C1C', secondaryColor:'#7F1D1D', accentColor:'#FCA5A5', heroBadge:'Estilo y actitud · MARKET CR', heroTitle:'Vestí tu identidad', heroSub:'Prendas y accesorios con actitud urbana.', heroLayout:'right', benefitsCols:4, productStyle:'rows', galleryStyle:'masonry', rounded:10, heroMediaShape:'sharp'}},
-  {id:'tpl-cielo', name:'☁️ Cielo', desc:'Baby, hogar o suave', thumbnail:'tpl-cielo',
-    seed:{primaryColor:'#0284C7', secondaryColor:'#075985', accentColor:'#BAE6FD', heroBadge:'Suavidad y cuidado · MARKET CR', heroTitle:'Lo más tierno para los tuyos', heroSub:'Productos suaves y cuidados para toda la familia.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'grid', rounded:24, heroMediaShape:'circle'}},
-  {id:'tpl-vintage', name:'📻 Vintage', desc:'Antigüedades o retro', thumbnail:'tpl-vintage',
-    seed:{primaryColor:'#92400E', secondaryColor:'#78350F', accentColor:'#FBBF24', heroBadge:'Clásicos que perduran · MARKET CR', heroTitle:'Un viaje al pasado', heroSub:'Piezas únicas con historia y encanto.', heroLayout:'left', benefitsCols:3, productStyle:'rows', galleryStyle:'masonry', rounded:16, heroMediaShape:'rounded'}},
-  {id:'tpl-neon', name:'💡 Neon', desc:'Gaming, estudio o creativo', thumbnail:'tpl-neon',
-    seed:{primaryColor:'#4F46E5', secondaryColor:'#312E81', accentColor:'#22D3EE', heroBadge:'Creatividad sin límites · MARKET CR', heroTitle:'Tu estilo, tu energía', heroSub:'Productos para estudios creativos y gamers.', heroLayout:'center', benefitsCols:4, productStyle:'grid', galleryStyle:'carousel', rounded:10, heroMediaShape:'sharp'}},
-  {id:'tpl-bosque', name:'🌲 Bosque', desc:'Camping, outdoor o aventura', thumbnail:'tpl-bosque',
-    seed:{primaryColor:'#166534', secondaryColor:'#14532D', accentColor:'#86EFAC', heroBadge:'Aventura natural · MARKET CR', heroTitle:'Salí a explorar', heroSub:'Equipo y productos para tu próxima aventura.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'grid', rounded:14, heroMediaShape:'sharp'}},
-  {id:'tpl-perla', name:'🫧 Perla', desc:'Cosmética, cuidado o salud', thumbnail:'tpl-perla',
-    seed:{primaryColor:'#DB2777', secondaryColor:'#9D174D', accentColor:'#FBCFE8', heroBadge:'Brillo y cuidado · MARKET CR', heroTitle:'Radiá con tu piel', heroSub:'Cosmética y cuidado personal de alta calidad.', heroLayout:'right', benefitsCols:2, productStyle:'rows', galleryStyle:'carousel', rounded:28, heroMediaShape:'circle'}},
-  {id:'tpl-grafito', name:'✏️ Grafito', desc:'Papelería, arte o diseño', thumbnail:'tpl-grafito',
-    seed:{primaryColor:'#334155', secondaryColor:'#1E293B', accentColor:'#94A3B8', heroBadge:'Creatividad en cada trazo · MARKET CR', heroTitle:'Herramientas para crear', heroSub:'Materiales y productos para tu arte y oficina.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'masonry', rounded:12, heroMediaShape:'sharp'}},
-  {id:'tpl-selva', name:'🦜 Selva', desc:'Tropical, exótico o plantas', thumbnail:'tpl-selva',
-    seed:{primaryColor:'#15803D', secondaryColor:'#166534', accentColor:'#FACC15', heroBadge:'Naturaleza exótica · MARKET CR', heroTitle:'Verde y vida tropical', heroSub:'Plantas exóticas y productos de la selva urbana.', heroLayout:'left', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:18, heroMediaShape:'circle'}},
-  {id:'tpl-aire', name:'🏔️ Aire Libre', desc:'Fitness, yoga o salud', thumbnail:'tpl-aire',
-    seed:{primaryColor:'#0D9488', secondaryColor:'#115E59', accentColor:'#5EEAD4', heroBadge:'Bienestar y movimiento · MARKET CR', heroTitle:'Tu mejor versión', heroSub:'Productos para tu rutina de bienestar y fitness.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'masonry', rounded:20, heroMediaShape:'circle'}}
+ const SITE_TEMPLATES = [
+  {id:'tpl-verde', name:'🌿 Verde Natural', desc:'Plantas, jardín o naturales', thumbnail:'tpl-verde', seed:{primaryColor:'#1B7A43', secondaryColor:'#0F5A30', accentColor:'#FFD100', heroBadge:'Catálogo y venta directa · MARKET CR', heroTitle:'Naturaleza que transforma tu espacio', heroSub:'Productos seleccionados con calidad garantizada y entrega a domicilio.', heroLayout:'left', benefitsCols:4, productStyle:'grid', galleryStyle:'grid', rounded:18, heroMediaShape:'rounded', heroStyle:'split', cardStyle:'soft', benefitStyle:'icon', categoryStyle:'card', typography:'modern', decor:'blob', ctaStyle:'gradient', footerStyle:'dark', animTheme:'slide', bgTheme:'wave'}},
+  {id:'tpl-ruby', name:'💜 Rubí Premium', desc:'Marca premium o servicios', thumbnail:'tpl-ruby', seed:{primaryColor:'#7C3AED', secondaryColor:'#5B21B6', accentColor:'#FDE047', heroBadge:'Experiencia premium · MARKET CR', heroTitle:'Calidad premium que se nota', heroSub:'Cuidamos cada detalle para que tu experiencia sea única.', heroLayout:'right', benefitsCols:3, productStyle:'rows', galleryStyle:'carousel', rounded:24, heroMediaShape:'circle', heroStyle:'split', cardStyle:'shadow', benefitStyle:'numbered', categoryStyle:'card', typography:'serif', decor:'blob', ctaStyle:'gradient', footerStyle:'brand', animTheme:'float', bgTheme:'aurora'}},
+  {id:'tpl-sol', name:'🌞 Sol Dorado', desc:'Café, repostería o moda', thumbnail:'tpl-sol', seed:{primaryColor:'#D97706', secondaryColor:'#92400E', accentColor:'#FDE68A', heroBadge:'Frescura y sabor · MARKET CR', heroTitle:'Lo mejor llega con calor humano', heroSub:'Preparado con dedicación y entregado con amor a tu puerta.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'grid', rounded:16, heroMediaShape:'rounded', heroStyle:'stacked', cardStyle:'soft', benefitStyle:'icon', categoryStyle:'card', typography:'rounded', decor:'blob', ctaStyle:'gradient', footerStyle:'dark', animTheme:'pop', bgTheme:'light'}},
+  {id:'tpl-oceano', name:'🌊 Océano Azul', desc:'Tecnología, salud o servicios', thumbnail:'tpl-oceano', seed:{primaryColor:'#2563EB', secondaryColor:'#1D4ED8', accentColor:'#93C5FD', heroBadge:'Confianza y seguridad · MARKET CR', heroTitle:'Soluciones claras, resultados reales', heroSub:'Confiá en nuestro equipo: calidad y atención en cada paso.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'masonry', rounded:20, heroMediaShape:'rounded', heroStyle:'split', cardStyle:'bordered', benefitStyle:'icon', categoryStyle:'card', typography:'modern', decor:'grid', ctaStyle:'gradient', footerStyle:'dark', animTheme:'wave', bgTheme:'dark'}},
+  {id:'tpl-rojo', name:'🔴 Rojo Energía', desc:'Deporte, comida o promos', thumbnail:'tpl-rojo', seed:{primaryColor:'#DC2626', secondaryColor:'#991B1B', accentColor:'#FCA5A5', heroBadge:'Energía y pasión · MARKET CR', heroTitle:'Viví la diferencia hoy', heroSub:'Productos con carácter y promociones que no podés ignorar.', heroLayout:'right', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:12, heroMediaShape:'sharp', heroStyle:'full', cardStyle:'flat', benefitStyle:'image', categoryStyle:'pill', typography:'bold', decor:'none', ctaStyle:'gradient', footerStyle:'dark', animTheme:'bounce', bgTheme:'wave'}},
+  {id:'tpl-minimal', name:'◻️ Minimalista', desc:'Negocios modernos y limpios', thumbnail:'tpl-minimal', seed:{primaryColor:'#111827', secondaryColor:'#374151', accentColor:'#22D3EE', heroBadge:'Nuevo en la plataforma · MARKET CR', heroTitle:'Simple, directo y moderno', heroSub:'Menos ruido, más producto. Una experiencia clara para tus clientes.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'carousel', rounded:8, heroMediaShape:'sharp', heroStyle:'minimal', cardStyle:'flat', benefitStyle:'icon', categoryStyle:'pill', typography:'modern', decor:'none', ctaStyle:'minimal', footerStyle:'light', animTheme:'slide', bgTheme:'aurora'}},
+  {id:'tpl-terra', name:'🟤 Terra', desc:'Artesanal, café o vintage', thumbnail:'tpl-terra', seed:{primaryColor:'#78350F', secondaryColor:'#92400E', accentColor:'#FBBF24', heroBadge:'Hecho a mano · MARKET CR', heroTitle:'Cálido, artesanal y cercano', heroSub:'Productos con historia y sabor, hechos con dedicación.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'grid', rounded:22, heroMediaShape:'rounded', heroStyle:'split', cardStyle:'soft', benefitStyle:'numbered', categoryStyle:'card', typography:'serif', decor:'blob', ctaStyle:'gradient', footerStyle:'dark', animTheme:'float', bgTheme:'light'}},
+  {id:'tpl-rosa', name:'🌸 Rosa Bloom', desc:'Belleza, skincare o moda', thumbnail:'tpl-rosa', seed:{primaryColor:'#DB2777', secondaryColor:'#9D174D', accentColor:'#F9A8D4', heroBadge:'Belleza y cuidado · MARKET CR', heroTitle:'Cuidate, brillá, sentite bien', heroSub:'Productos seleccionados para tu rutina de belleza y bienestar.', heroLayout:'right', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:18, heroMediaShape:'circle', heroStyle:'split', cardStyle:'glass', benefitStyle:'image', categoryStyle:'card', typography:'rounded', decor:'blob', ctaStyle:'gradient', footerStyle:'brand', animTheme:'pop', bgTheme:'dark'}},
+  {id:'tpl-noche', name:'🌌 Noche Moderna', desc:'Tech, apps o diseño oscuro', thumbnail:'tpl-noche', seed:{primaryColor:'#0F172A', secondaryColor:'#1E293B', accentColor:'#38BDF8', heroBadge:'Innovación que inspira · MARKET CR', heroTitle:'Diseño y tecnología para crecer', heroSub:'Soluciones modernas para tu negocio, con una experiencia impecable.', heroLayout:'center', benefitsCols:3, productStyle:'grid', galleryStyle:'masonry', rounded:14, heroMediaShape:'sharp', heroStyle:'full', cardStyle:'bordered', benefitStyle:'icon', categoryStyle:'card', typography:'modern', decor:'grid', ctaStyle:'gradient', footerStyle:'brand', animTheme:'wave', bgTheme:'wave'}},
+  {id:'tpl-citrico', name:'🍋 Cítrico', desc:'Jugos, frescos o salud', thumbnail:'tpl-citrico', seed:{primaryColor:'#65A30D', secondaryColor:'#3F6212', accentColor:'#FACC15', heroBadge:'Frescura en cada entrega · MARKET CR', heroTitle:'Viví lo fresco, viví lo natural', heroSub:'Productos frescos y saludables, directo a tu mesa.', heroLayout:'left', benefitsCols:2, productStyle:'rows', galleryStyle:'grid', rounded:26, heroMediaShape:'circle', heroStyle:'stacked', cardStyle:'soft', benefitStyle:'numbered', categoryStyle:'card', typography:'rounded', decor:'blob', ctaStyle:'gradient', footerStyle:'light', animTheme:'bounce', bgTheme:'aurora'}},
+  {id:'tpl-lavanda', name:'🪻 Lavanda', desc:'Relax, spa o cuidado personal', thumbnail:'tpl-lavanda', seed:{primaryColor:'#7C3AED', secondaryColor:'#4C1D95', accentColor:'#E9D5FF', heroBadge:'Bienestar y equilibrio · MARKET CR', heroTitle:'Tu momento de calma', heroSub:'Cuidado personal y bienestar para sentirse en paz.', heroLayout:'right', benefitsCols:3, productStyle:'grid', galleryStyle:'carousel', rounded:20, heroMediaShape:'rounded', heroStyle:'split', cardStyle:'glass', benefitStyle:'numbered', categoryStyle:'card', typography:'serif', decor:'blob', ctaStyle:'card', footerStyle:'light', animTheme:'slide', bgTheme:'light'}},
+  {id:'tpl-mar', name:'🏝️ Mar Caribe', desc:'Vacaciones, turismo o moda', thumbnail:'tpl-mar', seed:{primaryColor:'#0891B2', secondaryColor:'#155E75', accentColor:'#67E8F9', heroBadge:'Escapate con nosotros · MARKET CR', heroTitle:'Vibrá el paraíso', heroSub:'Experiencias y productos que te conectan con el mar.', heroLayout:'center', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:18, heroMediaShape:'circle', heroStyle:'full', cardStyle:'glass', benefitStyle:'icon', categoryStyle:'card', typography:'rounded', decor:'blob', ctaStyle:'gradient', footerStyle:'dark', animTheme:'float', bgTheme:'dark'}},
+  {id:'tpl-oro', name:'🥇 Oro Clásico', desc:'Joyas, lujo o inversión', thumbnail:'tpl-oro', seed:{primaryColor:'#A16207', secondaryColor:'#713F12', accentColor:'#FDE68A', heroBadge:'Elegancia atemporal · MARKET CR', heroTitle:'Detalles que perduran', heroSub:'Productos exclusivos con calidad y refinamiento.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'grid', rounded:24, heroMediaShape:'rounded', heroStyle:'split', cardStyle:'shadow', benefitStyle:'numbered', categoryStyle:'card', typography:'serif', decor:'none', ctaStyle:'gradient', footerStyle:'dark', animTheme:'pop', bgTheme:'wave'}},
+  {id:'tpl-bambu', name:'🎋 Bambú', desc:'Eco, hogar o sostenible', thumbnail:'tpl-bambu', seed:{primaryColor:'#3F6212', secondaryColor:'#1A2E05', accentColor:'#BEF264', heroBadge:'Vida sostenible · MARKET CR', heroTitle:'Eco-amigable por naturaleza', heroSub:'Productos sostenibles para un hogar más verde.', heroLayout:'right', benefitsCols:2, productStyle:'rows', galleryStyle:'masonry', rounded:12, heroMediaShape:'sharp', heroStyle:'stacked', cardStyle:'flat', benefitStyle:'icon', categoryStyle:'pill', typography:'modern', decor:'grid', ctaStyle:'minimal', footerStyle:'light', animTheme:'wave', bgTheme:'aurora'}},
+  {id:'tpl-coco', name:'🥥 Coco Café', desc:'Café, bakery o cozy', thumbnail:'tpl-coco', seed:{primaryColor:'#9A3412', secondaryColor:'#7C2D12', accentColor:'#FDBA74', heroBadge:'Café y antojos · MARKET CR', heroTitle:'Un rincón cálido para vos', heroSub:'Café, repostería y productos con sabor a hogar.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'carousel', rounded:28, heroMediaShape:'circle', heroStyle:'stacked', cardStyle:'soft', benefitStyle:'icon', categoryStyle:'card', typography:'rounded', decor:'blob', ctaStyle:'gradient', footerStyle:'dark', animTheme:'bounce', bgTheme:'light'}},
+  {id:'tpl-ladrillo', name:'🧱 Urban Brick', desc:'Moda urbana o callejera', thumbnail:'tpl-ladrillo', seed:{primaryColor:'#B91C1C', secondaryColor:'#7F1D1D', accentColor:'#FCA5A5', heroBadge:'Estilo y actitud · MARKET CR', heroTitle:'Vestí tu identidad', heroSub:'Prendas y accesorios con actitud urbana.', heroLayout:'right', benefitsCols:4, productStyle:'rows', galleryStyle:'masonry', rounded:10, heroMediaShape:'sharp', heroStyle:'full', cardStyle:'flat', benefitStyle:'numbered', categoryStyle:'pill', typography:'bold', decor:'none', ctaStyle:'gradient', footerStyle:'dark', animTheme:'slide', bgTheme:'dark'}},
+  {id:'tpl-cielo', name:'☁️ Cielo', desc:'Baby, hogar o suave', thumbnail:'tpl-cielo', seed:{primaryColor:'#0284C7', secondaryColor:'#075985', accentColor:'#BAE6FD', heroBadge:'Suavidad y cuidado · MARKET CR', heroTitle:'Lo más tierno para los tuyos', heroSub:'Productos suaves y cuidados para toda la familia.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'grid', rounded:24, heroMediaShape:'circle', heroStyle:'stacked', cardStyle:'glass', benefitStyle:'image', categoryStyle:'card', typography:'rounded', decor:'blob', ctaStyle:'card', footerStyle:'light', animTheme:'float', bgTheme:'wave'}},
+  {id:'tpl-vintage', name:'📻 Vintage', desc:'Antigüedades o retro', thumbnail:'tpl-vintage', seed:{primaryColor:'#92400E', secondaryColor:'#78350F', accentColor:'#FBBF24', heroBadge:'Clásicos que perduran · MARKET CR', heroTitle:'Un viaje al pasado', heroSub:'Piezas únicas con historia y encanto.', heroLayout:'left', benefitsCols:3, productStyle:'rows', galleryStyle:'masonry', rounded:16, heroMediaShape:'rounded', heroStyle:'split', cardStyle:'soft', benefitStyle:'numbered', categoryStyle:'card', typography:'serif', decor:'grid', ctaStyle:'gradient', footerStyle:'dark', animTheme:'pop', bgTheme:'aurora'}},
+  {id:'tpl-neon', name:'💡 Neon', desc:'Gaming, estudio o creativo', thumbnail:'tpl-neon', seed:{primaryColor:'#4F46E5', secondaryColor:'#312E81', accentColor:'#22D3EE', heroBadge:'Creatividad sin límites · MARKET CR', heroTitle:'Tu estilo, tu energía', heroSub:'Productos para estudios creativos y gamers.', heroLayout:'center', benefitsCols:4, productStyle:'grid', galleryStyle:'carousel', rounded:10, heroMediaShape:'sharp', heroStyle:'full', cardStyle:'shadow', benefitStyle:'numbered', categoryStyle:'card', typography:'bold', decor:'grid', ctaStyle:'gradient', footerStyle:'dark', animTheme:'wave', bgTheme:'light'}},
+  {id:'tpl-bosque', name:'🌲 Bosque', desc:'Camping, outdoor o aventura', thumbnail:'tpl-bosque', seed:{primaryColor:'#166534', secondaryColor:'#14532D', accentColor:'#86EFAC', heroBadge:'Aventura natural · MARKET CR', heroTitle:'Salí a explorar', heroSub:'Equipo y productos para tu próxima aventura.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'grid', rounded:14, heroMediaShape:'sharp', heroStyle:'split', cardStyle:'soft', benefitStyle:'icon', categoryStyle:'card', typography:'modern', decor:'none', ctaStyle:'gradient', footerStyle:'dark', animTheme:'bounce', bgTheme:'dark'}},
+  {id:'tpl-perla', name:'🫧 Perla', desc:'Cosmética, cuidado o salud', thumbnail:'tpl-perla', seed:{primaryColor:'#DB2777', secondaryColor:'#9D174D', accentColor:'#FBCFE8', heroBadge:'Brillo y cuidado · MARKET CR', heroTitle:'Radiá con tu piel', heroSub:'Cosmética y cuidado personal de alta calidad.', heroLayout:'right', benefitsCols:2, productStyle:'rows', galleryStyle:'carousel', rounded:28, heroMediaShape:'circle', heroStyle:'stacked', cardStyle:'glass', benefitStyle:'image', categoryStyle:'card', typography:'rounded', decor:'blob', ctaStyle:'gradient', footerStyle:'light', animTheme:'slide', bgTheme:'wave'}},
+  {id:'tpl-grafito', name:'✏️ Grafito', desc:'Papelería, arte o diseño', thumbnail:'tpl-grafito', seed:{primaryColor:'#334155', secondaryColor:'#1E293B', accentColor:'#94A3B8', heroBadge:'Creatividad en cada trazo · MARKET CR', heroTitle:'Herramientas para crear', heroSub:'Materiales y productos para tu arte y oficina.', heroLayout:'left', benefitsCols:3, productStyle:'grid', galleryStyle:'masonry', rounded:12, heroMediaShape:'sharp', heroStyle:'minimal', cardStyle:'flat', benefitStyle:'numbered', categoryStyle:'pill', typography:'modern', decor:'grid', ctaStyle:'minimal', footerStyle:'light', animTheme:'float', bgTheme:'aurora'}},
+  {id:'tpl-selva', name:'🦜 Selva', desc:'Tropical, exótico o plantas', thumbnail:'tpl-selva', seed:{primaryColor:'#15803D', secondaryColor:'#166534', accentColor:'#FACC15', heroBadge:'Naturaleza exótica · MARKET CR', heroTitle:'Verde y vida tropical', heroSub:'Plantas exóticas y productos de la selva urbana.', heroLayout:'left', benefitsCols:4, productStyle:'rows', galleryStyle:'carousel', rounded:18, heroMediaShape:'circle', heroStyle:'full', cardStyle:'soft', benefitStyle:'icon', categoryStyle:'card', typography:'bold', decor:'blob', ctaStyle:'gradient', footerStyle:'dark', animTheme:'pop', bgTheme:'light'}},
+  {id:'tpl-aire', name:'🏔️ Aire Libre', desc:'Fitness, yoga o salud', thumbnail:'tpl-aire', seed:{primaryColor:'#0D9488', secondaryColor:'#115E59', accentColor:'#5EEAD4', heroBadge:'Bienestar y movimiento · MARKET CR', heroTitle:'Tu mejor versión', heroSub:'Productos para tu rutina de bienestar y fitness.', heroLayout:'center', benefitsCols:2, productStyle:'grid', galleryStyle:'masonry', rounded:20, heroMediaShape:'circle', heroStyle:'full', cardStyle:'glass', benefitStyle:'icon', categoryStyle:'card', typography:'modern', decor:'grid', ctaStyle:'gradient', footerStyle:'dark', animTheme:'wave', bgTheme:'dark'}}
 ];
 /* Arma una plantilla completa (copia de SITE_DEFAULTS con nuevos textos,
    colores y semillas de imágenes para diferenciar cada plantilla). */
@@ -13394,11 +13728,20 @@ function siteBuildTemplate(s){
     galleryStyle: s.galleryStyle || 'grid',   // grid | masonry | carousel
     secOrder: s.secOrder || ['hero','videos','benefits','cats','products','offer','about','whyus','testimonials','gallery','cta','contact'],
     rounded: s.rounded === undefined ? 18 : s.rounded,
-    navStyle: s.navStyle || 'dark',           // dark | light
-    productLayout: s.productLayout || 'grid',  // grid | rows (alias de productStyle)
-    sectionStyle: s.sectionStyle || 'alt',     // alt | plain
-    heroMediaShape: s.heroMediaShape || 'rounded' // rounded | circle | sharp
+    heroMediaShape: s.heroMediaShape || 'rounded', // rounded | circle | sharp
+    heroStyle: s.heroStyle || 'split',             // split | full | stacked | minimalist
+    cardStyle: s.cardStyle || 'soft',              // soft | glass | bordered | flat | shadow
+    sectionStyle: s.sectionStyle || 'alt',         // alt | plain | tinted
+    benefitStyle: s.benefitStyle || 'icon',        // icon | numbered | image
+    categoryStyle: s.categoryStyle || 'card',      // card | pill
+    typography: s.typography || 'modern',          // modern | serif | rounded | bold
+    decor: s.decor || 'blob',                      // decor | grid | none
+    footerStyle: s.footerStyle || 'dark',          // dark | light | brand
+    ctaStyle: s.ctaStyle || 'gradient',            // gradient | card | minimal
+    animTheme: s.animTheme || 'slide',             // slide | float | pop | wave | none (animaciones de la plantilla)
+    bgTheme: s.bgTheme || 'wave'                   // wave | aurora | light | dark (fondo dinámico)
   };
+  t.hero.decor = s.heroDecor || ''; // decoración del hero (canvas, etc.)
   return t;
 }
 /* Aplica una plantilla predefinida completa al editor (se puede guardar) */
@@ -13436,17 +13779,54 @@ function siteThemesHTML(){
       SITE_TEMPLATES.map(t => siteTemplateThumb(t)).join('') +
     '</div></div>';
 }
+/* Paleta de ELEMENTOS y FORMAS para agregar al landing (se superponen en la
+   vista previa y se pueden mover, redimensionar, rotar y estilizar). */
+function siteElementsHTML(){
+  const shapes = [
+    {k:'rect', n:'Rectángulo', v:'▭', c:'#7C3AED'},
+    {k:'ellipse', n:'Círculo', v:'●', c:'#BE185D'},
+    {k:'line', n:'Línea', v:'─', c:'#334155'},
+    {k:'star', n:'Estrella', v:'★', c:'#F59E0B'},
+    {k:'heart', n:'Corazón', v:'♥', c:'#DC2626'},
+    {k:'bolt', n:'Rayo', v:'⚡', c:'#F59E0B'},
+  ];
+  const elems = [
+    {k:'text', n:'Título', v:'A', c:'#7C3AED'},
+    {k:'subtext', n:'Subtítulo', v:'Aa', c:'#64748B'},
+    {k:'button', n:'Botón', v:'[ ]', c:'#1B7A43'},
+    {k:'link', n:'Enlace', v:'🔗', c:'#2563EB'},
+    {k:'image', n:'Imagen', v:'📷', c:'#0891B2'},
+    {k:'icon', n:'Ícono', v:'✳', c:'#DB2777'},
+  ];
+  return '<div class="site-grp">' +
+    '<div class="sv-tpl-head"><h4>➕ Elementos para tu landing</h4><span class="sv-tpl-count">agregar</span></div>' +
+    '<div class="hint">Hacé clic en un elemento para agregarlo a la vista previa. Después lo movés, redimensionás, rotás y estilizás desde el panel flotante. Se guarda al pulsar "Guardar cambios".</div>' +
+    '<h5 style="font-size:13px;font-weight:800;margin:14px 0 8px">🔷 Formas</h5>' +
+    '<div class="sv-el-grid">' +
+      shapes.map(function(s){ return '<button type="button" class="sv-el-btn" onclick="cvAddOverlay(\'' + esc(s.k) + '\')"><span class="sv-el-ico" style="color:' + esc(s.c) + '">' + esc(s.v) + '</span><span>' + esc(s.n) + '</span></button>'; }).join('') +
+    '</div>' +
+    '<h5 style="font-size:13px;font-weight:800;margin:16px 0 8px">📄 Elementos de contenido</h5>' +
+    '<div class="sv-el-grid">' +
+      elems.map(function(e){ return '<button type="button" class="sv-el-btn" onclick="cvAddOverlay(\'' + esc(e.k) + '\')"><span class="sv-el-ico" style="color:' + esc(e.c) + '">' + esc(e.v) + '</span><span>' + esc(e.n) + '</span></button>'; }).join('') +
+    '</div>' +
+  '</div>';
+}
 /* Miniatura visual de una plantilla: mockup CSS que refleja su estructura */
 function siteTemplateThumb(t){
   const s = t.seed;
   const hl = s.heroLayout || 'left';
+  const hs = s.heroStyle || 'split';
   const layoutName = hl==='left'?'Texto↔Imagen':hl==='right'?'Imagen↔Texto':hl==='center'?'Centrado':'Pantalla completa';
-  const gal = s.galleryStyle==='carousel'?'· Carrusel':(s.galleryStyle==='masonry'?'· Mosaico':'');
+  const heroName = hs==='full'?'Full':hs==='stacked'?'Apilado':hs==='minimal'?'Minimal':'Split';
+  const gal = s.galleryStyle==='carousel'?'Carrusel':(s.galleryStyle==='masonry'?'Mosaico':'');
   const pStyle = s.productStyle==='rows'?'Filas':'Tarjetas';
+  const card = s.cardStyle||'soft';
+  const typ = s.typography||'modern';
+  const tags = [layoutName, heroName, pStyle, gal, card]; if(typ!=='modern') tags.push(typ);
   return '<button type="button" class="sv-tpl-card" data-theme="'+esc(t.id)+'" onclick="siteTemplateApply(\''+esc(t.id)+'\')">' +
-    '<div class="sv-tpl-preview" style="--tp:'+esc(s.primaryColor)+';--ts:'+esc(s.secondaryColor)+';--ta:'+esc(s.accentColor)+';--tr:'+(s.rounded||18)+'px">' +
+    '<div class="sv-tpl-preview sv-tpl-p-'+esc(hs)+'" style="--tp:'+esc(s.primaryColor)+';--ts:'+esc(s.secondaryColor)+';--ta:'+esc(s.accentColor)+';--tr:'+(s.rounded||18)+'px">' +
       '<div class="sv-tpl-nav"><span class="sv-tpl-dot"></span><span class="sv-tpl-dot"></span><span class="sv-tpl-dot"></span></div>' +
-      '<div class="sv-tpl-hero sv-tpl-hero-'+esc(hl)+'">' +
+      '<div class="sv-tpl-hero sv-tpl-hero-'+esc(hl)+(hs==='full'?' sv-tpl-hero-full':'')+'">' +
         '<div class="sv-tpl-hcol"><span class="sv-tpl-line w70"></span><span class="sv-tpl-line w50"></span><span class="sv-tpl-btn"></span></div>' +
         '<div class="sv-tpl-box'+(s.heroMediaShape==='circle'?' sv-tpl-circle':'')+(s.heroMediaShape==='sharp'?' sv-tpl-sharp':'')+'"></div>' +
       '</div>' +
@@ -13457,7 +13837,7 @@ function siteTemplateThumb(t){
     '</div>' +
     '<div class="sv-tpl-meta">' +
       '<div class="sv-tpl-name">'+esc(t.name)+'</div>' +
-      '<div class="sv-tpl-tags"><span>'+esc(layoutName)+'</span><span>'+esc(pStyle)+'</span>'+(gal?'<span>'+esc(gal)+'</span>':'')+'</div>' +
+      '<div class="sv-tpl-tags">'+tags.map(function(tg){ return '<span>'+esc(tg)+'</span>'; }).join('')+'</div>' +
     '</div></button>';
 }
 /* Ejemplo terminado: un negocio distinto (café + plantas) para que el admin
@@ -13814,13 +14194,32 @@ function renderSiteFull(){
   const productStyle = L.productStyle || 'grid';
   const galleryStyle = L.galleryStyle || 'grid';
   const heroMediaShape = L.heroMediaShape || 'rounded';
+  const heroStyle = L.heroStyle || 'split';
+  const cardStyle = L.cardStyle || 'soft';
+  const benefitStyle = L.benefitStyle || 'icon';
+  const categoryStyle = L.categoryStyle || 'card';
+  const typography = L.typography || 'modern';
+  const decor = L.decor || 'blob';
+  const ctaStyle = L.ctaStyle || 'gradient';
+  const footerStyle = L.footerStyle || 'dark';
+  const animTheme = L.animTheme || 'slide';
+  const bgTheme = L.bgTheme || 'wave';
   const rounded = L.rounded || 18;
   const v = document.getElementById('siteView');
+  root.classList.add('sv-site');
+  root.setAttribute('data-typ', typography);
+  root.setAttribute('data-anim', animTheme);
+  /* Fondo dinámico de la página (gradiente animado acorde a los colores) */
+  if(v){
+    v.classList.remove('sv-bg-wave','sv-bg-aurora','sv-bg-light','sv-bg-dark');
+    v.classList.add('sv-bg-' + (bgTheme || 'wave'));
+  }
   if(v){
     v.style.setProperty('--site-p', c.primaryColor || '#1B7A43');
     v.style.setProperty('--site-pd', c.secondaryColor || '#0F5A30');
     v.style.setProperty('--site-acc', c.accentColor || '#FFD100');
     v.style.setProperty('--site-radius', rounded + 'px');
+    v.style.setProperty('--site-font', typography==='serif' ? "'Georgia','Times New Roman',serif" : typography==='rounded' ? "'Nunito','Segoe UI',sans-serif" : typography==='bold' ? "'Archivo Black','Arial Black',sans-serif" : "'Inter','Segoe UI',sans-serif");
     /* Colores del pie de página (editables por el administrador) */
     if(c.footer && c.footer.bg) v.style.setProperty('--footer-bg', c.footer.bg);
     if(c.footer && c.footer.text) v.style.setProperty('--footer-text', c.footer.text);
@@ -13863,7 +14262,10 @@ function renderSiteFull(){
     + '</div></header>';
   /* HERO (diseño automático: el layout fluye solo; en edición los textos e
      imágenes se resaltan y se editan con clic directo en la vista previa) */
-  html += '<div class="sv-wrap"><section class="sv-hero sv-hero-' + esc(heroLayout) + '" id="svHero">'
+  html += '<div class="sv-wrap"><section class="sv-hero sv-hero-' + esc(heroLayout) + ' sv-hero-s-' + esc(heroStyle) + ' sv-decor-' + esc(decor) + ' sv-card-' + esc(cardStyle) + '" id="svHero">'
+    + (decor==='grid' ? '<div class="sv-grid-decor"></div>' : '')
+    + (decor==='blob' || bgTheme!=='dark' ? '<div class="sv-anim-bg"><span style="width:260px;height:260px;top:8%;left:-60px;background:var(--site-p)"></span><span style="width:200px;height:200px;bottom:5%;right:-40px;background:var(--site-acc)"></span><span style="width:140px;height:140px;top:45%;right:30%;background:var(--site-pd)"></span></div>' : '')
+    + (decor==='blob' ? '<div class="sv-blob-decor"></div>' : '')
     + '<span class="sv-hero-float">' + esc(name) + ' · ' + esc(tag) + '</span>'
     + '<div class="sv-hero-grid">'
     + '<div><span class="sv-hero-badge">' + si('cart') + '<span' + svEdText('hero.badge') + '>' + esc(c.hero.badge || '') + '</span></span>'
@@ -13908,18 +14310,18 @@ function renderSiteFull(){
   /* BENEFICIOS */
   html += '<section class="sv-sec" id="svBenefits"><div class="sv-inner">'
     + '<div class="sv-sec-head"><div class="sv-eyebrow">Por qué comprar aquí</div><h2 class="sv-h2">Propuesta de valor</h2></div>'
-    + '<div class="sv-grid sv-rv' + esc(benefitsCols) + ' sv-reveal">'
-    + c.benefits.map(function(b){ return '<div class="sv-benefit"><div class="sv-b-icon">' + si(b.icon || 'check') + '</div><h3>' + esc(b.title) + '</h3><p>' + esc(b.desc) + '</p></div>'; }).join('')
+    + '<div class="sv-benefits sv-bv-' + esc(benefitStyle) + ' sv-card-' + esc(cardStyle) + ' sv-grid sv-rv' + esc(benefitsCols) + ' sv-reveal">'
+    + c.benefits.map(function(b, bi){ return '<div class="sv-benefit">' + (benefitStyle==='numbered' ? '<div class="sv-b-num">' + (bi+1) + '</div>' : benefitStyle==='image' ? '<div class="sv-b-img">' + si(b.icon || 'check') + '</div>' : '<div class="sv-b-icon">' + si(b.icon || 'check') + '</div>') + '<h3>' + esc(b.title) + '</h3><p>' + esc(b.desc) + '</p></div>'; }).join('')
     + '</div></div></section>';
   html += '<section class="sv-sec sv-sec-alt" id="svCats"><div class="sv-inner">'
     + '<div class="sv-sec-head"><div class="sv-eyebrow">Explorá</div><h2 class="sv-h2">Categorías</h2><p class="sv-lead">Elegí tu favorita y encontrá justo lo que buscás.</p></div>'
-    + '<div class="sv-cat-grid sv-reveal">'
-    + c.categories.map(function(cat){ const im = cat.image || ''; return '<a class="sv-cat" href="' + esc(store) + '">' + simg(im, cat.name, '') + '<div class="sv-cat-overlay"><h3>' + esc(cat.name) + '</h3><p>' + esc(cat.desc) + '</p><span class="sv-link-mini" style="color:#fff">Explorar ' + si('arrow') + '</span></div></a>'; }).join('')
+    + '<div class="sv-cat-wrap sv-cc-' + esc(categoryStyle) + ' sv-reveal">'
+    + c.categories.map(function(cat){ const im = cat.image || ''; return '<a class="sv-cat' + (categoryStyle==='pill'?' sv-cat-pill':'') + '" href="' + esc(store) + '">' + simg(im, cat.name, '') + '<div class="sv-cat-overlay"><h3>' + esc(cat.name) + '</h3><p>' + esc(cat.desc) + '</p><span class="sv-link-mini" style="color:#fff">Explorar ' + si('arrow') + '</span></div></a>'; }).join('')
     + '</div></div></section>';
   /* PRODUCTOS DESTACADOS */
   html += '<section class="sv-sec" id="svProducts"><div class="sv-inner">'
     + '<div class="sv-sec-head"><div class="sv-eyebrow">Lo más solicitado</div><h2 class="sv-h2">Productos destacados</h2></div>'
-    + '<div class="sv-prod-grid sv-ps-' + esc(productStyle) + ' sv-reveal">'
+    + '<div class="sv-prod-grid sv-ps-' + esc(productStyle) + ' sv-card-' + esc(cardStyle) + ' sv-reveal">'
     + c.featured.map(siteFeaturedCard).join('')
     + '</div>'
     + '<div class="sv-sec-footer"><a class="sv-link-pill" href="' + esc(store) + '">Ver todos los productos ' + si('arrow') + '</a></div>'
@@ -13987,7 +14389,7 @@ function renderSiteFull(){
     + galInner
     + '</div></section>';
   /* CTA */
-  html += '<section class="sv-sec" id="svCta"><div class="sv-inner"><div class="sv-cta sv-reveal">'
+  html += '<section class="sv-sec" id="svCta"><div class="sv-inner"><div class="sv-cta sv-cta-' + esc(ctaStyle) + ' sv-reveal">'
     + '<h2>' + esc(c.cta.title) + '</h2><p>' + esc(c.cta.sub) + '</p>'
     + '<div class="sv-hero-actions">'
     + '<a class="sv-btn sv-btn-ghost" style="background:var(--site-acc);color:#17202A;border:none" href="' + esc(store) + '">Comprar ahora ' + si('arrow') + '</a>'
@@ -14021,7 +14423,7 @@ function renderSiteFull(){
     + '</form>'
     + '</div></div></section>';
   /* FOOTER */
-  html += '<footer class="sv-footer"><div class="sv-footer-inner">'
+  html += '<footer class="sv-footer sv-footer-' + esc(footerStyle) + '"><div class="sv-footer-inner">'
     + '<div><div class="sv-f-brand">' + (logo && !imgRemoved(logo) ? '<img class="sv-f-logo" src="' + esc(logo) + '" alt="Logo">' : '<span class="sv-f-logo-ph">' + esc(name.charAt(0).toUpperCase()) + '</span>') + esc(name) + '</div>'
     + '<p>' + esc(c.footer.about || c.about.text) + '</p></div>'
     + '<div class="sv-f-col"><h4>Navegación</h4><a href="#svHero">Inicio</a><a href="#svAbout">Nosotros</a><a href="#svProducts">Productos</a><a href="#svContact">Contacto</a></div>'
@@ -14098,6 +14500,24 @@ function restartGalCarousel(){
    beneficios, categorías, productos, oferta, nosotros, testimonios, galería,
    CTA y contacto) se pueden mover/redimensionar/rotar/estilizar/animar. */
 let _cvObjSeq = 0;
+/* Genera un ID ESTABLE para una capa, para que los estilos (posición, tamaño,
+   rotación, sombra) NO se pierdan al re-renderizar. Prefiere el data-path
+   (ruta del config) o, si no, arma un selector de posición que sobrevive a
+   recargas (tag + sección + índice entre hermanos). */
+function cvStableId(el, prefix){
+  const dp = el.getAttribute && el.getAttribute('data-path');
+  if(dp) return (prefix || 'cv') + ':' + dp.replace(/[^a-zA-Z0-9_.-]/g, '_');
+  /* índice entre hermanos del mismo tipo dentro de su contenedor */
+  const parent = el.parentElement;
+  let idx = 0;
+  if(parent){
+    const same = Array.prototype.filter.call(parent.children, function(ch){ return ch.tagName === el.tagName; });
+    idx = Array.prototype.indexOf.call(same, el);
+  }
+  const tag = (el.tagName || 'div').toLowerCase();
+  const cls = (el.className && String(el.className).split(' ')[0]) || '';
+  return (prefix || 'cv') + ':' + tag + ':' + (cls||'') + ':' + idx;
+}
 function cvAutoDetectLayers(){
   const root = document.getElementById('siteRoot');
   if(!root) return;
@@ -14107,7 +14527,7 @@ function cvAutoDetectLayers(){
   root.querySelectorAll('h1, h2, h3, h4, p, .sv-eyebrow, .sv-lead, .sv-storename, .sv-storetag, .sv-price, .sv-offer h3, .sv-benefit h3, .sv-benefit p, .sv-card-body h3, .sv-card-desc, .sv-test p, .sv-contact-row b').forEach(function(el){
     if(el.closest('[data-obj]')) return;
     if(el.isContentEditable) return;
-    const id = 'cv' + (++_cvObjSeq);
+    const id = cvStableId(el, 'cv');
     el.setAttribute('data-obj', id);
     el.setAttribute('data-way', 'text');
     el.classList.add('cv-editable-text');
@@ -14120,7 +14540,7 @@ function cvAutoDetectLayers(){
     if(el.closest('[data-obj]')) return;
     if(el.closest('.sv-lightbox')) return;   // la lupa ampila aparte
     if(el.classList.contains('sv-hero-slide')) return; // las del carrusel se manejan aparte
-    const id = 'cvimg' + (++_cvObjSeq);
+    const id = cvStableId(el, 'cvimg');
     el.setAttribute('data-obj', id);
     el.setAttribute('data-way', 'image');
     el.setAttribute('data-cv', 'image');
@@ -14144,7 +14564,7 @@ function cvAutoDetectLayers(){
   /* 3) Botones CTA: .sv-btn (excepto los del nav) */
   root.querySelectorAll('.sv-hero-actions .sv-btn, .sv-cta .sv-btn, .sv-btn-primary, .sv-hero-actions a').forEach(function(el){
     if(el.closest('[data-obj]')) return;
-    const id = 'cv' + (++_cvObjSeq);
+    const id = cvStableId(el, 'cv');
     el.setAttribute('data-obj', id);
     el.setAttribute('data-way', 'button');
     cvWrapTools(el, id);
@@ -14156,7 +14576,7 @@ function cvAutoDetectLayers(){
     if(el.closest('[data-obj]')) return;
     /* Evitar iconos dentro de botones ya marcados como objeto */
     if(el.closest('.sv-btn, [data-way="button"]')) return;
-    const id = 'cvic' + (++_cvObjSeq);
+    const id = cvStableId(el, 'cvic');
     el.setAttribute('data-obj', id);
     el.setAttribute('data-way', 'icon');
     el.style.cursor = 'move';
@@ -14521,6 +14941,9 @@ function loadSiteEditor(){
   if(siteSectionTab === 'plantillas'){
     /* Selector de plantillas en su propia pestaña, con vista previa ampliada */
     html = siteThemesHTML();
+  } else if(siteSectionTab === 'elementos'){
+    /* Paleta de elementos/formas para agregar al landing */
+    html = siteElementsHTML();
   } else if(siteSectionTab === 'negocio'){
     html = SITE_EDITOR_SIMPLE.map(function(grp){
       return '<div class="site-grp"><h4>' + esc(grp.g) + '</h4>'
@@ -14547,7 +14970,7 @@ function loadSiteEditor(){
 function generateSiteTabs(){
   const tb = document.getElementById('siteTabs');
   if(!tb) return;
-  const tabs = [ ['plantillas','🧩 Plantillas'], ['negocio','Datos del sitio'], ['listas','Secciones y contenidos'], ['galeria','Galería'] ];
+  const tabs = [ ['plantillas','🧩 Plantillas'], ['elementos','➕ Elementos'], ['negocio','Datos del sitio'], ['listas','Secciones y contenidos'], ['galeria','Galería'] ];
   tb.innerHTML = tabs.map(function(t){ return '<button class="site-tab-btn' + (siteSectionTab === t[0] ? ' on' : '') + '" onclick="siteSectionTab=\'' + t[0] + '\';loadSiteEditor()">' + esc(t[1]) + '</button>'; }).join('');
 }
 function siteRowEditorHTML(def){
@@ -14991,15 +15414,18 @@ function enableSiteInlineEditing(){
   });
   root.addEventListener('mousedown', function(ev){
     if(!siteLiveEdit) return;
-    const layer = ev.target.closest('[data-obj]');
+    /* ev.target puede ser un nodo de texto (no tiene .closest): subir al
+       elemento padre para poder recorrer hacia [data-obj]. */
+    var tgt = ev.target.nodeType === 3 ? ev.target.parentElement : ev.target;
+    const layer = tgt && tgt.closest ? tgt.closest('[data-obj]') : null;
     if(!layer){
       cvSelectReset();
       return;
     }
     cvSelect(layer.dataset.obj);
     /* Si se pulsan los tools, NO iniciar drag de mover */
-    if(ev.target.closest('.cv-tool')) return;
-    if(ev.target.closest('[data-cv="text"]')) return; // editar texto, no mover
+    if(tgt.closest('.cv-tool')) return;
+    if(tgt.closest('[data-cv="text"]')) return; // editar texto, no mover
     _cvMoved = false;
     cvDragStart(ev, layer);
   }, true);
@@ -15291,7 +15717,14 @@ function ensureCvStylePanel(){
     const k = ev.target.dataset.cvSp;
     if(!k) return;
     if(k === 'size') st.fontSize = Math.max(10, Math.min(120, parseFloat(ev.target.value) || 16));
-    else if(k === 'color') st.color = ev.target.value;
+    else if(k === 'color'){
+      st.color = ev.target.value;
+      /* Si es una forma (rect, círculo, estrella, etc.) el color pinta el relleno */
+      if(['rect','box','ellipse','line','star','heart','bolt','arrow','parallelogram'].indexOf(st.kind) !== -1){ st.shapeColor = ev.target.value; }
+      // Reconstruir el DOM para reflejar color/estilo
+      const lyr = document.querySelector('#siteRoot [data-obj="' + CSS.escape(_cvSel) + '"]');
+      if(lyr && siteConfig.overlays && siteConfig.overlays[_cvSel]) sceneBuildOverlay(_cvSel);
+    }
     else if(k === 'font') st.font = ev.target.value;
     else if(k === 'align') st.align = ev.target.value;
     else if(k === 'link'){
@@ -15404,13 +15837,26 @@ function cvAddOverlay(kind){
   if(!root) return;
   if(!siteConfig.overlays) siteConfig.overlays = {};
   const id = 'ov' + Date.now().toString(36);
+  const isShape = ['rect','ellipse','line','star','heart','bolt','arrow','box','parallelogram'].indexOf(kind) !== -1;
+  const isElem = ['text','subtext','button','link','image','icon'].indexOf(kind) !== -1;
+  /* Tamaño base según tipo */
+  let w = 180, h = 60, color = '#ffffff', text = '';
+  let bg = '', fontSize = 16, font = 'Inter', bold = true;
+  if(kind === 'image'){ w = 200; h = 150; }
+  else if(kind === 'link'){ w = 200; h = 48; bg = '#17202A'; text = 'Ir al enlace'; }
+  else if(kind === 'button'){ w = 200; h = 52; bg = '#1B7A43'; text = 'Comprar'; }
+  else if(kind === 'text'){ w = 320; h = 70; text = 'Título'; fontSize = 40; color = '#17202A'; }
+  else if(kind === 'subtext'){ w = 340; h = 40; text = 'Subtítulo'; fontSize = 20; bold = false; color = '#64748B'; }
+  else if(kind === 'icon'){ w = 64; h = 64; color = '#DB2777'; text = '✳'; fontSize = 40; bold = false; }
+  else if(isShape){ w = 120; h = 120; }
   const ov = siteConfig.overlays[id] = {
     kind: kind,
-    x: 60, y: 60, w: (kind === 'image' || kind === 'link') ? 200 : 180, h: (kind === 'image' ? 150 : (kind === 'link' ? 48 : 60)), rotate: 0,
-    font: 'Inter', fontSize: 16, color: '#ffffff', bold: true, italic: false, align: 'center',
-    text: (kind === 'text' ? 'Nuevo texto' : (kind === 'link' ? 'Ir al enlace' : '')),
+    x: 60, y: 60, w: w, h: h, rotate: 0,
+    font: font, fontSize: fontSize, color: color, bold: bold, italic: false, align: 'center',
+    text: text,
     link: '',
-    bg: (kind === 'link' ? '#17202A' : ''),
+    bg: bg,
+    shapeColor: (isShape ? (kind==='line'?'#334155': kind==='star'||kind==='bolt'?'#F59E0B': kind==='heart'?'#DC2626' : '#7C3AED') : ''),
     shadow: { offX: 0, offY: 4, blur: 12, color: 'rgba(0,0,0,.35)', enabled: true }
   };
   sceneBuildOverlay(id);
@@ -15428,6 +15874,10 @@ function sceneBuildOverlay(id){
     cont.id = 'cvOverlaysHolder';
     root.appendChild(cont);
   }
+  /* Si ya existe el elemento de este overlay, quitarlo antes de reconstruir
+     (evita duplicados al editar color/estilo). */
+  const existing = cont.querySelector('[data-obj="' + CSS.escape(id) + '"]');
+  if(existing) existing.remove();
   const el = document.createElement('div');
   el.className = 'cv-overlay-obj';
   el.setAttribute('data-obj', id);
@@ -15438,13 +15888,32 @@ function sceneBuildOverlay(id){
       ? '<img src="' + esc(ov.image) + '" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:block;cursor:pointer" onclick="event.stopPropagation();cvAddOverlayImage(\'' + id + '\')" title="Clic para cambiar la imagen">'
       : '<div data-cv="image" style="width:100%;height:100%;background:#E5E7EB;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px" onclick="event.stopPropagation();cvAddOverlayImage(\'' + id + '\')">📷</div>');
   } else if(ov.kind === 'ellipse'){
-    el.innerHTML = '<div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#BE185D)"></div>';
+    el.innerHTML = '<div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,' + esc(ov.shapeColor||'#7C3AED') + ',' + esc(ov.shapeColor||'#BE185D') + ')"></div>';
+  } else if(ov.kind === 'rect' || ov.kind === 'box'){
+    el.innerHTML = '<div style="width:100%;height:100%;border-radius:12px;background:linear-gradient(135deg,' + esc(ov.shapeColor||'#7C3AED') + ',' + esc(ov.shapeColor||'#BE185D') + ');opacity:.85"></div>';
+  } else if(ov.kind === 'star'){
+    el.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:' + Math.min(ov.w, ov.h)*0.8 + 'px;color:' + esc(ov.shapeColor||'#F59E0B') + ';text-shadow:0 4px 14px rgba(0,0,0,.25)">★</div>';
+  } else if(ov.kind === 'heart'){
+    el.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:' + Math.min(ov.w, ov.h)*0.8 + 'px;color:' + esc(ov.shapeColor||'#DC2626') + ';text-shadow:0 4px 14px rgba(0,0,0,.25)">♥</div>';
+  } else if(ov.kind === 'bolt'){
+    el.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:' + Math.min(ov.w, ov.h)*0.8 + 'px;color:' + esc(ov.shapeColor||'#F59E0B') + ';text-shadow:0 4px 14px rgba(0,0,0,.25)">⚡</div>';
+  } else if(ov.kind === 'line'){
+    el.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center"><span style="width:100%;height:4px;border-radius:99px;background:' + esc(ov.shapeColor||'#334155') + '"></span></div>';
+  } else if(ov.kind === 'arrow'){
+    el.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:' + Math.min(ov.w, ov.h)*0.8 + 'px;color:' + esc(ov.shapeColor||'#334155') + '">➜</div>';
+  } else if(ov.kind === 'parallelogram'){
+    el.innerHTML = '<div style="width:100%;height:100%;transform:skewX(-14deg);border-radius:8px;background:linear-gradient(135deg,' + esc(ov.shapeColor||'#7C3AED') + ',' + esc(ov.shapeColor||'#BE185D') + ')"></div>';
   } else if(ov.kind === 'link'){
     /* OBJETO ENLACE: parece un botón y abre la URL definida (ov.link).
        En la vista pública se vuelve clickable para navegar (data-link). */
     el.innerHTML = '<div data-cv="text" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:' + esc(ov.bg || '#17202A') + ';border-radius:10px;color:' + esc(ov.color || '#fff') + ';font-family:' + esc(ov.font || 'Inter') + ',sans-serif;font-size:' + (ov.fontSize||16) + 'px;font-weight:700;cursor:pointer">' + esc(ov.text || 'Ir al enlace') + '</div>';
+  } else if(ov.kind === 'button'){
+    el.innerHTML = '<div data-cv="text" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:' + esc(ov.bg || '#1B7A43') + ';border-radius:12px;color:' + esc(ov.color || '#fff') + ';font-family:' + esc(ov.font || 'Inter') + ',sans-serif;font-size:' + (ov.fontSize||18) + 'px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.2)">' + esc(ov.text || 'Comprar') + '</div>';
+  } else if(ov.kind === 'icon'){
+    el.innerHTML = '<div data-cv="text" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:' + (ov.fontSize||40) + 'px;color:' + esc(ov.color || '#DB2777') + ';font-weight:400">' + esc(ov.text || '✳') + '</div>';
   } else {
-    el.innerHTML = '<div data-cv="text">' + esc(ov.text || 'Texto') + '</div>';
+    /* text / subtext: texto con estilos */
+    el.innerHTML = '<div data-cv="text" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:' + esc(ov.font || 'Inter') + ',sans-serif;font-size:' + (ov.fontSize||16) + 'px;font-weight:' + (ov.bold?'800':'400') + ';color:' + esc(ov.color || '#17202A') + ';text-align:' + esc(ov.align || 'center') + ';line-height:1.2">' + esc(ov.text || 'Texto') + '</div>';
   }
   /* Cualquier objeto superpuesto puede tener un enlace (data-link) que se
      abre al hacer clic en la vista pública. */
