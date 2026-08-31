@@ -2736,17 +2736,25 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       </div>
 
       <div class="settings-card">
-        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6M12 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>Notificación de pagos por WhatsApp</h4>
-        <div class="desc">Cuando un cliente paga su factura, recibís un aviso con el número de factura y el nombre del cliente. Configurá aquí tu proveedor de WhatsApp.</div>
-        <div class="f-row" style="margin-top:6px">
-          <div class="f-group"><label>Proveedor de WhatsApp</label>
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6M12 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>Notificaciones al administrador</h4>
+        <div class="desc">Recibís un aviso cuando un cliente paga (comprobante local o PayPal) y cuando deja una opinión. Configurá tu <b>CallMeBot</b> (WhatsApp personal, gratis) o un proveedor de WhatsApp.</div>
+        <div style="border:1.5px solid var(--green);border-radius:12px;padding:10px 12px;background:var(--green-soft);margin-top:6px">
+          <b style="font-size:12.5px">🥇 CallMeBot (WhatsApp personal — GRATIS)</b>
+          <div style="font-size:11px;color:var(--muted);margin:2px 0 6px">Obtené tu API Key en <b>callmebot.com</b> (Free WhatsApp API → activá con "I allow callmebot to send me messages").</div>
+          <div class="f-row" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="f-group"><label>Tu número (con país)</label><input class="f-input" id="sCallmePhone" placeholder="50672284602" autocomplete="off"></div>
+            <div class="f-group"><label>API Key de CallMeBot</label><input class="f-input" id="sCallmeApiKey" type="password" autocomplete="off" placeholder="tu-apikey"></div>
+          </div>
+        </div>
+        <div class="f-row" style="margin-top:8px">
+          <div class="f-group"><label>Proveedor de WhatsApp (alternativo)</label>
             <select class="f-input" id="sWaProvider" onchange="onBizWaProviderChange()">
               <option value="twilio">Twilio</option>
               <option value="meta">Meta WhatsApp Cloud API</option>
             </select>
           </div>
         </div>
-        <div class="hint" style="margin-top:2px">Estas claves se guardan en el servidor (nunca en el navegador). El aviso llega al WhatsApp del negocio.</div>
+        <div class="hint" style="margin-top:2px">Estas claves se guardan en el servidor (nunca en el navegador).</div>
         <div id="sBizWaTwilio">
           <div class="f-row" style="margin-top:8px">
             <div class="f-group"><label>Account SID (Twilio)</label><input class="f-input" id="sWaSid" autocomplete="off" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"></div>
@@ -2994,6 +3002,13 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
       <div style="max-width:760px;display:flex;gap:10px;justify-content:flex-end">
         <button class="btn-ghost" style="width:auto;padding:12px 22px" onclick="settingsFormDirty=false; loadSettingsForm()">Descartar</button>
         <button class="btn-dark" style="padding:12px 26px" onclick="saveSettings()">Guardar cambios</button>
+      </div>
+
+      <!-- Zona de peligro: eliminar la tienda -->
+      <div class="settings-card" style="margin-top:20px;border:1.5px solid var(--danger);background:var(--danger-soft)">
+        <h4 style="color:var(--danger)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>Eliminar mi tienda</h4>
+        <div class="desc">Esta acción es <b>permanente</b>: borra tu tienda, productos, pedidos, estadísticas y tu cuenta de administrador. No se puede deshacer.</div>
+        <button class="btn-primary" style="width:auto;padding:11px 20px;background:var(--danger);border-color:var(--danger)" onclick="adminDeleteMyStore()">🗑️ Eliminar mi negocio</button>
       </div>
 </section>
 
@@ -3532,6 +3547,23 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
       </div>
       <button class="btn-primary" style="margin-top:6px" onclick="submitCustomerReview()">Publicar reseña</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: opinión de experiencia post-compra -->
+<div class="modal" id="expOpinionModal">
+  <div class="modal-bg" onclick="closeExpOpinion()"></div>
+  <div class="modal-card">
+    <div class="modal-head"><h3>¿Cómo fue tu experiencia?</h3>
+      <button class="close-x" onclick="closeExpOpinion()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="f-group"><label>Tu nombre</label><input class="f-input" id="expName" placeholder="Ej: María"></div>
+      <div class="f-group"><label>Calificación</label><div class="star-picker" id="expStars"></div></div>
+      <div class="f-group"><label>Tu comentario</label><textarea class="f-input" id="expText" placeholder="Contanos cómo estuvo tu compra y la tienda"></textarea></div>
+      <button class="btn-primary" style="margin-top:6px" onclick="submitExpOpinion()">Enviar mi opinión</button>
+      <button class="btn-ghost" style="width:100%;margin-top:8px" onclick="closeExpOpinion()">Ahora no, gracias</button>
     </div>
   </div>
 </div>
@@ -6835,6 +6867,8 @@ async function createOrderFromCart(){
   }
   lastOrder = order;
   markProductsAsOrdered(items.map(it=>it.id));
+  /* Avisar al administrador (CallMeBot/WhatsApp) que llegó un pedido con pago local */
+  try{ if(typeof cloudCall === 'function') cloudCall('notifyTenantNewOrder', { slug: TENANT_ID, order: { number: order.number, total: order.total, customer: order.customer, items: order.items } }).catch(function(){}); }catch(_e){}
 
   cart = {}; updateCartUI(); renderGrid();
   return order;
@@ -6873,6 +6907,37 @@ function renderCsrStars(){
   document.getElementById('csrStars').innerHTML = starPickerHTML('csr', csrRating).replace(/reviewField\('csr','rating',(\d)\)/g, 'csrPickRating($1)');
 }
 function csrPickRating(n){ csrRating = n; renderCsrStars(); }
+
+/* ---------- Opinión de experiencia post-compra ---------- */
+let expRating = 5, expOrderNumber = '';
+function openExpOpinion(orderNumber){
+  expOrderNumber = orderNumber || '';
+  expRating = 5;
+  document.getElementById('expStars').innerHTML = starPickerHTML('exp', 5);
+  document.getElementById('expName').value = lastOrder && lastOrder.customer && lastOrder.customer.name ? lastOrder.customer.name : '';
+  document.getElementById('expText').value = '';
+  document.getElementById('expOpinionModal').classList.add('show');
+}
+function closeExpOpinion(){ document.getElementById('expOpinionModal').classList.remove('show'); }
+function expPickRating(n){ expRating = n; var el = document.getElementById('expStars'); if(el) el.innerHTML = starPickerHTML('exp', n); }
+async function submitExpOpinion(){
+  const name = document.getElementById('expName').value.trim() || 'Cliente';
+  const text = document.getElementById('expText').value.trim();
+  try{
+    /* Notificar al administrador por CallMeBot/WhatsApp */
+    if(typeof cloudCall === 'function'){
+      cloudCall('notifyTenantReview', { slug: TENANT_ID, review: { name: name, rating: expRating, text: text, orderNumber: expOrderNumber } }).catch(function(){});
+    }
+    /* Guardar la opinión en el documento del pedido (historial) */
+    try{
+      if(expOrderNumber){
+        await ordersCol.doc(expOrderNumber).set({ experience: firebase.firestore.FieldValue.arrayUnion({ id: rid(), name: name, rating: expRating, text: text, date: new Date().toISOString() }) }, { merge: true });
+      }
+    }catch(_e){}
+    closeExpOpinion();
+    toast('¡Gracias por tu opinión! 😊', 'ok');
+  }catch(e){ toast('No se pudo enviar tu opinión', 'err'); }
+}
 function onCsrPhotoChosen(input){
   const file = input.files && input.files[0];
   if(!file) return;
@@ -6975,7 +7040,13 @@ function showInvoice(order){
   lines.push('');
   lines.push('Ya realicé el SINPE Móvil al ' + settings.sinpe + ' por ' + fmt(order.total) + '. Adjunto mi comprobante de pago:');
   const waURL = 'https://wa.me/' + waDigits(settings.whatsapp) + '?text=' + encodeURIComponent(lines.join('\n'));
-  document.getElementById('waReceiptBtn').onclick = () => { window.open(waURL, '_blank'); };
+  document.getElementById('waReceiptBtn').onclick = () => {
+    /* Antes de abrir WhatsApp, pedir la opinión de experiencia de la compra */
+    if(typeof openExpOpinion === 'function'){
+      openExpOpinion(order.number);
+    }
+    window.open(waURL, '_blank');
+  };
 }
 /* ================= CONVERSIÓN DE DIVISA (local → divisa PayPal / dólares) =================
    Usa en TIEMPO REAL el tipo de cambio del Banco Central de Costa Rica (BCCR).
@@ -9329,6 +9400,7 @@ let pendingBingoIcon = null;
    para saber que está guardada y puede reemplazarla escribiendo una nueva. */
 let _masked = { openrouter:'', gemini:'', external:'' };
 let _maskedPaypalSecret = '';
+let _maskedCallmeKey = '';
 let privatePaypal = {};
 async function refreshMaskedAiKeys(){
   const setMask = (id, masked, exists, placeholder) => {
@@ -9391,6 +9463,21 @@ async function loadBizWhatsappConfig(){
         _maskedPaypalSecret = '';
         pps.value = '';
         pps.placeholder = '****************************';
+      }
+    }
+    /* CallMeBot del admin: el API key se muestra enmascarado si hay uno */
+    const cmPhone = document.getElementById('sCallmePhone');
+    if(cmPhone) cmPhone.value = p.callmePhone || '';
+    const cmKey = document.getElementById('sCallmeApiKey');
+    if(cmKey){
+      if(p.callmeApiKey){
+        _maskedCallmeKey = p.callmeApiKey.slice(0,4) + '****';
+        cmKey.value = _maskedCallmeKey;
+        cmKey.placeholder = 'Guardada: ' + _maskedCallmeKey + ' — escribí una nueva para reemplazarla';
+      } else {
+        _maskedCallmeKey = '';
+        cmKey.value = '';
+        cmKey.placeholder = 'tu-apikey';
       }
     }
     onBizWaProviderChange();
@@ -10280,6 +10367,11 @@ try{
     if(wSidEl) priv.waSid = wSidEl.value.trim();
     if(wAuthEl) priv.waAuth = wAuthEl.value.trim();
     if(wFromEl) priv.waFrom = wFromEl.value.trim() || 'whatsapp:+14155238886';
+    /* CallMeBot del admin (WhatsApp personal) */
+    const cmPhoneEl = document.getElementById('sCallmePhone');
+    if(cmPhoneEl && cmPhoneEl.value.trim()) priv.callmePhone = cmPhoneEl.value.trim();
+    const cmKeyEl = document.getElementById('sCallmeApiKey');
+    if(cmKeyEl && cmKeyEl.value.trim() && cmKeyEl.value !== _maskedCallmeKey) priv.callmeApiKey = cmKeyEl.value.trim();
     if(wTokEl) priv.waToken = wTokEl.value.trim();
     if(wPhEl) priv.waPhoneId = wPhEl.value.trim();
     if(Object.keys(priv).length) await privateSettingsRef.set(priv, { merge:true });
@@ -11435,8 +11527,47 @@ const ref = db.collection('tenants').doc(id);
     renderSuperadminSummary();
     renderSuperadminTable();
     toast('Negocio eliminado', 'ok');
+    try{ if(typeof cloudCall === 'function') cloudCall('notifySuperadminTenantDeleted', { slug: id, nombre: nombre }).catch(function(){}); }catch(_e){}
   }catch(e){
     toast('No se pudo eliminar: ' + (e && e.message ? e.message : 'error desconocido'), 'err');
+    console.error(e);
+  }
+}
+
+/* Eliminar la propia tienda desde el panel del administrador (con confirmación
+   doble) y avisar al superadmin por WhatsApp. */
+async function adminDeleteMyStore(){
+  const nombre = (TENANT_DATA && (TENANT_DATA.nombre || settings.storeName)) || TENANT_ID;
+  if(!confirm('¿Seguro que querés eliminar "' + nombre + '"? Se borran tu tienda, productos, pedidos y estadísticas de forma PERMANENTE.')) return;
+  const check = prompt('Para confirmar, escribí exactamente el ID de tu negocio:\n' + TENANT_ID);
+  if(check !== TENANT_ID){ toast('Eliminación cancelada: el texto no coincide', 'err'); return; }
+  const btn = document.querySelector('.panel#panel-settings .settings-card:last-of-type button');
+  if(btn){ btn.disabled = true; btn.textContent = 'Eliminando…'; }
+  /* Enviar DESPEDIDA al admin ANTES de borrar (necesita su callmebot en privateSettings) */
+  try{ if(typeof cloudCall === 'function') cloudCall('notifyTenantFarewell', { slug: TENANT_ID }).catch(function(){}); }catch(_e){}
+  try{
+    const ref = db.collection('tenants').doc(TENANT_ID);
+    await saDeleteCollectionDocs(ref.collection('products'));
+    await saDeleteCollectionDocs(ref.collection('orders'));
+    await saDeleteCollectionDocs(ref.collection('settings'));
+    await saDeleteCollectionDocs(ref.collection('privateSettings'));
+    await saDeleteCollectionDocs(ref.collection('analytics'));
+    await saDeleteCollectionDocs(ref.collection('posSales'));
+    await saDeleteCollectionDocs(ref.collection('finance'));
+    await saDeleteCollectionDocs(ref.collection('employees'));
+    await saDeleteCollectionDocs(ref.collection('backups'));
+    await ref.delete();
+    /* Avisar al superadmin por WhatsApp */
+    try{ if(typeof cloudCall === 'function') cloudCall('notifySuperadminTenantDeleted', { slug: TENANT_ID, nombre: nombre }).catch(function(){}); }catch(_e){}
+    toast('Tu negocio fue eliminado', 'ok');
+    setTimeout(function(){
+      try{ auth.signOut(); }catch(_e){}
+      location.href = location.origin + (window.basePath || '') + '?tienda=';
+    }, 1200);
+  }catch(e){
+    toast('No se pudo eliminar: ' + (e && e.message ? e.message : 'error'),
+ 'err');
+    if(btn){ btn.disabled = false; btn.textContent = '🗑️ Eliminar mi negocio'; }
     console.error(e);
   }
 }
@@ -11616,6 +11747,8 @@ async function saApprovePlan(tenantId, planId){
       membershipLastPaymentDate: now.toISOString(),
       membershipNextDueDate: nextDue.toISOString(),
       membershipReminderSent: false,
+      membershipReminderSent24h: false,
+      membershipExpiryNotified: false,
       plan: planValue,
       planRank: rank,
       montoMensual: planId==='destacado'?25000:(planId==='profesional'?15000:9900),
@@ -11625,6 +11758,14 @@ async function saApprovePlan(tenantId, planId){
     if(t){ Object.assign(t, {membershipPlan:planId, planApprovedId:planId, planApprovalStatus:'aprobado', plan:planValue, planRank:rank, membershipNextDueDate:nextDue.toISOString(), estadoPago:'al_dia', activo:true}); }
     renderSuperadminTable();
     toast('Plan ' + PLAN_NAMES_MAP[planId] + ' activado para el negocio', 'ok');
+    /* Avisar al superadmin: cuenta nueva (viene del landing) vs pago/renovación */
+    const esNueva = !!(t && t.subSource === 'landing');
+    try{
+      if(typeof cloudCall === 'function'){
+        if(esNueva) cloudCall('notifySuperadminAccountActivated', { slug: tenantId }).catch(function(){});
+        else cloudCall('notifySuperadminMembershipPaid', { slug: tenantId, plan: planId, method: 'SINPE' }).catch(function(){});
+      }
+    }catch(_e){}
     await renderSaPlanModalContent(tenantId);
   }catch(e){
     toast('Error al activar plan: ' + (e.message||'error'), 'err');
@@ -12103,18 +12244,12 @@ async function savePlanConfig(){
   if(saPpS && saPpS.value.trim() && saPpS.value !== _maskedPlatformSecret) privatePaypalSecret = saPpS.value.trim();
   else if(!saPpS || !saPpS.value.trim()) { /* vacío = conservar */ }
   /* WhatsApp del superadmin: número/proveedor en doc público, claves en privado */
-  const saWaNum = document.getElementById('saSuperadminWhatsapp');
-  if(saWaNum) planConfig.superadminWhatsapp = saWaNum.value.trim();
-  const saWaProv = document.getElementById('saSuperadminWaProvider');
-  if(saWaProv) planConfig.waProvider = saWaProv.value;
-  const saWaFrom = document.getElementById('saSuperadminWaFrom');
-  if(saWaFrom) planConfig.waFrom = saWaFrom.value.trim() || 'whatsapp:+14155238886';
-  const saWaSid = document.getElementById('saSuperadminWaSid');
-  if(saWaSid && saWaSid.value.trim()) privatePlatformWa.waSid = saWaSid.value.trim();
-  const saWaAuth = document.getElementById('saSuperadminWaAuth');
-  if(saWaAuth && saWaAuth.value.trim()) privatePlatformWa.waAuth = saWaAuth.value.trim();
-  if(saWaProv) privatePlatformWa.waProvider = saWaProv.value;
-  if(saWaFrom) privatePlatformWa.waFrom = saWaFrom.value.trim() || 'whatsapp:+14155238886';
+  /* WhatsApp del superadmin: CallMeBot (principal) + Twilio/Meta (respaldo) */
+  const callmePhoneEl = document.getElementById('saCallmePhone');
+  if(callmePhoneEl) planConfig.callmePhone = callmePhoneEl.value.trim();
+  const callmeKeyEl = document.getElementById('saCallmeApiKey');
+  if(callmeKeyEl && callmeKeyEl.value.trim()) privatePlatformWa.callmeApiKey = callmeKeyEl.value.trim();
+  if(callmePhoneEl && callmePhoneEl.value.trim()) privatePlatformWa.callmePhone = callmePhoneEl.value.trim();
   /* Tasa de cambio forzada CRC→USD (si el superadmin la define) */
   const fxEl = document.getElementById('saFxRate');
   var fxRates = planConfig.fxRates = planConfig.fxRates || {};
@@ -12189,6 +12324,22 @@ async function saTestSuperadminWa(){
   }catch(e){
     if(st){ st.textContent = 'Error al probar: ' + ((e && e.message)||'error'); st.style.color = 'var(--danger)'; }
     toast('No se pudo probar la notificación', 'err');
+  }
+}
+/* Ejecuta el barrido de membresías vencidas (aviso al superadmin) manualmente */
+async function saTestExpiredAlert(){
+  const st = document.getElementById('saWaTestStatus');
+  if(st){ st.textContent = 'Revisando vencimientos…'; st.style.color = 'var(--muted)'; }
+  try{
+    const res = await cloudCall('notifyExpiredMemberships', {});
+    if(st){
+      st.textContent = res && res.notified ? ('Avisos enviados: ' + res.notified) : 'Sin vencimientos pendientes.';
+      st.style.color = (res && res.notified) ? 'var(--green)' : 'var(--muted)';
+    }
+    toast((res && res.notified ? 'Avisos de vencidas enviados ✓' : 'No hay vencimientos por avisar'), 'ok');
+  }catch(e){
+    if(st){ st.textContent = 'Error: ' + ((e && e.message)||'error'); st.style.color = 'var(--danger)'; }
+    toast('No se pudo ejecutar el barrido', 'err');
   }
 }
 function resetPlanConfigDefaults(){
@@ -12656,22 +12807,22 @@ function renderPlanConfigUI(){
   });
   html += '</div></div>';
   /* NOTIFICACIONES AL SUPERADMIN POR WHATSAPP (nuevas suscripciones + pagos de membresía) */
-  html += '<div><b style="font-size:14px">📲 Notificaciones del superadministrador (WhatsApp)</b>' +
-    '<div style="font-size:12px;color:var(--muted);margin:4px 0 8px">Recibís un aviso por WhatsApp cuando alguien se suscribe con el mes gratis y cuando una tienda paga su membresía. Configurá tu número y la cuenta Twilio/Meta.</div>' +
-    '<div class="f-row" style="grid-template-columns:1fr 1fr;gap:8px">' +
-      '<div class="f-group"><label>Tu número de WhatsApp (receptor)</label><input class="f-input" id="saSuperadminWhatsapp" placeholder="506xxxxxxxx" value="' + esc((planConfig.superadminWhatsapp || '')) + '"></div>' +
-      '<div class="f-group"><label>Proveedor</label><select class="f-input" id="saSuperadminWaProvider"><option value="twilio"' + ((planConfig.waProvider||'twilio')==='twilio'?' selected':'') + '>Twilio</option><option value="meta"' + ((planConfig.waProvider||'')==='meta'?' selected':'') + '>Meta</option></select></div>' +
+  html += '<div><b style="font-size:14px">📲 Notificaciones del superadministrador</b>' +
+    '<div style="font-size:12px;color:var(--muted);margin:4px 0 8px">Recibís un aviso cuando alguien se suscribe con el mes gratis y cuando una tienda paga su membresía. Usá <b>CallMeBot</b> (WhatsApp personal, gratis) o el respaldo Twilio/Meta.</div>' +
+    '<div style="border:1.5px solid var(--green);border-radius:12px;padding:10px 12px;background:var(--green-soft);margin-bottom:8px">' +
+      '<b style="font-size:12.5px">🥇 CallMeBot (WhatsApp personal — GRATIS)</b>' +
+      '<div style="font-size:11px;color:var(--muted);margin:2px 0 6px">Se envían los avisos a tu propio WhatsApp sin sandbox ni límites de prueba. Obtené tu APiKey en <b>callmebot.com</b> según su paso 1.</div>' +
+      '<div class="f-row" style="grid-template-columns:1fr 1fr;gap:8px">' +
+        '<div class="f-group"><label>Tu número (formato internacional)</label><input class="f-input" id="saCallmePhone" placeholder="50672284602" value="' + esc((planConfig.callmePhone || '')) + '"></div>' +
+        '<div class="f-group"><label>API Key de CallMeBot</label><input class="f-input" id="saCallmeApiKey" type="password" autocomplete="off" value="' + esc((planConfig.callmeApiKey || '')) + '"></div>' +
+      '</div>' +
     '</div>' +
-    '<div class="f-row" style="grid-template-columns:1fr 1fr;gap:8px">' +
-      '<div class="f-group"><label>Account SID</label><input class="f-input" id="saSuperadminWaSid" autocomplete="off" value="' + esc((planConfig.waSid || '')) + '"></div>' +
-      '<div class="f-group"><label>Auth Token</label><input class="f-input" id="saSuperadminWaAuth" type="password" autocomplete="off" value="' + esc((planConfig.waAuth || '')) + '"></div>' +
-    '</div>' +
-    '<div class="f-group"><label>Número WhatsApp (Twilio/Meta)</label><input class="f-input" id="saSuperadminWaFrom" autocomplete="off" placeholder="whatsapp:+14155238886" value="' + esc((planConfig.waFrom || 'whatsapp:+14155238886')) + '"></div>' +
+    '<div style="font-size:11.5px;color:var(--muted);margin:6px 0 8px;padding:8px 10px;background:#F1F5F9;border-radius:10px"><b>Debug:</b> Si CallMeBot no está configurado, se usa Twilio/Meta como respaldo. Las claves se guardan en un almacén privado (solo el servidor las lee).</div>' +
     '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">' +
-      '<button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="saTestSuperadminWa()">🧪 Probar notificación</button>' +
+      '<button type="button" class="btn-primary" style="width:auto;padding:10px 18px" onclick="saTestSuperadminWa()">🧪 Probar notificación</button>' +
+      '<button type="button" class="btn-ghost" style="width:auto;padding:9px 14px" onclick="saTestExpiredAlert()">⏰ Probar aviso de vencidas</button>' +
       '<span id="saWaTestStatus" style="font-size:12px;color:var(--muted)"></span>' +
     '</div>' +
-    '<div style="font-size:11px;color:var(--muted);margin-top:4px">El número receptor y el proveedor se guardan en la config pública. El SID/Auth/Token se guardan en un almacén privado (solo el servidor los lee).</div>' +
   '</div>';
   /* PAGOS INTERNACIONALES (superadmin): enlaces por plan + panel de su cuenta */
   html += '<div><b style="font-size:14px">💳 Pagos internacionales (PayPal / Payoneer / Wise)</b>' +
