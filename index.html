@@ -2262,6 +2262,16 @@ body.superadmin-mode #storeView,body.superadmin-mode #tenantSelector,body.supera
         </div>
         <div class="f-group"><label><span>Dirección / Ubicación</span> <span class="req">*</span></label><textarea class="f-input" id="cAddress" placeholder="Provincia, cantón, distrito y señas"></textarea></div>
         <div class="f-group"><label><span>Notas del pedido (opcional)</span></label><input class="f-input" id="cNotes" placeholder="Ej: entregar en la mañana"></div>
+        <div class="f-group" id="proofGroup">
+          <label><span>Comprobante de pago</span> <span class="req">*</span></label>
+          <div class="logo-upload-row">
+            <span class="logo-preview icon-checker" id="checkoutProofPreview" style="cursor:pointer" onclick="document.getElementById('checkoutProofInput').click()"></span>
+            <input type="file" id="checkoutProofInput" accept="image/*" style="display:none" onchange="onCheckoutProofChosen(this)">
+            <button type="button" class="btn-ghost" style="width:auto;padding:9px 16px" onclick="document.getElementById('checkoutProofInput').click()">Subir foto del comprobante</button>
+            <button type="button" class="btn-ghost" style="width:auto;padding:9px 14px;color:var(--danger)" onclick="clearCheckoutProof()">Quitar</button>
+          </div>
+          <div class="hint" style="margin-top:4px">📸 Subí la foto de tu comprobante de pago (SINPE/transferencia). <b>Es obligatoria</b> para que el pedido quede en espera de confirmación.</div>
+        </div>
         <button class="btn-primary" onclick="submitOrder()"><span>Generar factura y pagar con</span> <span id="cPayLabel">menor</span></button>
         <button class="btn-export" id="cCardBtn" style="width:100%;margin-top:8px;display:none" onclick="payOrderCard()"><span>💳 Pagar el monto exacto con tarjeta (PayPal)</span></button>
         <div id="paypalCheckoutBox" style="width:100%;margin-top:8px;display:none"></div>
@@ -6812,8 +6822,29 @@ const UBER_STEPS = [
   {key:'entregado',  lbl:'Entregado',         sub:'¡Disfrutá tus plantas!'}
 ];
 
+/* Comprobante de pago local (obligatorio para pago SINPE) */
+let checkoutProofDataUrl = '';
+function onCheckoutProofChosen(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  compressImageFile(file, 900, 0.75).then(dataUrl => {
+    checkoutProofDataUrl = dataUrl;
+    document.getElementById('checkoutProofPreview').innerHTML = '<img src="' + dataUrl + '" alt="Comprobante">';
+    toast('Comprobante cargado ✓', 'ok');
+  }).catch(()=> toast('No se pudo procesar la imagen', 'err'));
+  input.value = '';
+}
+function clearCheckoutProof(){
+  checkoutProofDataUrl = '';
+  document.getElementById('checkoutProofPreview').innerHTML = '';
+  toast('Comprobante quitado', 'ok');
+}
+function hasCheckoutProof(){
+  return !!(checkoutProofDataUrl && checkoutProofDataUrl.length > 100);
+}
+
 async function submitOrder(){
-  const order = await createOrderFromCart();
+  const order = await createOrderFromCart(true, 'local');
   if(order) showInvoice(order);
 }
 
@@ -6826,8 +6857,9 @@ function dateOrderNumber(){
 /* Crea y guarda la factura a partir de los datos del carrito, la registra en
    Firestore y la deja en `lastOrder`. Devuelve la factura o null si falta algo.
    La usan tanto el pago local (SINPE) como el checkout con tarjeta (PayPal),
-   de modo que el cobro PayPal SIEMPRE coincida con el total de la factura. */
-async function createOrderFromCart(){
+   de modo que el cobro PayPal SIEMPRE coincida con el total de la factura.
+   requireProof: true para pago local (comprobante obligatorio → pedido en espera). */
+async function createOrderFromCart(requireProof, payMethod){
   const name = document.getElementById('cName').value.trim();
   const phone = document.getElementById('cPhone').value.trim();
   const email = document.getElementById('cEmail').value.trim();
@@ -6837,6 +6869,11 @@ async function createOrderFromCart(){
   if(!name){ toast('Ingresá tu nombre completo', 'err'); return null; }
   if(!phone || waDigits(phone).length < 8){ toast('Ingresá un teléfono válido', 'err'); return null; }
   if(!address){ toast('Ingresá tu dirección o ubicación', 'err'); return null; }
+  if(requireProof && !hasCheckoutProof()){
+    toast('Adjuntá la foto de tu comprobante de pago (es obligatoria)', 'err');
+    document.getElementById('checkoutProofInput') && null;
+    return null;
+  }
 
   const t = cartTotals();
   if(!t.count){ toast('Tu canasta está vacía', 'err'); return null; }
@@ -6854,8 +6891,10 @@ async function createOrderFromCart(){
     customer:{ name, phone, email, address, delivery, notes },
     trackPhone4: digits.slice(-4),
     items, subtotal:t.sub, discountAmt:t.discountAmt||0, discountPercent:t.discountPercent||0, iva:t.iva, total:t.total,
-    status:'recibido',
-    timeline:[{status:'recibido', at: now.toISOString()}]
+    proofImage: requireProof ? checkoutProofDataUrl : '',
+    payMethod: payMethod || (requireProof ? 'local' : ''),
+    status: requireProof ? 'en_espera' : 'recibido',
+    timeline:[{status: requireProof ? 'en_espera' : 'recibido', at: now.toISOString()}]
   };
 
   try{
@@ -7111,7 +7150,7 @@ function payOrderCard(){
   }
   /* CREAR LA FACTURA PRIMERO: así el cobro coincide con el total de la factura
      y se guarda el número (lastOrder) para la descripción y la notificación. */
-  createOrderFromCart().then(function(order){
+  createOrderFromCart(false, 'PayPal').then(function(order){
     if(!order){ const btn = document.getElementById('cCardBtn'); if(btn){ btn.textContent = '💳 Pagar el monto exacto con tarjeta (PayPal)'; btn.disabled = false; } return; }
     const local = (settings && settings.currency) || 'CRC';
     const cur = (settings && settings.paypalCurrency) || (cfg.paymeCurrency || 'USD');
@@ -8478,6 +8517,7 @@ async function deleteProduct(id){
 
 /* ---------- pedidos ---------- */
 const STATUS = {
+  en_espera:{lbl:'En espera', cls:'amber'},
   recibido:{lbl:'Recibido', cls:'gray'},
   confirmado:{lbl:'Pago confirmado', cls:'blue'},
   preparando:{lbl:'Preparando', cls:'amber'},
@@ -8501,6 +8541,7 @@ function renderOrders(){
         Object.keys(STATUS).map(k=>'<option value="'+k+'"'+(o.status===k?' selected':'')+'>'+STATUS[k].lbl+'</option>').join('') +
       '</select></td>' +
       '<td style="text-align:right;white-space:nowrap">' +
+        (o.proofImage ? '<button class="icon-btn" title="Ver comprobante" onclick="viewOrderProof(\'' + o.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></button>' : '') +
         '<button class="icon-btn" title="Ver factura" onclick="viewOrder(\'' + o.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
         '<a class="icon-btn" title="WhatsApp del cliente" target="_blank" href="https://wa.me/' + waDigits(o.customer.phone) + '?text=' + encodeURIComponent('Hola ' + o.customer.name + ', te contactamos de ' + settings.storeName + ' por tu pedido ' + o.number + '.') + '"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z"/></svg></a>' +
         '<button class="icon-btn danger" title="Eliminar" onclick="deleteOrder(\'' + o.number + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m1 0-1 15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1L7 6"/></svg></button>' +
@@ -8604,11 +8645,10 @@ function viewOrder(num){
   const o = orders.find(x=>x.number===num);
   if(!o) return;
   lastOrder = o;
-  const st = STATUS[o.status]||STATUS.recibido;
-  const quickBtns = o.status==='cancelado' ? '' :
+  const st = STATUS[o.status]||STATUS.recibido;  const quickBtns = o.status==='cancelado' ? '' :
     '<div class="inv-actions" style="padding:0 0 16px;gap:8px;flex-wrap:wrap">' +
       (o.status!=='entregado' ? '<button class="btn-primary" style="width:auto;padding:9px 16px" onclick="setOrderStatus(\'' + o.number + '\',\'entregado\')">Marcar como entregado</button>' : '') +
-      (o.status==='recibido' ? '<button class="btn-ghost" style="width:auto;padding:9px 16px" onclick="setOrderStatus(\'' + o.number + '\',\'confirmado\')">Confirmar pago</button>' : '') +
+      (o.status==='recibido' || o.status==='en_espera' ? '<button class="btn-ghost" style="width:auto;padding:9px 16px" onclick="setOrderStatus(\'' + o.number + '\',\'confirmado\')">Confirmar pago</button>' : '') +
     '</div>';
 document.getElementById('orderDetail').innerHTML =
     '<div style="margin-bottom:12px"><span class="pill ' + st.cls + '">' + st.lbl + '</span></div>' +
@@ -8623,6 +8663,22 @@ document.getElementById('orderDetail').innerHTML =
     const inv = document.getElementById('orderDetailInvoice');
     if(inv){ inv.scrollIntoView({behavior:'smooth', block:'center'}); }
   }, 80);
+}
+/* Abre el comprobante de pago de un pedido en una ventana modal */
+function viewOrderProof(num){
+  const o = orders.find(x=>x.number===num);
+  if(!o || !o.proofImage){ toast('Este pedido no tiene comprobante adjunto', 'warn'); return; }
+  const st = STATUS[o.status]||STATUS.recibido;
+  const name = (o.customer && o.customer.name) || 'cliente';
+  document.getElementById('orderDetail').innerHTML =
+    '<div style="margin-bottom:12px"><span class="pill ' + st.cls + '">' + st.lbl + '</span></div>' +
+    '<div style="font-size:14px;font-weight:700;margin-bottom:6px">Comprobante de pago — ' + esc(o.number) + '</div>' +
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:10px">Cliente: ' + esc(name) + ' · Total: ' + fmt(o.total) + '</div>' +
+    '<div style="background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;justify-content:center">' +
+      '<img src="' + esc(o.proofImage) + '" alt="Comprobante" style="max-width:100%;max-height:70vh;border-radius:8px;object-fit:contain">' +
+    '</div>' +
+    '<div class="inv-actions" style="padding:14px 0 0"><button class="btn-ghost" onclick="viewOrder(\'' + o.number + '\')">← Volver al pedido</button></div>';
+  document.getElementById('orderModal').classList.add('show');
 }
 
 /* ---------- PUNTO DE VENTA (POS) ----------
